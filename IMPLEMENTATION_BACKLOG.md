@@ -350,25 +350,34 @@
 
 ---
 
-### Story 1.1.3: Expression Parser API 🔴 P0
+### Story 1.1.3: Expression Parser API 🔴 P0 ✅ COMPLETED
 **As a** user of the core library
 **I want** a simple API to parse expressions
 **So that** I can easily integrate parsing
 
 **Acceptance Criteria**:
-- [ ] Parser class with simple parse() method
-- [ ] Handles syntax errors gracefully
-- [ ] Returns AST or error details
-- [ ] Good error messages with line/column
+- [x] Parser class with simple parse() method ✅
+- [x] Handles syntax errors gracefully ✅
+- [x] Returns AST or error details ✅
+- [x] Good error messages with line/column ✅
 
 **Tasks**:
-- [ ] Task 1.1.3.1: Design Parser API - 3 SP
-- [ ] Task 1.1.3.2: Implement Parser class - 5 SP
-- [ ] Task 1.1.3.3: Implement error handling - 5 SP
-- [ ] Task 1.1.3.4: Write comprehensive tests - 5 SP
-- [ ] Task 1.1.3.5: Document API with examples - 3 SP
+- [x] Task 1.1.3.1: Design Parser API - 3 SP ✅
+- [x] Task 1.1.3.2: Implement Parser class - 5 SP ✅
+- [x] Task 1.1.3.3: Implement error handling - 5 SP ✅
+- [x] Task 1.1.3.4: Write comprehensive tests - 5 SP ✅
+- [x] Task 1.1.3.5: Document API with examples - 3 SP ✅
 
 **Story Points**: 13
+**Status**: ✅ COMPLETED (commit 6652bf2)
+
+**Deliverables**:
+- `ExpressionParser`: High-level API with parse() and parseOrThrow()
+- `ParseResult`: Result type with success/failure pattern
+- `ParseException`: Custom exception for parse failures
+- `ParserErrorListener`: ANTLR error listener with helpful messages
+- `ExpressionParserTest`: 19 comprehensive tests
+- All tests passing - clean error handling with line/column reporting
 
 ---
 
