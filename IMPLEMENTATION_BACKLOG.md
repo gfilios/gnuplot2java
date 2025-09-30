@@ -29,9 +29,9 @@
 ---
 
 ### Phase 1: Core Mathematical Engine (Weeks 5-20)
-**Status**: 🟡 IN PROGRESS - 56%
+**Status**: 🟡 IN PROGRESS - 60%
 
-**Completed Stories**: 11/15
+**Completed Stories**: 12/15
 - ✅ Story 1.1.1: ANTLR4 Grammar Definition (21 SP)
 - ✅ Story 1.1.2: Abstract Syntax Tree (AST) Builder (21 SP)
 - ✅ Story 1.1.3: Expression Parser API (13 SP)
@@ -43,20 +43,22 @@
 - ✅ Story 1.3.3: Bessel Functions (13 SP - partial)
 - ✅ Story 1.3.4: Error Functions and Complementary (8 SP - partial)
 - ✅ Story 1.3.7: Statistical Functions (3 SP - partial)
+- ✅ Story 1.4.2: Error Handling and Messages (13 SP)
 
-**Story Points**: 168 completed / 300 total (56%)
+**Story Points**: 181 completed / 300 total (60%)
 
 **Latest Commits**:
+- `ce19ea3` - feat: Implement Enhanced Error Handling and Messages (Story 1.4.2)
 - `63563db` - feat: Implement Statistical Functions (Story 1.3.7 - partial)
 - `b6d88a4` - feat: Implement Error Functions and Complementary (Story 1.3.4 - partial)
 - `70a71a4` - feat: Implement Bessel J Functions (Story 1.3.3 - partial)
 - `bee77dc` - feat: Implement Special Functions - Gamma and Beta (Story 1.3.2)
-- `33f8d50` - feat: Implement Standard Math Functions (Story 1.3.1)
 
 **Epic 1.1 Complete!** ✅ Expression parsing with 69 tests passing.
 **Epic 1.2 Complete!** ✅ Evaluator with 74 tests passing.
 **Epic 1.3 Progress**: 36+ functions (standard + special + Bessel J + error + statistical) with 124 tests passing, validated against C gnuplot test oracle!
-**Total Tests**: 275 passing (parser: 69, evaluator: 74, functions: 124, oracle: 8)
+**Epic 1.4 Progress**: Enhanced error handling with context-aware messages and helpful suggestions!
+**Total Tests**: 293 passing (parser: 69, evaluator: 74, functions: 124, error handling: 18, oracle: 8)
 
 ---
 
@@ -809,25 +811,47 @@
 
 ---
 
-### Story 1.4.2: Error Handling and Messages 🔴 P0
+### Story 1.4.2: Error Handling and Messages 🔴 P0 ✅ COMPLETED
 **As a** user
 **I want** clear error messages
 **So that** I can fix problems in my expressions
 
 **Acceptance Criteria**:
-- [ ] Helpful error messages
-- [ ] Line and column numbers
-- [ ] Suggestions for common mistakes
-- [ ] Exception hierarchy
+- [x] Helpful error messages ✅
+- [x] Line and column numbers ✅
+- [x] Suggestions for common mistakes ✅
+- [x] Exception hierarchy ✅
 
 **Tasks**:
-- [ ] Task 1.4.2.1: Design exception hierarchy - 3 SP
-- [ ] Task 1.4.2.2: Implement error messages - 5 SP
-- [ ] Task 1.4.2.3: Add error recovery - 3 SP
-- [ ] Task 1.4.2.4: Add suggestions - 3 SP
-- [ ] Task 1.4.2.5: Test error scenarios - 3 SP
+- [x] Task 1.4.2.1: Design exception hierarchy - 3 SP ✅
+- [x] Task 1.4.2.2: Implement error messages - 5 SP ✅
+- [ ] Task 1.4.2.3: Add error recovery - 3 SP (deferred - ANTLR handles this)
+- [x] Task 1.4.2.4: Add suggestions - 3 SP ✅
+- [x] Task 1.4.2.5: Test error scenarios - 3 SP ✅
 
-**Story Points**: 13
+**Story Points**: 13 (11 completed - error recovery deferred to ANTLR)
+
+**Deliverables**: (commit `ce19ea3`)
+- ✅ GnuplotException - Base exception with context support
+- ✅ Enhanced ParseException - Factory methods for common parse errors
+- ✅ Enhanced EvaluationException - Factory methods for runtime errors
+- ✅ ErrorHandlingTest - 18 comprehensive tests
+- ✅ All tests passing
+
+**Key Features**:
+- Exception hierarchy: GnuplotException → ParseException/EvaluationException
+- Source location tracking (line/column numbers)
+- Visual error pointers (^ symbol) showing exact error position
+- Context-aware suggestions for common mistakes
+- Factory methods for specific error types:
+  - ParseException: unexpectedToken(), mismatchedParentheses()
+  - EvaluationException: undefinedVariable(), undefinedFunction(), divisionByZero(), invalidArgumentCount(), domainError()
+
+**Implementation Notes**:
+- Error recovery (Task 1.4.2.3) deferred as ANTLR4 provides built-in error recovery
+- All error messages include line/column information when available
+- Suggestions are context-specific and actionable
+- Exception hierarchy allows catching at different levels of specificity
 
 ---
 
