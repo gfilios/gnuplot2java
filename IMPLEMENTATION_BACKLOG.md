@@ -318,25 +318,35 @@
 
 ---
 
-### Story 1.1.2: Abstract Syntax Tree (AST) Builder 🔴 P0
+### Story 1.1.2: Abstract Syntax Tree (AST) Builder 🔴 P0 ✅ COMPLETED
 **As a** developer
 **I want** an AST representation of expressions
 **So that** expressions can be analyzed and evaluated
 
 **Acceptance Criteria**:
-- [ ] AST node classes defined
-- [ ] Visitor pattern implemented
-- [ ] ANTLR parse tree converted to AST
-- [ ] Unit tests for AST construction
+- [x] AST node classes defined ✅
+- [x] Visitor pattern implemented ✅
+- [x] ANTLR parse tree converted to AST ✅
+- [x] Unit tests for AST construction ✅
 
 **Tasks**:
-- [ ] Task 1.1.2.1: Design AST node hierarchy - 5 SP
-- [ ] Task 1.1.2.2: Implement node classes - 8 SP
-- [ ] Task 1.1.2.3: Implement ANTLR visitor - 5 SP
-- [ ] Task 1.1.2.4: Write AST builder - 5 SP
-- [ ] Task 1.1.2.5: Unit tests for AST - 5 SP
+- [x] Task 1.1.2.1: Design AST node hierarchy - 5 SP ✅
+- [x] Task 1.1.2.2: Implement node classes - 8 SP ✅
+- [x] Task 1.1.2.3: Implement ANTLR visitor - 5 SP ✅
+- [x] Task 1.1.2.4: Write AST builder - 5 SP ✅
+- [x] Task 1.1.2.5: Unit tests for AST - 5 SP ✅
 
 **Story Points**: 21
+**Status**: ✅ COMPLETED (commit 3b488a6)
+
+**Deliverables**:
+- `ASTNode`: Base interface with visitor pattern
+- `SourceLocation`: Source location tracking for error reporting
+- `ASTVisitor`: Visitor interface for AST traversal
+- AST node types: `NumberLiteral`, `Variable`, `BinaryOperation`, `UnaryOperation`, `FunctionCall`, `TernaryConditional`
+- `ASTBuilder`: ANTLR visitor that converts parse tree to AST
+- `ASTBuilderTest`: 17 comprehensive tests covering all node types
+- All tests passing with proper operator precedence
 
 ---
 
