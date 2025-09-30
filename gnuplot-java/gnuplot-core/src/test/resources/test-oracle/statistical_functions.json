@@ -1,0 +1,13 @@
+{
+  "function": "statistical_functions",
+  "gnuplot_version": "gnuplot 6.0.3 patchlevel 3",
+  "tests": [
+    {"expression": "norm(0)", "result": 0.5},
+    {"expression": "norm(1)", "result": 0.84134474606854304},
+    {"expression": "norm(2)", "result": 0.97724986805182079},
+    {"expression": "norm(-1)", "result": 0.15865525393145699},
+    {"expression": "invnorm(0.5)", "result": 0},
+    {"expression": "invnorm(0.84134474)", "result": 0.99999997492034276},
+    {"expression": "invnorm(0.97724987)", "result": 2.0000000360834296}
+  ]
+}
