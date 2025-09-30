@@ -24,14 +24,29 @@
 
 **Story Points**: 61 completed / 61 total (100%)
 
-**Latest Commits**:
-- `72ecba2` - feat(test): Add test oracle data extraction
-- `58ad1c7` - docs: Add CI/CD status badges to README
-- `ffcef1c` - docs: Mark Phase 0 as complete
-- `99501ed` - docs: Add documentation framework
-- `c2c1758` - feat(ci): Add CI/CD pipeline and code quality tools
+**Phase 0 Complete!** ✅ All infrastructure ready. Test oracle with 89 reference test cases established.
 
-**Phase 0 Complete!** ✅ All infrastructure ready. Test oracle with 89 reference test cases established. Ready for Phase 1 (Core Math Engine).
+---
+
+### Phase 1: Core Mathematical Engine (Weeks 5-20)
+**Status**: 🟡 IN PROGRESS - 18%
+
+**Completed Stories**: 3/15
+- ✅ Story 1.1.1: ANTLR4 Grammar Definition (21 SP)
+- ✅ Story 1.1.2: Abstract Syntax Tree (AST) Builder (21 SP)
+- ✅ Story 1.1.3: Expression Parser API (13 SP)
+
+**Story Points**: 55 completed / 300 total (18%)
+
+**Latest Commits**:
+- `609fa52` - docs: Update backlog with Story 1.1.3 completion
+- `6652bf2` - feat: Implement Expression Parser API (Story 1.1.3)
+- `c8070b8` - docs: Update backlog with Story 1.1.2 completion
+- `3b488a6` - feat: Implement Abstract Syntax Tree (AST) Builder (Story 1.1.2)
+- `af79a8d` - docs: Update backlog with Story 1.1.1 completion
+- `557f802` - feat(parser): Add ANTLR4 grammar for mathematical expressions (Story 1.1.1)
+
+**Epic 1.1 Complete!** ✅ Expression parsing fully functional with 69 parser/AST tests passing. Ready for Epic 1.2 (Expression Evaluator).
 
 ---
 
