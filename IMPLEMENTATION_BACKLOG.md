@@ -29,9 +29,9 @@
 ---
 
 ### Phase 1: Core Mathematical Engine (Weeks 5-20)
-**Status**: 🟡 IN PROGRESS - 55%
+**Status**: 🟡 IN PROGRESS - 56%
 
-**Completed Stories**: 10/15
+**Completed Stories**: 11/15
 - ✅ Story 1.1.1: ANTLR4 Grammar Definition (21 SP)
 - ✅ Story 1.1.2: Abstract Syntax Tree (AST) Builder (21 SP)
 - ✅ Story 1.1.3: Expression Parser API (13 SP)
@@ -42,20 +42,21 @@
 - ✅ Story 1.3.2: Special Functions (Gamma, Beta) (21 SP)
 - ✅ Story 1.3.3: Bessel Functions (13 SP - partial)
 - ✅ Story 1.3.4: Error Functions and Complementary (8 SP - partial)
+- ✅ Story 1.3.7: Statistical Functions (3 SP - partial)
 
-**Story Points**: 165 completed / 300 total (55%)
+**Story Points**: 168 completed / 300 total (56%)
 
 **Latest Commits**:
+- `63563db` - feat: Implement Statistical Functions (Story 1.3.7 - partial)
 - `b6d88a4` - feat: Implement Error Functions and Complementary (Story 1.3.4 - partial)
 - `70a71a4` - feat: Implement Bessel J Functions (Story 1.3.3 - partial)
 - `bee77dc` - feat: Implement Special Functions - Gamma and Beta (Story 1.3.2)
 - `33f8d50` - feat: Implement Standard Math Functions (Story 1.3.1)
-- `8333976` - feat: Implement AST Interpreter for Basic Arithmetic (Story 1.2.1)
 
 **Epic 1.1 Complete!** ✅ Expression parsing with 69 tests passing.
 **Epic 1.2 Complete!** ✅ Evaluator with 74 tests passing.
-**Epic 1.3 Progress**: 34+ functions (standard + special + Bessel J + error) with 112 tests passing, validated against C gnuplot test oracle!
-**Total Tests**: 263 passing (parser: 69, evaluator: 74, functions: 112, oracle: 8)
+**Epic 1.3 Progress**: 36+ functions (standard + special + Bessel J + error + statistical) with 124 tests passing, validated against C gnuplot test oracle!
+**Total Tests**: 275 passing (parser: 69, evaluator: 74, functions: 124, oracle: 8)
 
 ---
 
@@ -700,7 +701,7 @@
 
 ---
 
-### Story 1.3.7: Statistical Functions 🟠 P1
+### Story 1.3.7: Statistical Functions 🟠 P1 ✅ COMPLETED (Partial)
 **As a** user
 **I want** statistical distribution functions
 **So that** I can perform statistical analysis
@@ -708,18 +709,34 @@
 **Functions**: norm, invnorm, chisquare, students_t, f_dist
 
 **Acceptance Criteria**:
-- [ ] PDF, CDF, and inverse CDF
-- [ ] Common distributions
-- [ ] Use Apache Commons Math
+- [x] Normal distribution CDF and inverse CDF ✅
+- [ ] Chi-square distribution
+- [ ] Student's t distribution
+- [ ] F distribution
+- [x] Use Apache Commons Math ✅
 
 **Tasks**:
-- [ ] Task 1.3.7.1: Implement normal distribution - 3 SP
+- [x] Task 1.3.7.1: Implement normal distribution - 3 SP ✅
 - [ ] Task 1.3.7.2: Implement chi-square - 3 SP
 - [ ] Task 1.3.7.3: Implement Student's t - 3 SP
 - [ ] Task 1.3.7.4: Implement F distribution - 3 SP
-- [ ] Task 1.3.7.5: Test against C outputs - 3 SP
+- [x] Task 1.3.7.5: Test against C outputs - 3 SP ✅ (partial - normal only)
 
-**Story Points**: 13
+**Story Points**: 13 (3 completed - normal distribution only)
+
+**Deliverables**: (commit `63563db`)
+- ✅ StatisticalFunctions.java - 2 statistical functions (norm, invnorm)
+- ✅ StatisticalFunctionsTest.java - 12 comprehensive tests
+- ✅ Test oracle data from C gnuplot 6.0.3
+- ✅ All tests passing, validated against test oracle
+
+**Implementation Notes**:
+- Used Apache Commons Math 3.6.1 NormalDistribution class
+- Standard normal distribution (mean=0, stddev=1)
+- norm(x): cumulative probability P(X <= x)
+- invnorm(p): quantile function (inverse CDF)
+- Accuracy matches C gnuplot within 1e-6 tolerance
+- Other distributions (chi-square, Student's t, F) deferred
 
 ---
 
