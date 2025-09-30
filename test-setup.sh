@@ -85,11 +85,12 @@ echo ""
 # 4. Check project structure
 echo -e "${YELLOW}4. Checking Project Structure...${NC}"
 PROJECT_FILES=(
-    "pom.xml"
-    "gnuplot-core/pom.xml"
-    "gnuplot-render/pom.xml"
-    "gnuplot-server/pom.xml"
-    "gnuplot-cli/pom.xml"
+    "gnuplot-java/pom.xml"
+    "gnuplot-java/gnuplot-core/pom.xml"
+    "gnuplot-java/gnuplot-render/pom.xml"
+    "gnuplot-java/gnuplot-server/pom.xml"
+    "gnuplot-java/gnuplot-cli/pom.xml"
+    "gnuplot-c/README"
     "README.md"
     "SETUP.md"
 )
@@ -107,9 +108,10 @@ echo ""
 # 5. Try to build the project
 if [ "$ALL_GOOD" = true ]; then
     echo -e "${YELLOW}5. Testing Maven Build...${NC}"
-    echo "Running: mvn clean compile -DskipTests"
+    echo "Running: cd gnuplot-java && mvn clean compile -DskipTests"
     echo ""
 
+    cd gnuplot-java
     if mvn clean compile -DskipTests; then
         echo ""
         echo -e "${GREEN}✓ Maven build successful!${NC}"
@@ -133,6 +135,7 @@ if [ "$ALL_GOOD" = true ]; then
         echo -e "${RED}✗ Tests failed${NC}"
         ALL_GOOD=false
     fi
+    cd ..
     echo ""
 else
     echo -e "${YELLOW}Skipping build tests due to missing prerequisites${NC}"
@@ -151,10 +154,11 @@ if [ "$ALL_GOOD" = true ]; then
     echo -e "${GREEN}✓ All checks passed! You're ready to develop.${NC}"
     echo ""
     echo "Next steps:"
-    echo "  1. Open the project in your IDE (IntelliJ IDEA recommended)"
-    echo "  2. Wait for Maven to download dependencies"
-    echo "  3. Start implementing features from IMPLEMENTATION_BACKLOG.md"
-    echo "  4. Run tests with: mvn test"
+    echo "  1. cd gnuplot-java"
+    echo "  2. Open the project in your IDE (IntelliJ IDEA recommended)"
+    echo "  3. Wait for Maven to download dependencies"
+    echo "  4. Start implementing features from ../IMPLEMENTATION_BACKLOG.md"
+    echo "  5. Run tests with: mvn test"
 else
     echo -e "${RED}✗ Some checks failed. Please fix the issues above.${NC}"
     echo ""
