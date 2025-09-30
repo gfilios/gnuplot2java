@@ -29,9 +29,9 @@
 ---
 
 ### Phase 1: Core Mathematical Engine (Weeks 5-20)
-**Status**: 🟡 IN PROGRESS - 52%
+**Status**: 🟡 IN PROGRESS - 55%
 
-**Completed Stories**: 9/15
+**Completed Stories**: 10/15
 - ✅ Story 1.1.1: ANTLR4 Grammar Definition (21 SP)
 - ✅ Story 1.1.2: Abstract Syntax Tree (AST) Builder (21 SP)
 - ✅ Story 1.1.3: Expression Parser API (13 SP)
@@ -41,20 +41,21 @@
 - ✅ Story 1.3.1: Standard Math Functions (21 SP)
 - ✅ Story 1.3.2: Special Functions (Gamma, Beta) (21 SP)
 - ✅ Story 1.3.3: Bessel Functions (13 SP - partial)
+- ✅ Story 1.3.4: Error Functions and Complementary (8 SP - partial)
 
-**Story Points**: 157 completed / 300 total (52%)
+**Story Points**: 165 completed / 300 total (55%)
 
 **Latest Commits**:
+- `b6d88a4` - feat: Implement Error Functions and Complementary (Story 1.3.4 - partial)
 - `70a71a4` - feat: Implement Bessel J Functions (Story 1.3.3 - partial)
 - `bee77dc` - feat: Implement Special Functions - Gamma and Beta (Story 1.3.2)
 - `33f8d50` - feat: Implement Standard Math Functions (Story 1.3.1)
 - `8333976` - feat: Implement AST Interpreter for Basic Arithmetic (Story 1.2.1)
-- `6652bf2` - feat: Implement Expression Parser API (Story 1.1.3)
 
 **Epic 1.1 Complete!** ✅ Expression parsing with 69 tests passing.
 **Epic 1.2 Complete!** ✅ Evaluator with 74 tests passing.
-**Epic 1.3 Progress**: 30+ functions (standard + special + Bessel J) with 96 tests passing, validated against C gnuplot test oracle!
-**Total Tests**: 247 passing (parser: 69, evaluator: 74, functions: 96, oracle: 8)
+**Epic 1.3 Progress**: 34+ functions (standard + special + Bessel J + error) with 112 tests passing, validated against C gnuplot test oracle!
+**Total Tests**: 263 passing (parser: 69, evaluator: 74, functions: 112, oracle: 8)
 
 ---
 
@@ -615,7 +616,7 @@
 
 ---
 
-### Story 1.3.4: Error Functions and Complementary 🔴 P0
+### Story 1.3.4: Error Functions and Complementary 🔴 P0 ✅ COMPLETED (Partial)
 **As a** user
 **I want** error functions
 **So that** I can work with probability distributions
@@ -623,19 +624,33 @@
 **Functions**: erf, erfc, inverf, inverfc, voigt, faddeeva
 
 **Acceptance Criteria**:
-- [ ] All error functions implemented
+- [x] Basic error functions implemented ✅
 - [ ] Complex error functions (cerf)
 - [ ] Voigt profile function
-- [ ] Match C accuracy
+- [x] Match C accuracy ✅
 
 **Tasks**:
-- [ ] Task 1.3.4.1: Implement erf/erfc - 3 SP
-- [ ] Task 1.3.4.2: Implement inverse error functions - 5 SP
+- [x] Task 1.3.4.1: Implement erf/erfc - 3 SP ✅
+- [x] Task 1.3.4.2: Implement inverse error functions - 5 SP ✅
 - [ ] Task 1.3.4.3: Implement complex error functions - 8 SP
 - [ ] Task 1.3.4.4: Implement Voigt profile - 5 SP
-- [ ] Task 1.3.4.5: Test against C outputs - 5 SP
+- [x] Task 1.3.4.5: Test against C outputs - 5 SP ✅ (partial - basic functions only)
 
-**Story Points**: 21
+**Story Points**: 21 (8 completed - basic error functions only)
+
+**Deliverables**: (commit `b6d88a4`)
+- ✅ ErrorFunctions.java - 4 error functions (erf, erfc, inverf, inverfc)
+- ✅ ErrorFunctionsTest.java - 16 comprehensive tests
+- ✅ Test oracle data from C gnuplot 6.0.3
+- ✅ Updated extraction script for error functions
+- ✅ All tests passing, validated against test oracle
+
+**Implementation Notes**:
+- Used Apache Commons Math 3.6.1 Erf class
+- Direct mapping: Erf.erf(), Erf.erfc(), Erf.erfInv(), Erf.erfcInv()
+- Accuracy matches C gnuplot within 1e-10 tolerance
+- Complex error functions (cerf) and Voigt profile require additional libraries
+- inverfc implemented as bonus (not in gnuplot 6.0.3 but available in Commons Math)
 
 ---
 
