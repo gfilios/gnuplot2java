@@ -54,7 +54,7 @@
         <jackson.version>2.16.0</jackson.version>
         <batik.version>1.17</batik.version>
         <pdfbox.version>3.0.1</pdfbox.version>
-        <jogl.version>2.4.0</jogl.version>
+        <jogl.version>2.5.0</jogl.version>
 
         <!-- Testing -->
         <junit.version>5.10.1</junit.version>
@@ -455,6 +455,16 @@
             </plugin>
         </plugins>
     </reporting>
+
+    <repositories>
+        <!-- JogAmp Repository for JOGL -->
+        <repository>
+            <id>jogamp-remote</id>
+            <name>jogamp test mirror</name>
+            <url>https://www.jogamp.org/deployment/maven/</url>
+            <layout>default</layout>
+        </repository>
+    </repositories>
 
     <profiles>
         <!-- Development Profile -->
