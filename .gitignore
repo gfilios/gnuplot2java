@@ -48,3 +48,36 @@ docs/pdf_figures
 share/Gnuplot
 FAQ.pdf
 build*
+
+# Java/Maven additions
+target/
+*.class
+*.jar
+!.mvn/wrapper/maven-wrapper.jar
+*.war
+*.ear
+*.log
+hs_err_pid*
+
+# IDE
+.idea/
+*.iws
+*.iml
+*.ipr
+.classpath
+.project
+.settings/
+.vscode/
+*.code-workspace
+
+# Environment
+.env
+.env.local
+
+# Test coverage
+jacoco.exec
+jacoco/
+
+# OS
+.DS_Store
+Thumbs.db
