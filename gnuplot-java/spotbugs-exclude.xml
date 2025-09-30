@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter
+        xmlns="https://github.com/spotbugs/filter/3.0.0"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="https://github.com/spotbugs/filter/3.0.0 https://raw.githubusercontent.com/spotbugs/spotbugs/3.1.0/spotbugs/etc/findbugsfilter.xsd">
+
+    <!-- Exclude generated ANTLR4 files -->
+    <Match>
+        <Source name="~.*[\\/]generated-sources[\\/]antlr4[\\/].*"/>
+    </Match>
+
+    <!-- Exclude generated files -->
+    <Match>
+        <Source name="~.*[\\/]target[\\/]generated-sources[\\/].*"/>
+    </Match>
+
+    <!-- Exclude test files from certain checks -->
+    <Match>
+        <Class name="~.*Test"/>
+        <Bug pattern="DM_NUMBER_CTOR"/>
+    </Match>
+
+    <!-- Allow serialization without serialVersionUID in DTOs -->
+    <Match>
+        <Package name="~com\.gnuplot\..*\.dto"/>
+        <Bug pattern="SE_NO_SERIALVERSIONID"/>
+    </Match>
+
+    <!-- Allow test code to have specific patterns -->
+    <Match>
+        <Source name="~.*Test\.java"/>
+        <Bug pattern="RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT"/>
+    </Match>
+
+    <!-- Spring Boot configuration classes -->
+    <Match>
+        <Class name="~.*Application"/>
+        <Bug pattern="UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR"/>
+    </Match>
+
+    <!-- Ignore potential null pointer in optional chain -->
+    <Match>
+        <Bug pattern="NP_NULL_ON_SOME_PATH"/>
+        <Priority value="3"/>
+    </Match>
+</FindBugsFilter>
