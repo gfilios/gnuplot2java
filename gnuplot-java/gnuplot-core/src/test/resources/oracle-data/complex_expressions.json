@@ -1,0 +1,38 @@
+{
+  "function": "complex_expressions",
+  "gnuplot_version": "gnuplot 6.0.3 patchlevel 3",
+  "tests": [
+    {
+      "expression": "sin(pi/4) ** 2 + cos(pi/4) ** 2",
+      "result": 1.0
+    },
+    {
+      "expression": "exp(log(10))",
+      "result": 10.0
+    },
+    {
+      "expression": "log(exp(5))",
+      "result": 5.0
+    },
+    {
+      "expression": "sqrt(4 ** 2)",
+      "result": 4.0
+    },
+    {
+      "expression": "abs(sin(pi))",
+      "result": 1.22464679914735e-16
+    },
+    {
+      "expression": "2 * sin(pi/6)",
+      "result": 1.0
+    },
+    {
+      "expression": "sqrt(3) / 2",
+      "result": 0.866025403784439
+    },
+    {
+      "expression": "1 / sqrt(2)",
+      "result": 0.707106781186547
+    }
+  ]
+}

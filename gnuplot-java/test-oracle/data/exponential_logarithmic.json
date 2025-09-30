@@ -1,0 +1,74 @@
+{
+  "function": "exponential_logarithmic",
+  "gnuplot_version": "gnuplot 6.0.3 patchlevel 3",
+  "tests": [
+    {
+      "expression": "exp(0)",
+      "result": 1.0
+    },
+    {
+      "expression": "exp(1)",
+      "result": 2.71828182845905
+    },
+    {
+      "expression": "exp(2)",
+      "result": 7.38905609893065
+    },
+    {
+      "expression": "exp(-1)",
+      "result": 0.367879441171442
+    },
+    {
+      "expression": "log(1)",
+      "result": 0.0
+    },
+    {
+      "expression": "log(exp(1))",
+      "result": 1.0
+    },
+    {
+      "expression": "log(10)",
+      "result": 2.30258509299405
+    },
+    {
+      "expression": "log(100)",
+      "result": 4.60517018598809
+    },
+    {
+      "expression": "log10(1)",
+      "result": 0.0
+    },
+    {
+      "expression": "log10(10)",
+      "result": 1.0
+    },
+    {
+      "expression": "log10(100)",
+      "result": 2.0
+    },
+    {
+      "expression": "log10(1000)",
+      "result": 3.0
+    },
+    {
+      "expression": "sqrt(0)",
+      "result": 0.0
+    },
+    {
+      "expression": "sqrt(1)",
+      "result": 1.0
+    },
+    {
+      "expression": "sqrt(4)",
+      "result": 2.0
+    },
+    {
+      "expression": "sqrt(2)",
+      "result": 1.4142135623731
+    },
+    {
+      "expression": "sqrt(9)",
+      "result": 3.0
+    }
+  ]
+}

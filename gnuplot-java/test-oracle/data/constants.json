@@ -1,0 +1,26 @@
+{
+  "function": "constants",
+  "gnuplot_version": "gnuplot 6.0.3 patchlevel 3",
+  "tests": [
+    {
+      "expression": "pi",
+      "result": 3.14159265358979
+    },
+    {
+      "expression": "2*pi",
+      "result": 6.28318530717959
+    },
+    {
+      "expression": "pi/2",
+      "result": 1.5707963267949
+    },
+    {
+      "expression": "pi/4",
+      "result": 0.785398163397448
+    },
+    {
+      "expression": "pi/6",
+      "result": 0.523598775598299
+    }
+  ]
+}

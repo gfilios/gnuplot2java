@@ -1,0 +1,62 @@
+{
+  "function": "special_functions",
+  "gnuplot_version": "gnuplot 6.0.3 patchlevel 3",
+  "tests": [
+    {
+      "expression": "abs(-5)",
+      "result": 5.0
+    },
+    {
+      "expression": "abs(0)",
+      "result": 0.0
+    },
+    {
+      "expression": "abs(3.14)",
+      "result": 3.14
+    },
+    {
+      "expression": "ceil(3.14)",
+      "result": 4.0
+    },
+    {
+      "expression": "ceil(-3.14)",
+      "result": -3.0
+    },
+    {
+      "expression": "ceil(5)",
+      "result": 5.0
+    },
+    {
+      "expression": "floor(3.14)",
+      "result": 3.0
+    },
+    {
+      "expression": "floor(-3.14)",
+      "result": -4.0
+    },
+    {
+      "expression": "floor(5)",
+      "result": 5.0
+    },
+    {
+      "expression": "int(3.14)",
+      "result": 3.0
+    },
+    {
+      "expression": "int(-3.14)",
+      "result": -3.0
+    },
+    {
+      "expression": "sgn(-5)",
+      "result": -1.0
+    },
+    {
+      "expression": "sgn(0)",
+      "result": 0.0
+    },
+    {
+      "expression": "sgn(5)",
+      "result": 1.0
+    }
+  ]
+}

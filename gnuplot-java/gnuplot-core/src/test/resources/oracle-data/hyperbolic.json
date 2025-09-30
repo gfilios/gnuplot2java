@@ -1,0 +1,42 @@
+{
+  "function": "hyperbolic",
+  "gnuplot_version": "gnuplot 6.0.3 patchlevel 3",
+  "tests": [
+    {
+      "expression": "sinh(0)",
+      "result": 0.0
+    },
+    {
+      "expression": "sinh(1)",
+      "result": 1.1752011936438
+    },
+    {
+      "expression": "sinh(-1)",
+      "result": -1.1752011936438
+    },
+    {
+      "expression": "cosh(0)",
+      "result": 1.0
+    },
+    {
+      "expression": "cosh(1)",
+      "result": 1.54308063481524
+    },
+    {
+      "expression": "cosh(-1)",
+      "result": 1.54308063481524
+    },
+    {
+      "expression": "tanh(0)",
+      "result": 0.0
+    },
+    {
+      "expression": "tanh(1)",
+      "result": 0.761594155955765
+    },
+    {
+      "expression": "tanh(-1)",
+      "result": -0.761594155955765
+    }
+  ]
+}
