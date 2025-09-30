@@ -1,5 +1,7 @@
 # Gnuplot Modernization Project
 
+![Build Status](https://github.com/gnuplot/gnuplot-java/workflows/CI/badge.svg)
+[![codecov](https://codecov.io/gh/gnuplot/gnuplot-java/branch/main/graph/badge.svg)](https://codecov.io/gh/gnuplot/gnuplot-java)
 ![Java Version](https://img.shields.io/badge/Java-21-blue.svg)
 ![Maven](https://img.shields.io/badge/Maven-3.9+-blue.svg)
 ![License](https://img.shields.io/badge/License-Gnuplot-green.svg)
