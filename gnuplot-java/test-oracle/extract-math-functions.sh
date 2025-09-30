@@ -111,6 +111,23 @@ print sprintf("    {\"expression\": \"pi/2\", \"result\": %.17g},", pi/2)
 print sprintf("    {\"expression\": \"pi/4\", \"result\": %.17g}", pi/4)
 EOF
             ;;
+        "error_functions")
+            gnuplot <<'EOF' >> "$test_file"
+print sprintf("    {\"expression\": \"erf(0)\", \"result\": %.17g},", erf(0))
+print sprintf("    {\"expression\": \"erf(0.5)\", \"result\": %.17g},", erf(0.5))
+print sprintf("    {\"expression\": \"erf(1)\", \"result\": %.17g},", erf(1))
+print sprintf("    {\"expression\": \"erf(2)\", \"result\": %.17g},", erf(2))
+print sprintf("    {\"expression\": \"erf(-1)\", \"result\": %.17g},", erf(-1))
+print sprintf("    {\"expression\": \"erfc(0)\", \"result\": %.17g},", erfc(0))
+print sprintf("    {\"expression\": \"erfc(0.5)\", \"result\": %.17g},", erfc(0.5))
+print sprintf("    {\"expression\": \"erfc(1)\", \"result\": %.17g},", erfc(1))
+print sprintf("    {\"expression\": \"erfc(2)\", \"result\": %.17g},", erfc(2))
+print sprintf("    {\"expression\": \"inverf(0)\", \"result\": %.17g},", inverf(0))
+print sprintf("    {\"expression\": \"inverf(0.5)\", \"result\": %.17g},", inverf(0.5))
+print sprintf("    {\"expression\": \"inverf(0.9)\", \"result\": %.17g},", inverf(0.9))
+print sprintf("    {\"expression\": \"inverf(-0.5)\", \"result\": %.17g}", inverf(-0.5))
+EOF
+            ;;
     esac
 
     # Close JSON
@@ -129,6 +146,7 @@ extract_function_results "exponential_logarithmic"
 extract_function_results "hyperbolic"
 extract_function_results "special_functions"
 extract_function_results "constants"
+extract_function_results "error_functions"
 
 echo ""
 echo "=== Extraction Complete ==="

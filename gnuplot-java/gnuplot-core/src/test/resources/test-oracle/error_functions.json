@@ -1,0 +1,19 @@
+{
+  "function": "error_functions",
+  "gnuplot_version": "gnuplot 6.0.3 patchlevel 3",
+  "tests": [
+    {"expression": "erf(0)", "result": 0},
+    {"expression": "erf(0.5)", "result": 0.52049987781304652},
+    {"expression": "erf(1)", "result": 0.84270079294971478},
+    {"expression": "erf(2)", "result": 0.99532226501895271},
+    {"expression": "erf(-1)", "result": -0.84270079294971478},
+    {"expression": "erfc(0)", "result": 1},
+    {"expression": "erfc(0.5)", "result": 0.47950012218695348},
+    {"expression": "erfc(1)", "result": 0.15729920705028516},
+    {"expression": "erfc(2)", "result": 0.0046777349810472645},
+    {"expression": "inverf(0)", "result": 0},
+    {"expression": "inverf(0.5)", "result": 0.47693627620446982},
+    {"expression": "inverf(0.9)", "result": 1.1630871536766743},
+    {"expression": "inverf(-0.5)", "result": -0.47693627620446982}
+  ]
+}
