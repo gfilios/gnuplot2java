@@ -10,6 +10,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 
 /**
  * SVG renderer implementation.
@@ -66,7 +67,7 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
     }
 
     private void writeSvgHeader() throws IOException {
-        writer.write(String.format(
+        writer.write(String.format(Locale.US,
                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                 "<svg xmlns=\"http://www.w3.org/2000/svg\" " +
                 "width=\"%d\" height=\"%d\" viewBox=\"0 0 %d %d\">\n",
@@ -76,14 +77,14 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
         // Background
         String bgColor = scene.getHints().get(RenderingHints.Keys.BACKGROUND_COLOR)
                 .orElse("#FFFFFF");
-        writer.write(String.format(
+        writer.write(String.format(Locale.US,
                 "  <rect width=\"%d\" height=\"%d\" fill=\"%s\"/>\n",
                 scene.getWidth(), scene.getHeight(), bgColor));
 
         // Title if present
         if (scene.getTitle() != null && !scene.getTitle().isEmpty()) {
             int fontSize = scene.getHints().get(RenderingHints.Keys.FONT_SIZE).orElse(16);
-            writer.write(String.format(
+            writer.write(String.format(Locale.US,
                     "  <text x=\"%d\" y=\"%d\" font-size=\"%d\" text-anchor=\"middle\">%s</text>\n",
                     scene.getWidth() / 2, fontSize + 5, fontSize, escapeXml(scene.getTitle())));
         }
@@ -114,14 +115,14 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
                 if (points.length() > 0) {
                     points.append(" ");
                 }
-                points.append(String.format("%.2f,%.2f", x, y));
+                points.append(String.format(Locale.US, "%.2f %.2f", x, y));
             }
 
             // Determine stroke-dasharray based on line style
             String dashArray = getStrokeDashArray(linePlot.getLineStyle());
 
             // Write polyline
-            writer.write(String.format(
+            writer.write(String.format(Locale.US,
                     "  <polyline points=\"%s\" fill=\"none\" stroke=\"%s\" stroke-width=\"2\"%s/>\n",
                     points, linePlot.getColor(), dashArray));
 
@@ -136,25 +137,25 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
             // For now, render a simple axis line
             if (axis.getAxisType() == Axis.AxisType.X_AXIS) {
                 double y = mapY(0);
-                writer.write(String.format(
+                writer.write(String.format(Locale.US,
                         "  <line x1=\"0\" y1=\"%.2f\" x2=\"%d\" y2=\"%.2f\" stroke=\"#000\" stroke-width=\"1\"/>\n",
                         y, scene.getWidth(), y));
 
                 // Axis label
                 if (axis.getLabel() != null) {
-                    writer.write(String.format(
+                    writer.write(String.format(Locale.US,
                             "  <text x=\"%d\" y=\"%.2f\" text-anchor=\"middle\" font-size=\"12\">%s</text>\n",
                             scene.getWidth() / 2, y + 25, escapeXml(axis.getLabel())));
                 }
             } else if (axis.getAxisType() == Axis.AxisType.Y_AXIS) {
                 double x = mapX(0);
-                writer.write(String.format(
+                writer.write(String.format(Locale.US,
                         "  <line x1=\"%.2f\" y1=\"0\" x2=\"%.2f\" y2=\"%d\" stroke=\"#000\" stroke-width=\"1\"/>\n",
                         x, x, scene.getHeight()));
 
                 // Axis label
                 if (axis.getLabel() != null) {
-                    writer.write(String.format(
+                    writer.write(String.format(Locale.US,
                             "  <text x=\"%.2f\" y=\"%d\" text-anchor=\"middle\" font-size=\"12\" transform=\"rotate(-90 %.2f %d)\">%s</text>\n",
                             x - 30, scene.getHeight() / 2, x - 30, scene.getHeight() / 2, escapeXml(axis.getLabel())));
                 }
@@ -175,7 +176,7 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
 
             // Draw legend box if border is enabled
             if (legend.isShowBorder()) {
-                writer.write(String.format(
+                writer.write(String.format(Locale.US,
                         "  <rect x=\"%d\" y=\"%d\" width=\"120\" height=\"%d\" fill=\"white\" stroke=\"black\" stroke-width=\"1\"/>\n",
                         x, y, legend.getEntries().size() * 20 + 10));
             }
@@ -185,12 +186,12 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
             for (Legend.LegendEntry entry : legend.getEntries()) {
                 // Draw line sample
                 String dashArray = getStrokeDashArray(entry.getLineStyle());
-                writer.write(String.format(
+                writer.write(String.format(Locale.US,
                         "  <line x1=\"%d\" y1=\"%d\" x2=\"%d\" y2=\"%d\" stroke=\"%s\" stroke-width=\"2\"%s/>\n",
                         x + 5, entryY, x + 25, entryY, entry.getColor(), dashArray));
 
                 // Draw label
-                writer.write(String.format(
+                writer.write(String.format(Locale.US,
                         "  <text x=\"%d\" y=\"%d\" font-size=\"10\" alignment-baseline=\"middle\">%s</text>\n",
                         x + 30, entryY + 2, escapeXml(entry.getLabel())));
 
