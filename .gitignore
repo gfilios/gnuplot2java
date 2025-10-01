@@ -24,7 +24,6 @@ _$*
 *.Z
 *.elc
 *.ln
-core
 # CVS default ignores end
 .deps
 Makefile
