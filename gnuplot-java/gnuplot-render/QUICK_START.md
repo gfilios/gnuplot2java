@@ -46,10 +46,12 @@ public class QuickPlot {
 The module includes complete examples in `SimplePlotExample.java`:
 
 ```bash
-# From the gnuplot-render directory
+# From the gnuplot-java directory (parent directory)
+cd gnuplot-java
 mvn test-compile exec:java \
   -Dexec.mainClass="com.gnuplot.render.examples.SimplePlotExample" \
-  -Dexec.classpathScope=test
+  -Dexec.classpathScope=test \
+  -pl gnuplot-render
 ```
 
 This will create three SVG files:
