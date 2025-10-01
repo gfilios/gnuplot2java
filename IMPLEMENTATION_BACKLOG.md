@@ -143,30 +143,37 @@ String function support requires similar changes for String type support. Both a
 ---
 
 ### Phase 3: Rendering Engine (Weeks 33-48)
-**Status**: 🟡 IN PROGRESS - 5%
+**Status**: 🟡 IN PROGRESS - 12%
 
-**Current Work**: Implementing rendering pipeline architecture (Story 3.1.1)
+**Current Work**: Implementing axis rendering system (Story 3.1.2)
 
-**Completed Stories**: 0/14 P0 stories (0%)
+**Completed Stories**: 0/14 P0 stories (0% complete, 2 in progress)
 - 🟡 Story 3.1.1: Rendering Pipeline Architecture (13/21 SP - foundations complete)
+- 🟡 Story 3.1.2: Axis Rendering System (23/36 SP - TickGenerator complete)
 
-**Story Points**: 13 completed / 300 total (5%)
+**Story Points**: 36 completed / 300 total (12%)
 
 **Latest Commits**:
+- `pending` - feat: Implement TickGenerator for axis tick generation (Story 3.1.2 - partial)
 - `98f7eda` - feat: Implement rendering pipeline architecture (Story 3.1.1 - foundations)
 - `1c16e53` - docs: Complete Phase 2 - Data Processing Layer (MVP)
 
 **Phase 3 Progress**:
-- **Epic 3.1 (Rendering Infrastructure) - In Progress** 🟡 Story 3.1.1 foundations complete
-- **Total Tests**: 631 passing (335 Phase 1 + 238 Phase 2 + 58 Phase 3)
+- **Epic 3.1 (Rendering Infrastructure) - In Progress** 🟡
+  - Story 3.1.1 foundations complete (58 tests)
+  - Story 3.1.2 TickGenerator complete (36 tests)
+- **Total Tests**: 667 passing (335 Phase 1 + 238 Phase 2 + 94 Phase 3)
 
-**Story 3.1.1 Status**:
-- ✅ Core rendering interfaces (Renderer, RenderException, RendererCapabilities)
-- ✅ Scene graph architecture (Scene, SceneElement, Viewport)
-- ✅ Rendering hints system (type-safe hints with 12 standard keys)
-- ✅ Comprehensive tests (58 tests covering all components)
-- ⏳ Next: Implement concrete scene elements (axes, plots, legends)
-- ⏳ Next: Implement SVG and PNG renderers
+**Story 3.1.2 Status (TickGenerator)**:
+- ✅ Gnuplot's quantize_normal_tics algorithm implementation
+- ✅ Linear tick generation with automatic "nice" spacing
+- ✅ Minor tics support (configurable count between major tics)
+- ✅ Custom tic positions with optional labels
+- ✅ Logarithmic scale ticks (base 10 and custom bases)
+- ✅ Smart label formatting with appropriate precision
+- ✅ 36 comprehensive unit tests
+- ⏳ Next: Integrate TickGenerator with Axis scene element
+- ⏳ Next: Add time-based tick generation
 
 ---
 
@@ -1448,26 +1455,39 @@ String function support requires similar changes for String type support. Both a
 
 ---
 
-### Story 3.1.2: Axis Rendering System 🔴 P0
+### Story 3.1.2: Axis Rendering System 🔴 P0 - 🟡 IN PROGRESS
 **As a** developer
 **I want** a flexible axis rendering system
 **So that** all plot types can have proper axes
 
 **Acceptance Criteria**:
-- [ ] Linear axes
-- [ ] Logarithmic axes
+- [x] Linear axes tick generation
+- [x] Logarithmic axes tick generation
 - [ ] Time axes
-- [ ] Tick mark generation
-- [ ] Label formatting
+- [x] Tick mark generation (major and minor)
+- [x] Label formatting
 
 **Tasks**:
-- [ ] Task 3.1.2.1: Study C axis.c (2,999 lines) - 5 SP
-- [ ] Task 3.1.2.2: Design axis API - 5 SP
-- [ ] Task 3.1.2.3: Implement tick generation - 8 SP
-- [ ] Task 3.1.2.4: Implement label formatting - 5 SP
-- [ ] Task 3.1.2.5: Test against C outputs - 5 SP
+- [x] Task 3.1.2.1: Study C axis.c (2,999 lines) - 5 SP ✅
+- [x] Task 3.1.2.2: Implement TickGenerator with gnuplot's quantize_normal_tics algorithm - 8 SP ✅
+- [x] Task 3.1.2.3: Add minor tics support - 3 SP ✅
+- [x] Task 3.1.2.4: Add custom tic positions - 2 SP ✅
+- [x] Task 3.1.2.5: Add logarithmic scale tics - 5 SP ✅
+- [ ] Task 3.1.2.6: Integrate with Axis scene element - 8 SP
+- [ ] Task 3.1.2.7: Add time-based tick generation - 5 SP
+- [ ] Task 3.1.2.8: Test against C outputs - 5 SP
 
-**Story Points**: 21
+**Story Points**: 36 (23 completed)
+
+**Completed Work**:
+- TickGenerator class with gnuplot's quantize_normal_tics algorithm
+- Linear tick generation with automatic "nice" spacing
+- Minor tics with configurable count between major tics
+- Custom tic positions with optional custom labels
+- Logarithmic scale tick generation (base 10 and custom bases)
+- Smart label formatting for all tick types
+- 36 comprehensive unit tests covering all functionality
+- Floating point error handling with proper clamping
 
 ---
 
