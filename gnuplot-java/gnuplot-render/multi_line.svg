@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+  <rect width="800" height="600" fill="#FFFFFF"/>
+  <text x="400" y="21" font-size="16" text-anchor="middle">Multiple Lines</text>
+  <line x1="0" y1="600,00" x2="800" y2="600,00" stroke="#000" stroke-width="1"/>
+  <text x="400" y="625,00" text-anchor="middle" font-size="12">X</text>
+  <line x1="0,00" y1="0" x2="0,00" y2="600" stroke="#000" stroke-width="1"/>
+  <text x="-30,00" y="300" text-anchor="middle" font-size="12" transform="rotate(-90 -30,00 300)">Y</text>
+  <polyline points="0,00,480,00 266,67,360,00 533,33,240,00 800,00,120,00" fill="none" stroke="#FF0000" stroke-width="2"/>
+  <polyline points="0,00,480,00 266,67,420,00 533,33,300,00 800,00,120,00" fill="none" stroke="#0000FF" stroke-width="2" stroke-dasharray="10,5"/>
+  <rect x="10" y="10" width="120" height="50" fill="white" stroke="black" stroke-width="1"/>
+  <line x1="15" y1="25" x2="35" y2="25" stroke="#FF0000" stroke-width="2"/>
+  <text x="40" y="27" font-size="10" alignment-baseline="middle">Linear</text>
+  <line x1="15" y1="45" x2="35" y2="45" stroke="#0000FF" stroke-width="2" stroke-dasharray="10,5"/>
+  <text x="40" y="47" font-size="10" alignment-baseline="middle">Quadratic</text>
+</svg>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+  <rect width="800" height="600" fill="#FFFFFF"/>
+  <text x="400" y="21" font-size="16" text-anchor="middle">Sine Wave</text>
+  <line x1="0" y1="300,00" x2="800" y2="300,00" stroke="#000" stroke-width="1"/>
+  <text x="400" y="325,00" text-anchor="middle" font-size="12">X Axis</text>
+  <line x1="0,00" y1="0" x2="0,00" y2="600" stroke="#000" stroke-width="1"/>
+  <text x="-30,00" y="300" text-anchor="middle" font-size="12" transform="rotate(-90 -30,00 300)">Y Axis</text>
+  <polyline points="0,00,300,00 133,33,150,00 266,67,0,00 400,00,150,00 533,33,300,00 666,67,450,00 800,00,600,00" fill="none" stroke="#FF0000" stroke-width="2"/>
+  <rect x="660" y="10" width="120" height="30" fill="white" stroke="black" stroke-width="1"/>
+  <line x1="665" y1="25" x2="685" y2="25" stroke="#FF0000" stroke-width="2"/>
+  <text x="690" y="27" font-size="10" alignment-baseline="middle">sin(x)</text>
+</svg>
