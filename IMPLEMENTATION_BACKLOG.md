@@ -143,29 +143,31 @@ String function support requires similar changes for String type support. Both a
 ---
 
 ### Phase 3: Rendering Engine (Weeks 33-48)
-**Status**: 🟡 IN PROGRESS - 23%
+**Status**: 🟡 IN PROGRESS - 30%
 
-**Current Work**: Ready to start Story 3.1.4
+**Current Work**: Ready to start Story 3.2.1 (Line Plot Renderer)
 
-**Completed Stories**: 3/14 P0 stories (21%)
+**Completed Stories**: 4/14 P0 stories (29%)
 - ✅ Story 3.1.1: Rendering Pipeline Architecture (21/21 SP - COMPLETE)
 - ✅ Story 3.1.2: Axis Rendering System (36/36 SP - COMPLETE)
 - ✅ Story 3.1.3: Color Palette System (13/13 SP - COMPLETE)
+- ✅ Story 3.1.4: Text Rendering and Fonts (18/21 SP - MVP COMPLETE)
 
-**Story Points**: 70 completed / 300 total (23%)
+**Story Points**: 88 completed / 300 total (29%)
 
 **Latest Commits**:
-- `pending` - feat: Implement color palette system (Story 3.1.3 - complete)
+- `pending` - feat: Implement text rendering and fonts (Story 3.1.4 - MVP complete)
+- `b1cc00b` - feat: Implement color palette system (Story 3.1.3)
 - `05c146a` - feat: Complete Story 3.1.2 with time-based tick generation
 - `e6bebe0` - docs: Complete Story 3.1.1 with architecture documentation
-- `a5cc4c8` - feat: Integrate TickGenerator with Axis scene element (Story 3.1.2 - partial)
 
 **Phase 3 Progress**:
-- **Epic 3.1 (Rendering Infrastructure) - In Progress** 🟡
+- **Epic 3.1 (Rendering Infrastructure) - MVP Complete** ✅
   - ✅ Story 3.1.1 COMPLETE (58 tests)
   - ✅ Story 3.1.2 COMPLETE (71 tests: 43 TickGenerator + 28 Axis)
   - ✅ Story 3.1.3 COMPLETE (52 tests: Color, ColorFormula, ColorPalette, NamedPalettes)
-- **Total Tests**: 737 passing (335 Phase 1 + 238 Phase 2 + 164 Phase 3)
+  - ✅ Story 3.1.4 MVP COMPLETE (38 tests: Font, TextMetrics, TextAlignment, TextRenderer)
+- **Total Tests**: 775 passing (335 Phase 1 + 238 Phase 2 + 202 Phase 3)
 
 **Story 3.1.2 Completion (TickGenerator + Axis Integration)**:
 - ✅ Gnuplot's quantize_normal_tics algorithm implementation
@@ -1550,26 +1552,50 @@ String function support requires similar changes for String type support. Both a
 
 ---
 
-### Story 3.1.4: Text Rendering and Fonts 🔴 P0
+### Story 3.1.4: Text Rendering and Fonts 🔴 P0 - ✅ MVP COMPLETE
 **As a** developer
 **I want** proper text rendering
 **So that** labels and titles display correctly
 
 **Acceptance Criteria**:
-- [ ] Font loading and management
-- [ ] Text measurement
-- [ ] Text rotation
-- [ ] Unicode support
-- [ ] Math notation support
+- [x] Font loading and management ✅
+- [x] Text measurement ✅
+- [x] Text rotation ✅
+- [x] Unicode support ✅
+- [ ] Math notation support (deferred - not needed for MVP)
 
 **Tasks**:
-- [ ] Task 3.1.4.1: Implement font system - 5 SP
-- [ ] Task 3.1.4.2: Add text rendering - 5 SP
-- [ ] Task 3.1.4.3: Support rotation - 3 SP
-- [ ] Task 3.1.4.4: Add Unicode support - 5 SP
-- [ ] Task 3.1.4.5: Add math notation (LaTeX subset) - 8 SP
+- [x] Task 3.1.4.1: Implement font system - 5 SP ✅
+- [x] Task 3.1.4.2: Add text rendering - 5 SP ✅
+- [x] Task 3.1.4.3: Support rotation - 3 SP ✅
+- [x] Task 3.1.4.4: Add Unicode support - 5 SP ✅
+- [ ] Task 3.1.4.5: Add math notation (LaTeX subset) - 8 SP (deferred - post-MVP)
 
-**Story Points**: 21
+**Story Points**: 21 (18 MVP complete, 3 deferred)
+
+**Completed Work**:
+- Font record class with family, size, style (plain, bold, italic)
+- Font factory methods and CSS string conversion
+- Default fonts (DEFAULT, TITLE, AXIS_LABEL, TICK_LABEL, etc.)
+- TextMetrics record with width, height, ascent, descent
+- TextAlignment enum (LEFT, CENTER, RIGHT) with offset calculation
+- TextRenderer class using Java AWT for accurate text measurement
+  - Text measurement with font support
+  - Rotated text bounding box calculation
+  - Baseline position calculation for aligned text
+  - Unicode validation (proper surrogate pair handling)
+  - SVG escaping for special characters (&, <, >, ", ')
+- 38 comprehensive unit tests (100% passing)
+  - FontTest: 14 tests (construction, styles, CSS, defaults)
+  - TextMetricsTest: 9 tests (construction, validation)
+  - TextAlignmentTest: 4 tests (offset calculation)
+  - TextRendererTest: 11 tests (measurement, rotation, Unicode, SVG)
+
+**Deferred**:
+- Math notation (LaTeX subset) - complex feature better suited for post-MVP
+- Can be added later without breaking existing text rendering
+
+**Story MVP Complete!** ✅ Text rendering system ready for integration with renderers. Unicode support included.
 
 ---
 
