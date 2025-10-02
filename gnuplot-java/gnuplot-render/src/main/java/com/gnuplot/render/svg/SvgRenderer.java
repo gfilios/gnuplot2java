@@ -1,9 +1,11 @@
 package com.gnuplot.render.svg;
 
 import com.gnuplot.render.*;
+import com.gnuplot.render.color.Color;
 import com.gnuplot.render.elements.Axis;
 import com.gnuplot.render.elements.Legend;
 import com.gnuplot.render.elements.LinePlot;
+import com.gnuplot.render.style.StrokeStyle;
 
 import java.io.IOException;
 import java.io.OutputStream;

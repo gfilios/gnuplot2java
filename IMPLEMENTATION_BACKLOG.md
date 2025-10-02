@@ -145,7 +145,7 @@ String function support requires similar changes for String type support. Both a
 ### Phase 3: Rendering Engine (Weeks 33-48)
 **Status**: 🟡 IN PROGRESS - 30%
 
-**Current Work**: Ready to start Story 3.2.1 (Line Plot Renderer)
+**Current Work**: Story 3.2.1 (Line Plot Renderer) - line styles implemented
 
 **Completed Stories**: 4/14 P0 stories (29%)
 - ✅ Story 3.1.1: Rendering Pipeline Architecture (21/21 SP - COMPLETE)
@@ -156,10 +156,10 @@ String function support requires similar changes for String type support. Both a
 **Story Points**: 88 completed / 300 total (29%)
 
 **Latest Commits**:
-- `pending` - feat: Implement text rendering and fonts (Story 3.1.4 - MVP complete)
+- `pending` - feat: Implement line styles (Story 3.2.1 - partial, 22 tests)
+- `cc67ff0` - feat: Implement text rendering and fonts (Story 3.1.4 - MVP complete)
 - `b1cc00b` - feat: Implement color palette system (Story 3.1.3)
 - `05c146a` - feat: Complete Story 3.1.2 with time-based tick generation
-- `e6bebe0` - docs: Complete Story 3.1.1 with architecture documentation
 
 **Phase 3 Progress**:
 - **Epic 3.1 (Rendering Infrastructure) - MVP Complete** ✅
@@ -1601,25 +1601,30 @@ String function support requires similar changes for String type support. Both a
 
 ## Epic 3.2: 2D Plot Rendering
 
-### Story 3.2.1: Line Plot Renderer 🔴 P0
+### Story 3.2.1: Line Plot Renderer 🔴 P0 - 🟡 IN PROGRESS
 **As a** user
 **I want** to create line plots
 **So that** I can visualize continuous data
 
 **Acceptance Criteria**:
 - [ ] Draw polylines
-- [ ] Line styles (solid, dashed, dotted)
-- [ ] Line width control
-- [ ] Color support
+- [x] Line styles (solid, dashed, dotted) - ✅ DONE
+- [x] Line width control - ✅ DONE
+- [x] Color support - ✅ DONE
 - [ ] Clipping to plot area
 
 **Tasks**:
 - [ ] Task 3.2.1.1: Implement line drawing - 5 SP
-- [ ] Task 3.2.1.2: Add line styles - 3 SP
+- [x] Task 3.2.1.2: Add line styles - 3 SP - ✅ DONE
+  - ✅ Created LineStyle enum (7 styles: SOLID, DASHED, DOTTED, DASH_DOT, DASH_DOT_DOT, LONG_DASH, SHORT_DASH)
+  - ✅ Created StrokeStyle record (width, color, lineStyle)
+  - ✅ Added LinePlot.LineStyle.toStyleLineStyle() conversion method
+  - ✅ Enhanced SvgRenderer with Color and StrokeStyle imports
+  - ✅ 22 tests passing (8 LineStyleTest + 14 StrokeStyleTest)
 - [ ] Task 3.2.1.3: Implement clipping - 5 SP
 - [ ] Task 3.2.1.4: Visual regression tests - 5 SP
 
-**Story Points**: 13
+**Story Points**: 13 (3/13 SP completed - 23%)
 
 ---
 

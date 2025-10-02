@@ -111,7 +111,20 @@ public final class LinePlot implements SceneElement {
         DASHED,
         DOTTED,
         DASH_DOT,
-        NONE
+        NONE;
+
+        /**
+         * Converts to the style package LineStyle enum.
+         */
+        public com.gnuplot.render.style.LineStyle toStyleLineStyle() {
+            return switch (this) {
+                case SOLID -> com.gnuplot.render.style.LineStyle.SOLID;
+                case DASHED -> com.gnuplot.render.style.LineStyle.DASHED;
+                case DOTTED -> com.gnuplot.render.style.LineStyle.DOTTED;
+                case DASH_DOT -> com.gnuplot.render.style.LineStyle.DASH_DOT;
+                case NONE -> com.gnuplot.render.style.LineStyle.SOLID; // Default to solid for none
+            };
+        }
     }
 
     public static class Builder {
