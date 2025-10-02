@@ -120,13 +120,15 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
                 points.append(String.format(Locale.US, "%.2f %.2f", x, y));
             }
 
-            // Determine stroke-dasharray based on line style
-            String dashArray = getStrokeDashArray(linePlot.getLineStyle());
+            // Create stroke style from LinePlot properties
+            Color color = Color.fromHexString(linePlot.getColor());
+            com.gnuplot.render.style.LineStyle styleLineStyle = linePlot.getLineStyle().toStyleLineStyle();
+            StrokeStyle stroke = new StrokeStyle(linePlot.getLineWidth(), color, styleLineStyle);
 
-            // Write polyline
+            // Write polyline with stroke attributes
             writer.write(String.format(Locale.US,
-                    "  <polyline points=\"%s\" fill=\"none\" stroke=\"%s\" stroke-width=\"2\"%s/>\n",
-                    points, linePlot.getColor(), dashArray));
+                    "  <polyline points=\"%s\" fill=\"none\" %s/>\n",
+                    points, stroke.toSvgAttributes()));
 
         } catch (IOException e) {
             throw new RuntimeException("Failed to render line plot", e);

@@ -45,6 +45,33 @@ public record Color(double r, double g, double b) {
     }
 
     /**
+     * Creates a Color from a hex string (e.g., "#FF0000" or "FF0000").
+     *
+     * @param hexString Hex color string (with or without '#' prefix)
+     * @return Color with normalized components
+     * @throws IllegalArgumentException if the hex string is invalid
+     */
+    public static Color fromHexString(String hexString) {
+        if (hexString == null || hexString.isEmpty()) {
+            throw new IllegalArgumentException("Hex string cannot be null or empty");
+        }
+
+        // Remove '#' prefix if present
+        String hex = hexString.startsWith("#") ? hexString.substring(1) : hexString;
+
+        if (hex.length() != 6) {
+            throw new IllegalArgumentException("Hex string must be 6 characters (RRGGBB): " + hexString);
+        }
+
+        try {
+            int rgb24 = Integer.parseInt(hex, 16);
+            return fromRGB24(rgb24);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Invalid hex string: " + hexString, e);
+        }
+    }
+
+    /**
      * Creates a grayscale color.
      *
      * @param gray Grayscale value (0.0 to 1.0)

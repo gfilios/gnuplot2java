@@ -19,6 +19,7 @@ public final class LinePlot implements SceneElement {
     private final String id;
     private final List<Point2D> points;
     private final LineStyle lineStyle;
+    private final double lineWidth;
     private final String color;
     private final String label;
 
@@ -26,6 +27,7 @@ public final class LinePlot implements SceneElement {
         this.id = builder.id;
         this.points = Collections.unmodifiableList(new ArrayList<>(builder.points));
         this.lineStyle = builder.lineStyle;
+        this.lineWidth = builder.lineWidth;
         this.color = builder.color;
         this.label = builder.label;
     }
@@ -54,6 +56,10 @@ public final class LinePlot implements SceneElement {
 
     public LineStyle getLineStyle() {
         return lineStyle;
+    }
+
+    public double getLineWidth() {
+        return lineWidth;
     }
 
     public String getColor() {
@@ -131,6 +137,7 @@ public final class LinePlot implements SceneElement {
         private String id;
         private final List<Point2D> points = new ArrayList<>();
         private LineStyle lineStyle = LineStyle.SOLID;
+        private double lineWidth = 1.0;
         private String color = "#000000";
         private String label;
 
@@ -163,6 +170,14 @@ public final class LinePlot implements SceneElement {
             return this;
         }
 
+        public Builder lineWidth(double lineWidth) {
+            if (lineWidth <= 0) {
+                throw new IllegalArgumentException("lineWidth must be positive");
+            }
+            this.lineWidth = lineWidth;
+            return this;
+        }
+
         public Builder color(String color) {
             this.color = Objects.requireNonNull(color, "color cannot be null");
             return this;
@@ -186,7 +201,7 @@ public final class LinePlot implements SceneElement {
 
     @Override
     public String toString() {
-        return String.format("LinePlot{id='%s', points=%d, style=%s, color='%s', label='%s'}",
-                id, points.size(), lineStyle, color, label);
+        return String.format("LinePlot{id='%s', points=%d, style=%s, width=%.1f, color='%s', label='%s'}",
+                id, points.size(), lineStyle, lineWidth, color, label);
     }
 }

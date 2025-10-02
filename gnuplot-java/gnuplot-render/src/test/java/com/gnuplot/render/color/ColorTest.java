@@ -152,6 +152,37 @@ class ColorTest {
     }
 
     @Test
+    void testFromHexString() {
+        // Test with # prefix
+        Color color1 = Color.fromHexString("#FF0000");
+        assertEquals(1.0, color1.r(), EPSILON);
+        assertEquals(0.0, color1.g(), EPSILON);
+        assertEquals(0.0, color1.b(), EPSILON);
+
+        // Test without # prefix
+        Color color2 = Color.fromHexString("00FF00");
+        assertEquals(0.0, color2.r(), EPSILON);
+        assertEquals(1.0, color2.g(), EPSILON);
+        assertEquals(0.0, color2.b(), EPSILON);
+
+        // Test mixed case
+        Color color3 = Color.fromHexString("#fF8000");
+        assertEquals(1.0, color3.r(), EPSILON);
+        assertEquals(128.0 / 255.0, color3.g(), 0.01);
+        assertEquals(0.0, color3.b(), EPSILON);
+    }
+
+    @Test
+    void testFromHexStringInvalid() {
+        assertThrows(IllegalArgumentException.class, () -> Color.fromHexString(null));
+        assertThrows(IllegalArgumentException.class, () -> Color.fromHexString(""));
+        assertThrows(IllegalArgumentException.class, () -> Color.fromHexString("#FF"));
+        assertThrows(IllegalArgumentException.class, () -> Color.fromHexString("FF"));
+        assertThrows(IllegalArgumentException.class, () -> Color.fromHexString("#GGGGGG"));
+        assertThrows(IllegalArgumentException.class, () -> Color.fromHexString("ZZZZZZ"));
+    }
+
+    @Test
     void testEquality() {
         Color c1 = new Color(0.5, 0.3, 0.1);
         Color c2 = new Color(0.5, 0.3, 0.1);

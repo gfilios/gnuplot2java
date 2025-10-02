@@ -143,9 +143,9 @@ String function support requires similar changes for String type support. Both a
 ---
 
 ### Phase 3: Rendering Engine (Weeks 33-48)
-**Status**: 🟡 IN PROGRESS - 30%
+**Status**: 🟡 IN PROGRESS - 31%
 
-**Current Work**: Story 3.2.1 (Line Plot Renderer) - line styles implemented
+**Current Work**: Story 3.2.1 (Line Plot Renderer) - polyline rendering with StrokeStyle
 
 **Completed Stories**: 4/14 P0 stories (29%)
 - ✅ Story 3.1.1: Rendering Pipeline Architecture (21/21 SP - COMPLETE)
@@ -156,10 +156,10 @@ String function support requires similar changes for String type support. Both a
 **Story Points**: 88 completed / 300 total (29%)
 
 **Latest Commits**:
-- `pending` - feat: Implement line styles (Story 3.2.1 - partial, 22 tests)
+- `pending` - feat: Complete polyline rendering with StrokeStyle (Story 3.2.1 - 8/13 SP, 287 tests)
+- `f0d2be2` - feat: Implement line styles (Story 3.2.1 - partial, 22 tests)
 - `cc67ff0` - feat: Implement text rendering and fonts (Story 3.1.4 - MVP complete)
 - `b1cc00b` - feat: Implement color palette system (Story 3.1.3)
-- `05c146a` - feat: Complete Story 3.1.2 with time-based tick generation
 
 **Phase 3 Progress**:
 - **Epic 3.1 (Rendering Infrastructure) - MVP Complete** ✅
