@@ -359,14 +359,25 @@ class AxisTest {
 
     @Test
     void testTimeScaleTickGeneration() {
-        // TIME scale should fall back to linear for now
+        // TIME scale with Unix timestamps (2025-01-01 to 2025-01-02, 1 day)
+        double startTime = 1735689600.0; // 2025-01-01 00:00:00
+        double endTime = 1735776000.0;   // 2025-01-02 00:00:00
+
         Axis axis = Axis.builder()
                 .id("timeaxis")
-                .range(0.0, 100.0)
+                .range(startTime, endTime)
                 .scaleType(Axis.ScaleType.TIME)
                 .build();
 
         List<TickGenerator.Tick> ticks = axis.generateTicks();
         assertFalse(ticks.isEmpty());
+
+        // All ticks should be within range
+        for (TickGenerator.Tick tick : ticks) {
+            assertTrue(tick.getPosition() >= startTime);
+            assertTrue(tick.getPosition() <= endTime);
+            assertNotNull(tick.getLabel());
+            assertFalse(tick.getLabel().isEmpty());
+        }
     }
 }

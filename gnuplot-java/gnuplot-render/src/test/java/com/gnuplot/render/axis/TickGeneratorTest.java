@@ -2,6 +2,9 @@ package com.gnuplot.render.axis;
 
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -582,6 +585,128 @@ class TickGeneratorTest {
         for (int i = 1; i < ticks.size(); i++) {
             assertTrue(ticks.get(i).getPosition() > ticks.get(i - 1).getPosition(),
                     "Log ticks should be in ascending order");
+        }
+    }
+
+    @Test
+    void testTimeTicksHourRange() {
+        // 2025-01-01 00:00:00 to 2025-01-01 12:00:00 (12 hours)
+        LocalDateTime start = LocalDateTime.of(2025, 1, 1, 0, 0);
+        LocalDateTime end = LocalDateTime.of(2025, 1, 1, 12, 0);
+
+        long startTime = start.atZone(ZoneId.systemDefault()).toEpochSecond();
+        long endTime = end.atZone(ZoneId.systemDefault()).toEpochSecond();
+
+        List<TickGenerator.Tick> ticks = generator.generateTimeTicks(startTime, endTime);
+
+        assertFalse(ticks.isEmpty());
+        // All ticks should be within range
+        for (TickGenerator.Tick tick : ticks) {
+            assertTrue(tick.getPosition() >= startTime);
+            assertTrue(tick.getPosition() <= endTime);
+            assertNotNull(tick.getLabel());
+        }
+    }
+
+    @Test
+    void testTimeTicksDayRange() {
+        // 2025-01-01 to 2025-01-31 (1 month)
+        LocalDateTime start = LocalDateTime.of(2025, 1, 1, 0, 0);
+        LocalDateTime end = LocalDateTime.of(2025, 1, 31, 0, 0);
+
+        long startTime = start.atZone(ZoneId.systemDefault()).toEpochSecond();
+        long endTime = end.atZone(ZoneId.systemDefault()).toEpochSecond();
+
+        List<TickGenerator.Tick> ticks = generator.generateTimeTicks(startTime, endTime);
+
+        assertFalse(ticks.isEmpty());
+        assertTrue(ticks.size() <= 31); // One month can have up to 31 day ticks
+        // All ticks should be within range
+        for (TickGenerator.Tick tick : ticks) {
+            assertTrue(tick.getPosition() >= startTime);
+            assertTrue(tick.getPosition() <= endTime);
+        }
+    }
+
+    @Test
+    void testTimeTicksYearRange() {
+        // 2020-01-01 to 2025-01-01 (5 years)
+        LocalDateTime start = LocalDateTime.of(2020, 1, 1, 0, 0);
+        LocalDateTime end = LocalDateTime.of(2025, 1, 1, 0, 0);
+
+        long startTime = start.atZone(ZoneId.systemDefault()).toEpochSecond();
+        long endTime = end.atZone(ZoneId.systemDefault()).toEpochSecond();
+
+        List<TickGenerator.Tick> ticks = generator.generateTimeTicks(startTime, endTime);
+
+        assertFalse(ticks.isEmpty());
+        // Should have yearly ticks
+        assertTrue(ticks.size() >= 5);
+    }
+
+    @Test
+    void testTimeTicksMinuteRange() {
+        // 10-minute range
+        LocalDateTime start = LocalDateTime.of(2025, 1, 1, 10, 0);
+        LocalDateTime end = LocalDateTime.of(2025, 1, 1, 10, 10);
+
+        long startTime = start.atZone(ZoneId.systemDefault()).toEpochSecond();
+        long endTime = end.atZone(ZoneId.systemDefault()).toEpochSecond();
+
+        List<TickGenerator.Tick> ticks = generator.generateTimeTicks(startTime, endTime);
+
+        assertFalse(ticks.isEmpty());
+        // All ticks should be within range
+        for (TickGenerator.Tick tick : ticks) {
+            assertTrue(tick.getPosition() >= startTime);
+            assertTrue(tick.getPosition() <= endTime);
+        }
+    }
+
+    @Test
+    void testTimeTicksWithGuide() {
+        LocalDateTime start = LocalDateTime.of(2025, 1, 1, 0, 0);
+        LocalDateTime end = LocalDateTime.of(2025, 1, 1, 12, 0);
+
+        long startTime = start.atZone(ZoneId.systemDefault()).toEpochSecond();
+        long endTime = end.atZone(ZoneId.systemDefault()).toEpochSecond();
+
+        // Test with different guide parameters
+        List<TickGenerator.Tick> ticks1 = generator.generateTimeTicks(startTime, endTime, 5);
+        List<TickGenerator.Tick> ticks2 = generator.generateTimeTicks(startTime, endTime, 20);
+
+        // More guide should generally produce more ticks
+        assertTrue(ticks2.size() >= ticks1.size());
+    }
+
+    @Test
+    void testTimeTicksInvalidRange() {
+        // Min equals max
+        List<TickGenerator.Tick> ticks1 = generator.generateTimeTicks(1000.0, 1000.0);
+        assertTrue(ticks1.isEmpty());
+
+        // Min > max
+        List<TickGenerator.Tick> ticks2 = generator.generateTimeTicks(2000.0, 1000.0);
+        assertTrue(ticks2.isEmpty());
+    }
+
+    @Test
+    void testTimeTicksLabelFormats() {
+        // Test hour labels
+        LocalDateTime start = LocalDateTime.of(2025, 1, 1, 0, 0);
+        LocalDateTime end = LocalDateTime.of(2025, 1, 1, 6, 0);
+
+        long startTime = start.atZone(ZoneId.systemDefault()).toEpochSecond();
+        long endTime = end.atZone(ZoneId.systemDefault()).toEpochSecond();
+
+        List<TickGenerator.Tick> ticks = generator.generateTimeTicks(startTime, endTime);
+
+        // Labels should contain time info
+        for (TickGenerator.Tick tick : ticks) {
+            assertNotNull(tick.getLabel());
+            assertFalse(tick.getLabel().isEmpty());
+            // Hour format should contain ":" (e.g., "10:00")
+            assertTrue(tick.getLabel().matches(".*\\d+.*"));
         }
     }
 }

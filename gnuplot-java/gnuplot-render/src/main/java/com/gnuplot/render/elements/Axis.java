@@ -101,8 +101,7 @@ public final class Axis implements SceneElement {
             case LOGARITHMIC:
                 return tickGenerator.generateLogTicks(min, max, 10.0, minorTicsCount > 0);
             case TIME:
-                // TODO: Implement time-based tick generation
-                return tickGenerator.generateTicks(min, max, 20, minorTicsCount);
+                return tickGenerator.generateTimeTicks(min, max, 20);
             default:
                 throw new IllegalStateException("Unknown scale type: " + scaleType);
         }
@@ -121,8 +120,7 @@ public final class Axis implements SceneElement {
             case LOGARITHMIC:
                 return tickGenerator.generateLogTicks(min, max, 10.0, minorTicsCount > 0);
             case TIME:
-                // TODO: Implement time-based tick generation
-                return tickGenerator.generateTicks(min, max, guide, minorTicsCount);
+                return tickGenerator.generateTimeTicks(min, max, guide);
             default:
                 throw new IllegalStateException("Unknown scale type: " + scaleType);
         }

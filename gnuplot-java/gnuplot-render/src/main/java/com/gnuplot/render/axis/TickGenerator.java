@@ -1,5 +1,10 @@
 package com.gnuplot.render.axis;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -235,6 +240,227 @@ public class TickGenerator {
             } else {
                 return String.format(Locale.US, "%.2f", value);
             }
+        }
+    }
+
+    /**
+     * Generates tick marks for a time-based axis.
+     *
+     * <p>Time ticks are placed at "nice" intervals based on the time range:
+     * seconds, minutes, hours, days, weeks, months, or years.</p>
+     *
+     * @param minTime The minimum time value (Unix timestamp in seconds)
+     * @param maxTime The maximum time value (Unix timestamp in seconds)
+     * @param guide The approximate maximum number of ticks
+     * @return A list of tick marks for the time scale
+     */
+    public List<Tick> generateTimeTicks(double minTime, double maxTime, int guide) {
+        List<Tick> ticks = new ArrayList<>();
+
+        if (minTime >= maxTime) {
+            return ticks; // Invalid range
+        }
+
+        // Convert to Instant for time manipulation
+        Instant minInstant = Instant.ofEpochSecond((long) minTime);
+        Instant maxInstant = Instant.ofEpochSecond((long) maxTime);
+
+        // Calculate time span in seconds
+        long spanSeconds = (long) (maxTime - minTime);
+
+        // Determine appropriate time unit and interval
+        TimeInterval interval = determineTimeInterval(spanSeconds, guide);
+
+        // Generate ticks at the determined interval
+        LocalDateTime current = LocalDateTime.ofInstant(minInstant, ZoneId.systemDefault());
+        LocalDateTime end = LocalDateTime.ofInstant(maxInstant, ZoneId.systemDefault());
+
+        // Round current to interval boundary
+        current = roundToTimeInterval(current, interval);
+
+        while (!current.isAfter(end)) {
+            long timestamp = current.atZone(ZoneId.systemDefault()).toEpochSecond();
+            if (timestamp >= minTime && timestamp <= maxTime) {
+                String label = formatTimeLabel(current, interval);
+                ticks.add(new Tick(timestamp, label, TickType.MAJOR));
+            }
+            current = advanceByInterval(current, interval);
+        }
+
+        return ticks;
+    }
+
+    /**
+     * Generates tick marks for a time-based axis with default guide parameter.
+     *
+     * @param minTime The minimum time value (Unix timestamp in seconds)
+     * @param maxTime The maximum time value (Unix timestamp in seconds)
+     * @return A list of tick marks for the time scale
+     */
+    public List<Tick> generateTimeTicks(double minTime, double maxTime) {
+        return generateTimeTicks(minTime, maxTime, DEFAULT_GUIDE);
+    }
+
+    /**
+     * Time interval enumeration for tick placement.
+     */
+    private enum TimeInterval {
+        SECOND(1),
+        FIVE_SECONDS(5),
+        TEN_SECONDS(10),
+        THIRTY_SECONDS(30),
+        MINUTE(60),
+        FIVE_MINUTES(300),
+        TEN_MINUTES(600),
+        THIRTY_MINUTES(1800),
+        HOUR(3600),
+        SIX_HOURS(21600),
+        TWELVE_HOURS(43200),
+        DAY(86400),
+        WEEK(604800),
+        MONTH(2592000),  // Approximate (30 days)
+        YEAR(31536000);  // Approximate (365 days)
+
+        final long seconds;
+
+        TimeInterval(long seconds) {
+            this.seconds = seconds;
+        }
+    }
+
+    /**
+     * Determines the appropriate time interval based on the span and desired tick count.
+     */
+    private TimeInterval determineTimeInterval(long spanSeconds, int guide) {
+        // Target interval in seconds
+        long targetInterval = spanSeconds / guide;
+
+        // Find the closest "nice" interval
+        TimeInterval[] intervals = TimeInterval.values();
+        TimeInterval best = intervals[0];
+        long bestDiff = Math.abs(intervals[0].seconds - targetInterval);
+
+        for (TimeInterval interval : intervals) {
+            long diff = Math.abs(interval.seconds - targetInterval);
+            if (diff < bestDiff) {
+                bestDiff = diff;
+                best = interval;
+            }
+        }
+
+        return best;
+    }
+
+    /**
+     * Rounds a time to the nearest interval boundary.
+     */
+    private LocalDateTime roundToTimeInterval(LocalDateTime time, TimeInterval interval) {
+        switch (interval) {
+            case SECOND:
+            case FIVE_SECONDS:
+            case TEN_SECONDS:
+            case THIRTY_SECONDS:
+                int seconds = (time.getSecond() / (int) interval.seconds) * (int) interval.seconds;
+                return time.withSecond(seconds).withNano(0);
+
+            case MINUTE:
+            case FIVE_MINUTES:
+            case TEN_MINUTES:
+            case THIRTY_MINUTES:
+                int minutes = (time.getMinute() / ((int) interval.seconds / 60)) * ((int) interval.seconds / 60);
+                return time.withMinute(minutes).withSecond(0).withNano(0);
+
+            case HOUR:
+            case SIX_HOURS:
+            case TWELVE_HOURS:
+                int hours = (time.getHour() / ((int) interval.seconds / 3600)) * ((int) interval.seconds / 3600);
+                return time.withHour(hours).withMinute(0).withSecond(0).withNano(0);
+
+            case DAY:
+                return time.withHour(0).withMinute(0).withSecond(0).withNano(0);
+
+            case WEEK:
+                return time.withHour(0).withMinute(0).withSecond(0).withNano(0)
+                        .minusDays(time.getDayOfWeek().getValue() - 1);
+
+            case MONTH:
+                return time.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+
+            case YEAR:
+                return time.withDayOfYear(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+
+            default:
+                return time;
+        }
+    }
+
+    /**
+     * Advances time by the specified interval.
+     */
+    private LocalDateTime advanceByInterval(LocalDateTime time, TimeInterval interval) {
+        switch (interval) {
+            case SECOND:
+            case FIVE_SECONDS:
+            case TEN_SECONDS:
+            case THIRTY_SECONDS:
+            case MINUTE:
+            case FIVE_MINUTES:
+            case TEN_MINUTES:
+            case THIRTY_MINUTES:
+            case HOUR:
+            case SIX_HOURS:
+            case TWELVE_HOURS:
+            case DAY:
+            case WEEK:
+                return time.plus(interval.seconds, ChronoUnit.SECONDS);
+
+            case MONTH:
+                return time.plusMonths(1);
+
+            case YEAR:
+                return time.plusYears(1);
+
+            default:
+                return time;
+        }
+    }
+
+    /**
+     * Formats a time label based on the interval.
+     */
+    private String formatTimeLabel(LocalDateTime time, TimeInterval interval) {
+        switch (interval) {
+            case SECOND:
+            case FIVE_SECONDS:
+            case TEN_SECONDS:
+            case THIRTY_SECONDS:
+                return time.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+
+            case MINUTE:
+            case FIVE_MINUTES:
+            case TEN_MINUTES:
+            case THIRTY_MINUTES:
+                return time.format(DateTimeFormatter.ofPattern("HH:mm"));
+
+            case HOUR:
+            case SIX_HOURS:
+            case TWELVE_HOURS:
+                return time.format(DateTimeFormatter.ofPattern("HH:mm"));
+
+            case DAY:
+                return time.format(DateTimeFormatter.ofPattern("MMM dd"));
+
+            case WEEK:
+                return time.format(DateTimeFormatter.ofPattern("MMM dd"));
+
+            case MONTH:
+                return time.format(DateTimeFormatter.ofPattern("MMM yyyy"));
+
+            case YEAR:
+                return time.format(DateTimeFormatter.ofPattern("yyyy"));
+
+            default:
+                return time.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
         }
     }
 
