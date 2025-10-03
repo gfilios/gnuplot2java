@@ -3,6 +3,7 @@ package com.gnuplot.render.svg;
 import com.gnuplot.render.*;
 import com.gnuplot.render.color.Color;
 import com.gnuplot.render.elements.Axis;
+import com.gnuplot.render.elements.BarChart;
 import com.gnuplot.render.elements.Legend;
 import com.gnuplot.render.elements.LinePlot;
 import com.gnuplot.render.elements.ScatterPlot;
@@ -392,6 +393,41 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
 
         } catch (IOException e) {
             throw new RuntimeException("Failed to render legend", e);
+        }
+    }
+
+    @Override
+    public void visitBarChart(BarChart barChart) {
+        try {
+            for (BarChart.Bar bar : barChart.getBars()) {
+                double mappedX = mapX(bar.getX());
+                double mappedHeight = Math.abs(mapY(bar.getHeight()) - mapY(0));
+                double mappedY = mapY(Math.max(0, bar.getHeight()));
+
+                // Calculate bar width in screen coordinates
+                double dataBarWidth = barChart.getBarWidth();
+                double screenBarWidth = (viewport != null)
+                    ? (dataBarWidth / viewport.getWidth()) * scene.getWidth()
+                    : dataBarWidth;
+
+                if (barChart.getOrientation() == BarChart.Orientation.VERTICAL) {
+                    // Vertical bars: x is position, height determines bar height
+                    double barX = mappedX - screenBarWidth / 2;
+                    writer.write(String.format(Locale.US,
+                            "  <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" fill=\"%s\"/>\n",
+                            barX, mappedY, screenBarWidth, mappedHeight, bar.getColor()));
+                } else {
+                    // Horizontal bars: x is baseline (0), height determines bar length
+                    double barY = mappedX - screenBarWidth / 2;
+                    double barWidth = Math.abs(mapX(bar.getHeight()) - mapX(0));
+                    double barX = mapX(Math.min(0, bar.getHeight()));
+                    writer.write(String.format(Locale.US,
+                            "  <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" fill=\"%s\"/>\n",
+                            barX, barY, barWidth, screenBarWidth, bar.getColor()));
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to render bar chart", e);
         }
     }
 

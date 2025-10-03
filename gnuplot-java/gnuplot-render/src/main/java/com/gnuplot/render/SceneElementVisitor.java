@@ -1,6 +1,7 @@
 package com.gnuplot.render;
 
 import com.gnuplot.render.elements.Axis;
+import com.gnuplot.render.elements.BarChart;
 import com.gnuplot.render.elements.Legend;
 import com.gnuplot.render.elements.LinePlot;
 import com.gnuplot.render.elements.ScatterPlot;
@@ -40,4 +41,11 @@ public interface SceneElementVisitor {
      * @param legend the legend to visit
      */
     void visitLegend(Legend legend);
+
+    /**
+     * Visit a bar chart element.
+     *
+     * @param barChart the bar chart to visit
+     */
+    void visitBarChart(BarChart barChart);
 }
