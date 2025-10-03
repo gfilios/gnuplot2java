@@ -3,6 +3,7 @@ package com.gnuplot.render;
 import com.gnuplot.render.elements.Axis;
 import com.gnuplot.render.elements.Legend;
 import com.gnuplot.render.elements.LinePlot;
+import com.gnuplot.render.elements.ScatterPlot;
 
 /**
  * Visitor pattern interface for processing scene elements.
@@ -18,6 +19,13 @@ public interface SceneElementVisitor {
      * @param linePlot the line plot to visit
      */
     void visitLinePlot(LinePlot linePlot);
+
+    /**
+     * Visit a scatter plot element.
+     *
+     * @param scatterPlot the scatter plot to visit
+     */
+    void visitScatterPlot(ScatterPlot scatterPlot);
 
     /**
      * Visit an axis element.

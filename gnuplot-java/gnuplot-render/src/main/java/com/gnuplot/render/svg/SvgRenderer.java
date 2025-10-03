@@ -5,6 +5,9 @@ import com.gnuplot.render.color.Color;
 import com.gnuplot.render.elements.Axis;
 import com.gnuplot.render.elements.Legend;
 import com.gnuplot.render.elements.LinePlot;
+import com.gnuplot.render.elements.ScatterPlot;
+import com.gnuplot.render.style.MarkerStyle;
+import com.gnuplot.render.style.PointStyle;
 import com.gnuplot.render.style.StrokeStyle;
 
 import java.io.IOException;
@@ -144,6 +147,179 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
 
         } catch (IOException e) {
             throw new RuntimeException("Failed to render line plot", e);
+        }
+    }
+
+    @Override
+    public void visitScatterPlot(ScatterPlot scatterPlot) {
+        try {
+            if (scatterPlot.getPoints().isEmpty()) {
+                return;
+            }
+
+            MarkerStyle style = scatterPlot.getMarkerStyle();
+            String clipAttr = (viewport != null) ? " clip-path=\"url(#plotClip)\"" : "";
+
+            for (ScatterPlot.DataPoint point : scatterPlot.getPoints()) {
+                double x = mapX(point.getX());
+                double y = mapY(point.getY());
+
+                // Use custom size/color if specified, otherwise use marker style defaults
+                double size = point.hasCustomSize() ? point.getCustomSize() : style.size();
+                String colorHex = point.hasCustomColor() ? point.getCustomColor() : style.getColorHex();
+
+                // Render the marker based on point style
+                String marker = renderMarker(x, y, size, colorHex, style.pointStyle(), style.filled());
+                writer.write("  " + marker + clipAttr + "/>\n");
+            }
+
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to render scatter plot", e);
+        }
+    }
+
+    /**
+     * Renders a single marker at the specified position.
+     */
+    private String renderMarker(double x, double y, double size, String colorHex,
+                                 PointStyle pointStyle, boolean filled) {
+        return switch (pointStyle) {
+            case CIRCLE -> renderCircle(x, y, size, colorHex, filled);
+            case SQUARE -> renderSquare(x, y, size, colorHex, filled);
+            case TRIANGLE_UP -> renderTriangle(x, y, size, colorHex, filled, false);
+            case TRIANGLE_DOWN -> renderTriangle(x, y, size, colorHex, filled, true);
+            case DIAMOND -> renderDiamond(x, y, size, colorHex, filled);
+            case PLUS -> renderPlus(x, y, size, colorHex);
+            case CROSS -> renderCross(x, y, size, colorHex);
+            case STAR -> renderStar(x, y, size, colorHex, filled);
+            case HEXAGON -> renderPolygon(x, y, size, 6, 0, colorHex, filled);
+            case PENTAGON -> renderPolygon(x, y, size, 5, -90, colorHex, filled);
+        };
+    }
+
+    private String renderCircle(double cx, double cy, double r, String color, boolean filled) {
+        if (filled) {
+            return String.format(Locale.US, "<circle cx=\"%.2f\" cy=\"%.2f\" r=\"%.2f\" fill=\"%s\"",
+                    cx, cy, r, color);
+        } else {
+            return String.format(Locale.US, "<circle cx=\"%.2f\" cy=\"%.2f\" r=\"%.2f\" fill=\"none\" stroke=\"%s\" stroke-width=\"1.5\"",
+                    cx, cy, r, color);
+        }
+    }
+
+    private String renderSquare(double cx, double cy, double size, String color, boolean filled) {
+        double x = cx - size;
+        double y = cy - size;
+        double width = size * 2;
+        if (filled) {
+            return String.format(Locale.US, "<rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" fill=\"%s\"",
+                    x, y, width, width, color);
+        } else {
+            return String.format(Locale.US, "<rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" fill=\"none\" stroke=\"%s\" stroke-width=\"1.5\"",
+                    x, y, width, width, color);
+        }
+    }
+
+    private String renderTriangle(double cx, double cy, double size, String color, boolean filled, boolean inverted) {
+        double height = size * 1.732; // sqrt(3) for equilateral triangle
+        double halfBase = size;
+
+        String points;
+        if (inverted) {
+            // Triangle pointing down
+            points = String.format(Locale.US, "%.2f,%.2f %.2f,%.2f %.2f,%.2f",
+                    cx, cy + height * 0.667,           // bottom
+                    cx - halfBase, cy - height * 0.333, // top left
+                    cx + halfBase, cy - height * 0.333  // top right
+            );
+        } else {
+            // Triangle pointing up
+            points = String.format(Locale.US, "%.2f,%.2f %.2f,%.2f %.2f,%.2f",
+                    cx, cy - height * 0.667,           // top
+                    cx - halfBase, cy + height * 0.333, // bottom left
+                    cx + halfBase, cy + height * 0.333  // bottom right
+            );
+        }
+
+        if (filled) {
+            return String.format("<polygon points=\"%s\" fill=\"%s\"", points, color);
+        } else {
+            return String.format("<polygon points=\"%s\" fill=\"none\" stroke=\"%s\" stroke-width=\"1.5\"",
+                    points, color);
+        }
+    }
+
+    private String renderDiamond(double cx, double cy, double size, String color, boolean filled) {
+        String points = String.format(Locale.US, "%.2f,%.2f %.2f,%.2f %.2f,%.2f %.2f,%.2f",
+                cx, cy - size,      // top
+                cx + size, cy,      // right
+                cx, cy + size,      // bottom
+                cx - size, cy       // left
+        );
+
+        if (filled) {
+            return String.format("<polygon points=\"%s\" fill=\"%s\"", points, color);
+        } else {
+            return String.format("<polygon points=\"%s\" fill=\"none\" stroke=\"%s\" stroke-width=\"1.5\"",
+                    points, color);
+        }
+    }
+
+    private String renderPlus(double cx, double cy, double size, String color) {
+        return String.format(Locale.US,
+                "<path d=\"M %.2f %.2f L %.2f %.2f M %.2f %.2f L %.2f %.2f\" " +
+                "stroke=\"%s\" stroke-width=\"2\" stroke-linecap=\"round\"",
+                cx, cy - size, cx, cy + size,  // vertical line
+                cx - size, cy, cx + size, cy,  // horizontal line
+                color);
+    }
+
+    private String renderCross(double cx, double cy, double size, String color) {
+        double offset = size * 0.707; // cos(45°)
+        return String.format(Locale.US,
+                "<path d=\"M %.2f %.2f L %.2f %.2f M %.2f %.2f L %.2f %.2f\" " +
+                "stroke=\"%s\" stroke-width=\"2\" stroke-linecap=\"round\"",
+                cx - offset, cy - offset, cx + offset, cy + offset,  // diagonal \
+                cx - offset, cy + offset, cx + offset, cy - offset,  // diagonal /
+                color);
+    }
+
+    private String renderStar(double cx, double cy, double size, String color, boolean filled) {
+        // 5-pointed star
+        StringBuilder points = new StringBuilder();
+        for (int i = 0; i < 10; i++) {
+            double angle = Math.toRadians(i * 36 - 90); // Start from top
+            double r = (i % 2 == 0) ? size : size * 0.4; // Alternate between outer and inner radius
+            double px = cx + r * Math.cos(angle);
+            double py = cy + r * Math.sin(angle);
+            if (i > 0) points.append(" ");
+            points.append(String.format(Locale.US, "%.2f,%.2f", px, py));
+        }
+
+        if (filled) {
+            return String.format("<polygon points=\"%s\" fill=\"%s\"", points, color);
+        } else {
+            return String.format("<polygon points=\"%s\" fill=\"none\" stroke=\"%s\" stroke-width=\"1.5\"",
+                    points, color);
+        }
+    }
+
+    private String renderPolygon(double cx, double cy, double size, int sides, double rotationDegrees,
+                                   String color, boolean filled) {
+        StringBuilder points = new StringBuilder();
+        for (int i = 0; i < sides; i++) {
+            double angle = Math.toRadians(i * 360.0 / sides + rotationDegrees);
+            double px = cx + size * Math.cos(angle);
+            double py = cy + size * Math.sin(angle);
+            if (i > 0) points.append(" ");
+            points.append(String.format(Locale.US, "%.2f,%.2f", px, py));
+        }
+
+        if (filled) {
+            return String.format("<polygon points=\"%s\" fill=\"%s\"", points, color);
+        } else {
+            return String.format("<polygon points=\"%s\" fill=\"none\" stroke=\"%s\" stroke-width=\"1.5\"",
+                    points, color);
         }
     }
 

@@ -143,24 +143,25 @@ String function support requires similar changes for String type support. Both a
 ---
 
 ### Phase 3: Rendering Engine (Weeks 33-48)
-**Status**: 🟡 IN PROGRESS - 34%
+**Status**: 🟡 IN PROGRESS - 38%
 
-**Current Work**: Ready to start Story 3.2.2 (Scatter Plot Renderer)
+**Current Work**: Ready to start Story 3.2.3 (Bar Chart Renderer)
 
-**Completed Stories**: 5/14 P0 stories (36%)
+**Completed Stories**: 6/14 P0 stories (43%)
 - ✅ Story 3.1.1: Rendering Pipeline Architecture (21/21 SP - COMPLETE)
 - ✅ Story 3.1.2: Axis Rendering System (36/36 SP - COMPLETE)
 - ✅ Story 3.1.3: Color Palette System (13/13 SP - COMPLETE)
 - ✅ Story 3.1.4: Text Rendering and Fonts (18/21 SP - MVP COMPLETE)
 - ✅ Story 3.2.1: Line Plot Renderer (13/13 SP - COMPLETE)
+- ✅ Story 3.2.2: Scatter Plot Renderer (13/13 SP - COMPLETE)
 
-**Story Points**: 101 completed / 300 total (34%)
+**Story Points**: 114 completed / 300 total (38%)
 
 **Latest Commits**:
+- `pending` - feat: Implement scatter plot renderer (Story 3.2.2 - COMPLETE, 314 tests)
+- `ede10ac` - docs: Update README and backlog with Story 3.2.1 completion
 - `0b861a3` - feat: Implement viewport clipping (Story 3.2.1 - COMPLETE, 290 tests)
 - `cdb107d` - feat: Complete polyline rendering with StrokeStyle (Story 3.2.1 - 8/13 SP, 287 tests)
-- `f0d2be2` - feat: Implement line styles (Story 3.2.1 - partial, 22 tests)
-- `cc67ff0` - feat: Implement text rendering and fonts (Story 3.1.4 - MVP complete)
 
 **Phase 3 Progress**:
 - **Epic 3.1 (Rendering Infrastructure) - MVP Complete** ✅
@@ -170,7 +171,8 @@ String function support requires similar changes for String type support. Both a
   - ✅ Story 3.1.4 MVP COMPLETE (38 tests: Font, TextMetrics, TextAlignment, TextRenderer)
 - **Epic 3.2 (2D Plot Rendering) - In Progress** 🟡
   - ✅ Story 3.2.1 COMPLETE (27 tests: LineStyle, StrokeStyle, SvgRenderer clipping)
-- **Total Tests**: 290 passing in gnuplot-render module
+  - ✅ Story 3.2.2 COMPLETE (24 tests: PointStyle, MarkerStyle, ScatterPlot)
+- **Total Tests**: 314 passing in gnuplot-render module
 
 **Story 3.1.2 Completion (TickGenerator + Axis Integration)**:
 - ✅ Gnuplot's quantize_normal_tics algorithm implementation
@@ -1643,24 +1645,40 @@ String function support requires similar changes for String type support. Both a
 
 ---
 
-### Story 3.2.2: Scatter Plot Renderer 🔴 P0
+### Story 3.2.2: Scatter Plot Renderer 🔴 P0 - ✅ COMPLETE
 **As a** user
 **I want** to create scatter plots
 **So that** I can visualize discrete data points
 
 **Acceptance Criteria**:
-- [ ] Multiple point styles
-- [ ] Variable point size
-- [ ] Point colors
-- [ ] Filled/unfilled points
+- [x] Multiple point styles - ✅ DONE
+- [x] Variable point size - ✅ DONE
+- [x] Point colors - ✅ DONE
+- [x] Filled/unfilled points - ✅ DONE
 
 **Tasks**:
-- [ ] Task 3.2.2.1: Implement point drawing - 5 SP
-- [ ] Task 3.2.2.2: Add point styles (circle, square, etc.) - 5 SP
-- [ ] Task 3.2.2.3: Add variable sizing - 3 SP
-- [ ] Task 3.2.2.4: Visual tests - 3 SP
+- [x] Task 3.2.2.1: Implement point drawing - 5 SP - ✅ DONE
+  - ✅ Created PointStyle enum with 10 shapes (circle, square, triangles, diamond, plus, cross, star, hexagon, pentagon)
+  - ✅ Implemented SVG rendering for all 10 marker types
+  - ✅ Added viewport clipping support
+  - ✅ 3 tests for PointStyle
+- [x] Task 3.2.2.2: Add point styles - 5 SP - ✅ DONE
+  - ✅ Created MarkerStyle record (size, color, pointStyle, filled)
+  - ✅ Predefined styles (DEFAULT, SMALL, LARGE, RED_CIRCLE, etc.)
+  - ✅ Fluent API (withSize, withColor, withPointStyle, withFilled)
+  - ✅ 14 tests for MarkerStyle
+- [x] Task 3.2.2.3: Add variable sizing - 3 SP - ✅ DONE
+  - ✅ Created ScatterPlot with DataPoint class
+  - ✅ Support for per-point custom size and color
+  - ✅ ScatterPlot builder with marker style defaults
+  - ✅ 7 tests for ScatterPlot
+- [x] Task 3.2.2.4: Visual tests - 3 SP - ✅ DONE
+  - ✅ Created ScatterPlotDemo showcasing all 10 marker types
+  - ✅ Demonstrated variable sizing (2-8 pixels)
+  - ✅ Demonstrated filled vs unfilled markers
+  - ✅ Generated scatter-plot-demo.svg
 
-**Story Points**: 13
+**Story Points**: 13 (13/13 SP completed - 100%)
 
 ---
 
@@ -2799,11 +2817,11 @@ String function support requires similar changes for String type support. Both a
 
 ---
 
-# OPTIONAL PHASE 7: GNUPLOT COMPATIBILITY (Post-MVP)
+# PHASE 7: GNUPLOT COMPATIBILITY 
 
 ## Epic 7.1: Script Compatibility
 
-### Story 7.1.1: Gnuplot Command Parser 🟢 P3
+### Story 7.1.1: Gnuplot Command Parser 🔴 P0
 **As a** Gnuplot user
 **I want** to run my existing scripts
 **So that** I can migrate easily
@@ -2824,7 +2842,7 @@ String function support requires similar changes for String type support. Both a
 
 ---
 
-### Story 7.1.2: CLI Interface 🟢 P3
+### Story 7.1.2: CLI Interface 🔴 P0
 **As a** command-line user
 **I want** a CLI tool
 **So that** I can use gnuplot from terminal
