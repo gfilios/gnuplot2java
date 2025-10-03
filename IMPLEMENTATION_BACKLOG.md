@@ -158,7 +158,7 @@ String function support requires similar changes for String type support. Both a
 **Story Points**: 114 completed / 300 total (38%)
 
 **Latest Commits**:
-- `pending` - feat: Implement scatter plot renderer (Story 3.2.2 - COMPLETE, 314 tests)
+- `264af97` - feat: Implement scatter plot renderer (Story 3.2.2 - COMPLETE, 314 tests)
 - `ede10ac` - docs: Update README and backlog with Story 3.2.1 completion
 - `0b861a3` - feat: Implement viewport clipping (Story 3.2.1 - COMPLETE, 290 tests)
 - `cdb107d` - feat: Complete polyline rendering with StrokeStyle (Story 3.2.1 - 8/13 SP, 287 tests)
