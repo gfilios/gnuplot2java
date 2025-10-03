@@ -93,16 +93,26 @@ The `all.dem` file contains **100+ demo scripts** organized by complexity:
 
 **Phase TDD Complete**: 26/26 SP (100%) ✅
 
-### Phase 2: Tier 1 - Basic Demos (2-3 weeks)
+### Phase 2: Tier 1 - Basic Demos (2-3 weeks) - 🟡 IN PROGRESS
 
 **Goal**: Pass all basic demos (simple, controls, using, fillstyle, errorbars, scatter)
 
-**Story TDD-4: simple.dem Compliance** (21 SP)
-- Implement missing commands: `set key left box`, `set style data`
-- Fix rendering: impulses style, complex expressions
-- Data file support: `'1.dat' with impulses`
-- Range syntax: `[0:*]` (open-ended ranges)
-- Ternary operators: `sin(x) > sin(x+1) ? sin(x) : sin(x+1)`
+**Story TDD-4: simple.dem Compliance** (21 SP) - 🔴 NOT STARTED
+- **Phase 1**: Grammar fixes (8 SP) - terminal size, fonts, key positions, quotes, ranges
+- **Phase 2**: Output file path (3 SP) - make set output write to specified file
+- **Phase 3**: Plot styles (5 SP) - impulses, set style data
+- **Phase 4**: Data file reading (5 SP) - read .dat files
+
+**Roadmap**: See [STORY_TDD4_ROADMAP.md](../docs/STORY_TDD4_ROADMAP.md)
+
+**Current blockers from gap analysis**:
+- Grammar: `set term svg size 800,600` fails to parse (comma in size)
+- Grammar: `set title "text" font ",20"` not supported
+- Grammar: `set key bmargin center` position modifiers missing
+- Grammar: Single-quoted strings `'1.dat'` not recognized
+- Feature: Set output doesn't write to specified file path
+- Feature: `with impulses` plot style not implemented
+- Feature: Data file reading not implemented
 
 **Story TDD-5: controls.dem Compliance** (13 SP)
 - Implement: `if/else`, `do/while`, `for` loops

@@ -457,6 +457,15 @@ Gnuplot Script → ANTLR Parser → Command AST → Executor → SVG Output
 
 **Story Points Complete**: 26/26 SP (100%) - Phase TDD Complete ✅
 
+**🔜 Next: Story TDD-4** - simple.dem Compliance (21 SP)
+- Fix grammar issues (terminal size, fonts, key positions, quotes, ranges)
+- Implement set output file path support
+- Add impulses plot style
+- Implement data file reading
+- Target: 8/8 plots in simple.dem working
+
+See [STORY_TDD4_ROADMAP.md](docs/STORY_TDD4_ROADMAP.md) for detailed implementation plan.
+
 **Timeline**: 12-18 months to full MVP
 
 ---
