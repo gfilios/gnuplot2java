@@ -490,38 +490,101 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
     @Override
     public void visitLegend(Legend legend) {
         try {
+            // Calculate legend dimensions
+            int columns = legend.getColumns();
+            int rows = (int) Math.ceil((double) legend.getEntries().size() / columns);
+            int columnWidth = 150; // Width per column
+            int rowHeight = 25;    // Height per row
+            int padding = 10;
+
+            int legendWidth = columns * columnWidth + padding * 2;
+            int legendHeight = rows * rowHeight + padding * 2;
+
             // Calculate legend position
-            int[] pos = getLegendPosition(legend.getPosition());
+            int[] pos = getLegendPosition(legend.getPosition(), legendWidth, legendHeight);
             int x = pos[0];
             int y = pos[1];
 
             // Draw legend box if border is enabled
             if (legend.isShowBorder()) {
                 writer.write(String.format(Locale.US,
-                        "  <rect x=\"%d\" y=\"%d\" width=\"120\" height=\"%d\" fill=\"white\" stroke=\"black\" stroke-width=\"1\"/>\n",
-                        x, y, legend.getEntries().size() * 20 + 10));
+                        "  <rect x=\"%d\" y=\"%d\" width=\"%d\" height=\"%d\" fill=\"%s\" stroke=\"%s\" stroke-width=\"1\"/>\n",
+                        x, y, legendWidth, legendHeight,
+                        legend.getBackgroundColor(), legend.getBorderColor()));
             }
 
-            // Draw legend entries
-            int entryY = y + 15;
+            // Draw legend entries in multi-column layout
+            int entryIndex = 0;
             for (Legend.LegendEntry entry : legend.getEntries()) {
-                // Draw line sample
-                String dashArray = getStrokeDashArray(entry.getLineStyle());
-                writer.write(String.format(Locale.US,
-                        "  <line x1=\"%d\" y1=\"%d\" x2=\"%d\" y2=\"%d\" stroke=\"%s\" stroke-width=\"2\"%s/>\n",
-                        x + 5, entryY, x + 25, entryY, entry.getColor(), dashArray));
+                int col = entryIndex % columns;
+                int row = entryIndex / columns;
+
+                int entryX = x + padding + col * columnWidth;
+                int entryY = y + padding + row * rowHeight + rowHeight / 2;
+
+                // Render symbol based on type
+                switch (entry.getSymbolType()) {
+                    case LINE:
+                        renderLegendLine(entry, entryX, entryY, legend.getFontSize());
+                        break;
+                    case MARKER:
+                        renderLegendMarker(entry, entryX, entryY, legend.getFontSize());
+                        break;
+                    case LINE_MARKER:
+                        renderLegendLineAndMarker(entry, entryX, entryY, legend.getFontSize());
+                        break;
+                }
 
                 // Draw label
                 writer.write(String.format(Locale.US,
-                        "  <text x=\"%d\" y=\"%d\" font-size=\"10\" alignment-baseline=\"middle\">%s</text>\n",
-                        x + 30, entryY + 2, escapeXml(entry.getLabel())));
+                        "  <text x=\"%d\" y=\"%d\" font-family=\"%s\" font-size=\"%d\" alignment-baseline=\"middle\">%s</text>\n",
+                        entryX + 40, entryY + 3, legend.getFontFamily(), legend.getFontSize(),
+                        escapeXml(entry.getLabel())));
 
-                entryY += 20;
+                entryIndex++;
             }
 
         } catch (IOException e) {
             throw new RuntimeException("Failed to render legend", e);
         }
+    }
+
+    private void renderLegendLine(Legend.LegendEntry entry, int x, int y, int fontSize) throws IOException {
+        String dashArray = getStrokeDashArray(entry.getLineStyle());
+        writer.write(String.format(Locale.US,
+                "  <line x1=\"%d\" y1=\"%d\" x2=\"%d\" y2=\"%d\" stroke=\"%s\" stroke-width=\"2\"%s/>\n",
+                x + 5, y, x + 30, y, entry.getColor(), dashArray));
+    }
+
+    private void renderLegendMarker(Legend.LegendEntry entry, int x, int y, int fontSize) throws IOException {
+        MarkerStyle markerStyle = entry.getMarkerStyle();
+        String markerSvg = renderMarker(x + 17, y, markerStyle.size(),
+                entry.getColor(), markerStyle.pointStyle(), markerStyle.filled());
+        writer.write("  ");
+        writer.write(markerSvg);
+        writer.write("/>\n");
+    }
+
+    private void renderLegendLineAndMarker(Legend.LegendEntry entry, int x, int y, int fontSize) throws IOException {
+        // Draw line
+        renderLegendLine(entry, x, y, fontSize);
+        // Draw marker in center of line
+        renderLegendMarker(entry, x, y, fontSize);
+    }
+
+    private int[] getLegendPosition(Legend.Position position, int legendWidth, int legendHeight) {
+        int margin = 10;
+        return switch (position) {
+            case TOP_LEFT -> new int[]{margin, margin};
+            case TOP_RIGHT -> new int[]{scene.getWidth() - legendWidth - margin, margin};
+            case BOTTOM_LEFT -> new int[]{margin, scene.getHeight() - legendHeight - margin};
+            case BOTTOM_RIGHT -> new int[]{scene.getWidth() - legendWidth - margin, scene.getHeight() - legendHeight - margin};
+            case TOP_CENTER -> new int[]{(scene.getWidth() - legendWidth) / 2, margin};
+            case BOTTOM_CENTER -> new int[]{(scene.getWidth() - legendWidth) / 2, scene.getHeight() - legendHeight - margin};
+            case LEFT_CENTER -> new int[]{margin, (scene.getHeight() - legendHeight) / 2};
+            case RIGHT_CENTER -> new int[]{scene.getWidth() - legendWidth - margin, (scene.getHeight() - legendHeight) / 2};
+            case CENTER -> new int[]{(scene.getWidth() - legendWidth) / 2, (scene.getHeight() - legendHeight) / 2};
+        };
     }
 
     @Override
@@ -766,24 +829,6 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
             case DASH_DOT -> " stroke-dasharray=\"10,5,2,5\"";
             case NONE -> " stroke-width=\"0\"";
             default -> "";
-        };
-    }
-
-    /**
-     * Get legend position coordinates.
-     */
-    private int[] getLegendPosition(Legend.Position position) {
-        int margin = 10;
-        return switch (position) {
-            case TOP_LEFT -> new int[]{margin, margin};
-            case TOP_RIGHT -> new int[]{scene.getWidth() - 130 - margin, margin};
-            case BOTTOM_LEFT -> new int[]{margin, scene.getHeight() - 100 - margin};
-            case BOTTOM_RIGHT -> new int[]{scene.getWidth() - 130 - margin, scene.getHeight() - 100 - margin};
-            case TOP_CENTER -> new int[]{scene.getWidth() / 2 - 60, margin};
-            case BOTTOM_CENTER -> new int[]{scene.getWidth() / 2 - 60, scene.getHeight() - 100 - margin};
-            case LEFT_CENTER -> new int[]{margin, scene.getHeight() / 2 - 50};
-            case RIGHT_CENTER -> new int[]{scene.getWidth() - 130 - margin, scene.getHeight() / 2 - 50};
-            case CENTER -> new int[]{scene.getWidth() / 2 - 60, scene.getHeight() / 2 - 50};
         };
     }
 

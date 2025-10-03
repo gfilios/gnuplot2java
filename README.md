@@ -246,7 +246,7 @@ mvn test -Dtest=ExpressionParserTest#shouldParseAddition
 | Phase 0: Setup | ✅ Complete | 100% |
 | Phase 1: Core Math Engine | 🟢 Complete (MVP) | 66% |
 | Phase 2: Data Processing | 🔵 Planned | 0% |
-| Phase 3: Rendering Engine | 🟡 In Progress | 43% (375 tests passing) |
+| Phase 3: Rendering Engine | 🟡 In Progress | 46% (375 tests passing) |
 | Phase 4: Backend Server | 🔵 Planned | 0% |
 | Phase 5: Web Frontend | 🔵 Planned | 0% |
 
@@ -313,13 +313,20 @@ mvn test -Dtest=ExpressionParserTest#shouldParseAddition
   - Per-bar and per-series colors
   - Automatic width calculation for groups
   - SVG rect-based rendering with error bar lines
-- ⏳ **Story 3.5.1**: Multi-Plot Layouts (15/21 SP - IN PROGRESS)
+- ✅ **Story 3.5.1**: Multi-Plot Layouts (15/21 SP - MVP COMPLETE)
   - Grid layout with configurable rows/columns
   - Custom positioning with fractional coordinates (0.0-1.0)
   - MultiPlotLayout with Builder pattern
   - SVG transform and clipPath for subplot isolation
   - 16 comprehensive unit tests + 4 demo files
   - Axis sharing deferred to future work
+- ✅ **Story 3.5.2**: Legend System (8/8 SP - COMPLETE)
+  - Multi-column legends (1-N columns)
+  - 9 positioning options (corners, centers, middle)
+  - Line, marker, and combined symbol support
+  - Customizable styling (fonts, colors, borders, background)
+  - Automatic legend generation from plot elements
+  - 16 unit tests + 5 comprehensive visual demos
 
 **📊 Test Coverage**: 375 passing tests (948 total)
 - Rendering pipeline: 58 tests
@@ -342,6 +349,7 @@ mvn test -Dtest=ExpressionParserTest#shouldParseAddition
 - BarChartDemo: 5 bar chart variations (vertical, horizontal, comparison, narrow, wide)
 - GroupedBarChartDemo: 5 grouped/stacked bar chart demos
 - ErrorBarDemo: 5 error bar variations (symmetric, asymmetric, upper/lower only)
+- LegendDemo: 5 legend demos (positions, multi-column, custom styling, mixed symbols, with plot)
 
 **Timeline**: 12-18 months to full MVP
 

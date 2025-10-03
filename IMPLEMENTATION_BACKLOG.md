@@ -143,11 +143,11 @@ String function support requires similar changes for String type support. Both a
 ---
 
 ### Phase 3: Rendering Engine (Weeks 33-48)
-**Status**: 🟡 IN PROGRESS - 43%
+**Status**: 🟡 IN PROGRESS - 46%
 
-**Current Work**: Story 3.5.1 (Multi-Plot Layouts) - IN PROGRESS ⏳
+**Current Work**: Completed Story 3.5.2 (Legend System) ✅
 
-**Completed Stories**: 7/14 P0 stories (50%)
+**Completed Stories**: 9/14 P0 stories (64%)
 - ✅ Story 3.1.1: Rendering Pipeline Architecture (21/21 SP - COMPLETE)
 - ✅ Story 3.1.2: Axis Rendering System (36/36 SP - COMPLETE)
 - ✅ Story 3.1.3: Color Palette System (13/13 SP - COMPLETE)
@@ -155,8 +155,10 @@ String function support requires similar changes for String type support. Both a
 - ✅ Story 3.2.1: Line Plot Renderer (13/13 SP - COMPLETE)
 - ✅ Story 3.2.2: Scatter Plot Renderer (13/13 SP - COMPLETE)
 - ✅ Story 3.2.3: Bar Chart Renderer (13/13 SP - COMPLETE)
+- ✅ Story 3.5.1: Multi-Plot Layouts (15/21 SP - MVP COMPLETE, axis sharing deferred)
+- ✅ Story 3.5.2: Legend System (8/8 SP - COMPLETE)
 
-**Story Points**: 130 completed / 300 total (43%)
+**Story Points**: 138 completed / 300 total (46%)
 
 **Latest Commits**:
 - (pending) - feat: Add error bars to complete Story 3.2.3 (13/13 SP, 359 tests)
@@ -2071,24 +2073,36 @@ String function support requires similar changes for String type support. Both a
 
 ---
 
-### Story 3.5.2: Legend System 🔴 P0
+### Story 3.5.2: Legend System 🔴 P0 - ✅ COMPLETE
 **As a** user
 **I want** configurable legends
 **So that** plot elements are identified
 
 **Acceptance Criteria**:
-- [ ] Automatic legend generation
-- [ ] Custom positioning
-- [ ] Multi-column legends
-- [ ] Legend styling
+- [x] Automatic legend generation
+- [x] Custom positioning
+- [x] Multi-column legends
+- [x] Legend styling
 
 **Tasks**:
-- [ ] Task 3.5.2.1: Implement legend generation - 5 SP
-- [ ] Task 3.5.2.2: Add positioning options - 3 SP
-- [ ] Task 3.5.2.3: Add styling options - 3 SP
-- [ ] Task 3.5.2.4: Visual tests - 2 SP
+- [x] Task 3.5.2.1: Implement legend generation - 5 SP (COMPLETE)
+- [x] Task 3.5.2.2: Add positioning options - 3 SP (COMPLETE)
+- [x] Task 3.5.2.3: Add styling options - 3 SP (COMPLETE)
+- [x] Task 3.5.2.4: Visual tests - 2 SP (COMPLETE - 5 demos)
 
-**Story Points**: 8
+**Story Points**: 8/8 (100%)
+
+**Implementation Details**:
+- Enhanced Legend class with multi-column support (1-N columns)
+- Added SymbolType enum (LINE, MARKER, LINE_MARKER)
+- Enhanced LegendEntry to support lines, markers, and combined symbols
+- Added styling options: fontFamily, fontSize, borderColor, backgroundColor
+- Implemented 9 position options (corners, centers, middle)
+- Updated SvgRenderer for multi-column rendering with proper sizing
+- Static factory methods for marker-only and line+marker entries
+- Backward-compatible line-only constructor
+- 16 existing tests pass + 5 comprehensive visual demos
+- All tests passing (375 total tests)
 
 ---
 

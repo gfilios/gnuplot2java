@@ -2,6 +2,7 @@ package com.gnuplot.render.elements;
 
 import com.gnuplot.render.SceneElement;
 import com.gnuplot.render.SceneElementVisitor;
+import com.gnuplot.render.style.MarkerStyle;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,12 +21,22 @@ public final class Legend implements SceneElement {
     private final Position position;
     private final List<LegendEntry> entries;
     private final boolean showBorder;
+    private final int columns;
+    private final String fontFamily;
+    private final int fontSize;
+    private final String borderColor;
+    private final String backgroundColor;
 
     private Legend(Builder builder) {
         this.id = builder.id;
         this.position = builder.position;
         this.entries = Collections.unmodifiableList(new ArrayList<>(builder.entries));
         this.showBorder = builder.showBorder;
+        this.columns = builder.columns;
+        this.fontFamily = builder.fontFamily;
+        this.fontSize = builder.fontSize;
+        this.borderColor = builder.borderColor;
+        this.backgroundColor = builder.backgroundColor;
     }
 
     public static Builder builder() {
@@ -58,6 +69,26 @@ public final class Legend implements SceneElement {
         return showBorder;
     }
 
+    public int getColumns() {
+        return columns;
+    }
+
+    public String getFontFamily() {
+        return fontFamily;
+    }
+
+    public int getFontSize() {
+        return fontSize;
+    }
+
+    public String getBorderColor() {
+        return borderColor;
+    }
+
+    public String getBackgroundColor() {
+        return backgroundColor;
+    }
+
     /**
      * Legend position enumeration.
      */
@@ -74,17 +105,63 @@ public final class Legend implements SceneElement {
     }
 
     /**
+     * Symbol type for legend entries.
+     */
+    public enum SymbolType {
+        LINE,       // Line style symbol
+        MARKER,     // Marker symbol
+        LINE_MARKER // Both line and marker
+    }
+
+    /**
      * Single entry in the legend.
      */
     public static final class LegendEntry {
         private final String label;
         private final String color;
         private final LinePlot.LineStyle lineStyle;
+        private final MarkerStyle markerStyle;
+        private final SymbolType symbolType;
 
+        // Line-only constructor (backward compatibility - not ambiguous with MarkerStyle version)
         public LegendEntry(String label, String color, LinePlot.LineStyle lineStyle) {
             this.label = Objects.requireNonNull(label, "label cannot be null");
             this.color = Objects.requireNonNull(color, "color cannot be null");
             this.lineStyle = Objects.requireNonNull(lineStyle, "lineStyle cannot be null");
+            this.markerStyle = null;
+            this.symbolType = SymbolType.LINE;
+        }
+
+        // Marker-only static factory
+        public static LegendEntry withMarker(String label, String color, MarkerStyle markerStyle) {
+            return new LegendEntry(label, color, null, markerStyle, SymbolType.MARKER);
+        }
+
+        // Line and marker static factory
+        public static LegendEntry withLineAndMarker(String label, String color,
+                                                    LinePlot.LineStyle lineStyle, MarkerStyle markerStyle) {
+            return new LegendEntry(label, color, lineStyle, markerStyle, SymbolType.LINE_MARKER);
+        }
+
+        // Full private constructor
+        private LegendEntry(String label, String color, LinePlot.LineStyle lineStyle,
+                           MarkerStyle markerStyle, SymbolType symbolType) {
+            this.label = Objects.requireNonNull(label, "label cannot be null");
+            this.color = Objects.requireNonNull(color, "color cannot be null");
+            this.lineStyle = lineStyle;
+            this.markerStyle = markerStyle;
+            this.symbolType = Objects.requireNonNull(symbolType, "symbolType cannot be null");
+
+            // Validate that required styles are present
+            if (symbolType == SymbolType.LINE && lineStyle == null) {
+                throw new IllegalArgumentException("lineStyle required for LINE symbol type");
+            }
+            if (symbolType == SymbolType.MARKER && markerStyle == null) {
+                throw new IllegalArgumentException("markerStyle required for MARKER symbol type");
+            }
+            if (symbolType == SymbolType.LINE_MARKER && (lineStyle == null || markerStyle == null)) {
+                throw new IllegalArgumentException("both lineStyle and markerStyle required for LINE_MARKER symbol type");
+            }
         }
 
         public String getLabel() {
@@ -99,10 +176,26 @@ public final class Legend implements SceneElement {
             return lineStyle;
         }
 
+        public MarkerStyle getMarkerStyle() {
+            return markerStyle;
+        }
+
+        public SymbolType getSymbolType() {
+            return symbolType;
+        }
+
         @Override
         public String toString() {
-            return String.format("LegendEntry{label='%s', color='%s', style=%s}",
-                    label, color, lineStyle);
+            if (symbolType == SymbolType.LINE && lineStyle != null) {
+                return String.format("LegendEntry{label='%s', color='%s', style=%s}",
+                        label, color, lineStyle);
+            } else if (symbolType == SymbolType.MARKER && markerStyle != null) {
+                return String.format("LegendEntry{label='%s', color='%s', marker=%s}",
+                        label, color, markerStyle.pointStyle());
+            } else {
+                return String.format("LegendEntry{label='%s', color='%s', type=%s}",
+                        label, color, symbolType);
+            }
         }
     }
 
@@ -111,6 +204,11 @@ public final class Legend implements SceneElement {
         private Position position = Position.TOP_RIGHT;
         private final List<LegendEntry> entries = new ArrayList<>();
         private boolean showBorder = true;
+        private int columns = 1;
+        private String fontFamily = "Arial";
+        private int fontSize = 10;
+        private String borderColor = "#000000";
+        private String backgroundColor = "#FFFFFF";
 
         private Builder() {
         }
@@ -146,6 +244,37 @@ public final class Legend implements SceneElement {
             return this;
         }
 
+        public Builder columns(int columns) {
+            if (columns < 1) {
+                throw new IllegalArgumentException("columns must be positive, got " + columns);
+            }
+            this.columns = columns;
+            return this;
+        }
+
+        public Builder fontFamily(String fontFamily) {
+            this.fontFamily = Objects.requireNonNull(fontFamily, "fontFamily cannot be null");
+            return this;
+        }
+
+        public Builder fontSize(int fontSize) {
+            if (fontSize < 6 || fontSize > 72) {
+                throw new IllegalArgumentException("fontSize must be between 6 and 72, got " + fontSize);
+            }
+            this.fontSize = fontSize;
+            return this;
+        }
+
+        public Builder borderColor(String borderColor) {
+            this.borderColor = Objects.requireNonNull(borderColor, "borderColor cannot be null");
+            return this;
+        }
+
+        public Builder backgroundColor(String backgroundColor) {
+            this.backgroundColor = Objects.requireNonNull(backgroundColor, "backgroundColor cannot be null");
+            return this;
+        }
+
         public Legend build() {
             if (id == null) {
                 throw new IllegalStateException("id is required");
@@ -156,7 +285,7 @@ public final class Legend implements SceneElement {
 
     @Override
     public String toString() {
-        return String.format("Legend{id='%s', position=%s, entries=%d, border=%s}",
-                id, position, entries.size(), showBorder);
+        return String.format("Legend{id='%s', position=%s, entries=%d, border=%s, columns=%d}",
+                id, position, entries.size(), showBorder, columns);
     }
 }
