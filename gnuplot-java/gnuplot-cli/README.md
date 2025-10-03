@@ -141,15 +141,34 @@ target/gnuplot-cli-1.0.0-SNAPSHOT-jar-with-dependencies.jar
 
 ## Running
 
-### With Maven
+### Recommended: Using the launcher script (no terminal warnings)
+
+**Unix/Linux/macOS:**
 ```bash
-mvn exec:java -Dexec.mainClass="com.gnuplot.cli.GnuplotCli"
+./gnuplot                    # Interactive mode
+./gnuplot script.gp          # Batch mode
+./gnuplot -c "plot sin(x)"   # Single command
+echo "plot sin(x)" | ./gnuplot  # Pipe mode
 ```
 
-### With JAR
-```bash
-java -jar target/gnuplot-cli-1.0.0-SNAPSHOT-jar-with-dependencies.jar
+**Windows:**
+```cmd
+gnuplot.bat                    # Interactive mode
+gnuplot.bat script.gp          # Batch mode
+gnuplot.bat -c "plot sin(x)"   # Single command
 ```
+
+### Alternative: Direct JAR execution
+```bash
+java -jar target/gnuplot-cli-1.0.0-SNAPSHOT-jar-with-dependencies.jar [args]
+```
+
+### Alternative: With Maven (may show JLine terminal warnings)
+```bash
+mvn exec:java -Dexec.mainClass="com.gnuplot.cli.GnuplotCli" -Dexec.args="[args]"
+```
+
+**Note**: The Maven exec plugin doesn't provide a proper terminal, so JLine will show warnings. Use the launcher scripts or direct JAR execution for the best experience.
 
 ## Architecture
 

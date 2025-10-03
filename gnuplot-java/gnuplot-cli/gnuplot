@@ -1,0 +1,18 @@
+#!/bin/bash
+# Gnuplot Java CLI launcher script
+
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Path to the executable JAR
+JAR_PATH="$SCRIPT_DIR/target/gnuplot-cli-1.0.0-SNAPSHOT-jar-with-dependencies.jar"
+
+# Check if JAR exists
+if [ ! -f "$JAR_PATH" ]; then
+    echo "Error: Executable JAR not found at $JAR_PATH"
+    echo "Please build the project first: mvn package"
+    exit 1
+fi
+
+# Run the CLI with all arguments passed through
+exec java -jar "$JAR_PATH" "$@"

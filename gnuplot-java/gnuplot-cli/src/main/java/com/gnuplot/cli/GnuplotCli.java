@@ -171,7 +171,10 @@ public class GnuplotCli implements Callable<Integer> {
         System.out.println("Type 'help' for help, 'quit' or 'exit' to exit");
         System.out.println();
 
-        try (Terminal terminal = TerminalBuilder.builder().build()) {
+        try (Terminal terminal = TerminalBuilder.builder()
+                .system(true)
+                .dumb(true)  // Allow dumb terminal fallback
+                .build()) {
             LineReader lineReader = LineReaderBuilder.builder()
                     .terminal(terminal)
                     .build();
