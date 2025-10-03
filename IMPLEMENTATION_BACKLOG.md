@@ -1,9 +1,11 @@
 # Gnuplot Modernization - Implementation Backlog
 
 **Project**: Gnuplot Java Modernization
-**Approach**: Progressive Rewrite
+**Approach**: Test-Driven Development using Official Gnuplot Demo Suite
 **Timeline**: 12-18 months to MVP
-**Last Updated**: 2025-10-01
+**Last Updated**: 2025-10-03
+
+**🎯 NEW APPROACH**: Shifted to test-driven development using `gnuplot-c/demo/*.dem` scripts as test oracle. See [TEST_DRIVEN_PLAN.md](TEST_DRIVEN_PLAN.md) for details.
 
 ---
 
@@ -2991,6 +2993,153 @@ String function support requires similar changes for String type support. Both a
 - Single and multiple command execution
 - Pipe mode simulation
 - Invalid command handling
+
+---
+
+# PHASE TDD: TEST-DRIVEN DEMO COMPLIANCE
+
+## 🎯 New Approach: Gnuplot Demo Suite Validation
+
+**Shift to test-driven development using official Gnuplot demos** (`gnuplot-c/demo/*.dem`)
+
+See [TEST_DRIVEN_PLAN.md](TEST_DRIVEN_PLAN.md) for complete methodology.
+
+### TDD Progress Summary
+**Status**: 🟡 IN PROGRESS - 4% (4/100+ demos passing)
+
+**Current Pass Rate**:
+- Tier 1 (Basic): 4/6 passing (67%)
+  - ✅ scatter.dem - Leverages existing scatter plot renderer
+  - ✅ errorbars.dem - Leverages existing error bar support
+  - ❌ simple.dem - Missing: data files, impulses style, set key variations
+  - ❌ controls.dem - Missing: control flow (if/else, for, while)
+  - ❌ using.dem - Missing: data file reading
+  - ❌ fillstyle.dem - Missing: fill patterns
+
+- Tier 2 (Intermediate): 0/15 - Not yet attempted
+- Tier 3 (Advanced): 0/30 - Not yet attempted
+- Tier 4 (Expert): 0/50 - Not yet attempted
+
+**Total**: ~4/100 demos passing (4%)
+
+### Epic TDD-1: Test Infrastructure (Week 1)
+
+**Story TDD-1.1: Demo Test Runner** 🔴 P0 (8 SP)
+**As a** developer
+**I want** automated demo execution
+**So that** I can compare C vs Java output
+
+**Acceptance Criteria**:
+- [ ] Execute .dem files in C gnuplot
+- [ ] Execute .dem files in Java gnuplot
+- [ ] Capture SVG outputs
+- [ ] Generate comparison report
+
+**Story TDD-1.2: Visual Comparison System** 🔴 P0 (13 SP)
+**As a** developer
+**I want** automated visual regression testing
+**So that** I can detect rendering differences
+
+**Acceptance Criteria**:
+- [ ] SVG structure comparison
+- [ ] Pixel-based diff (rasterize + compare)
+- [ ] Difference highlighting
+- [ ] Similarity score calculation
+
+**Story TDD-1.3: Gap Analysis Reporting** 🔴 P0 (5 SP)
+**As a** developer
+**I want** automated gap analysis
+**So that** I know what features to implement
+
+**Acceptance Criteria**:
+- [ ] Parse error messages
+- [ ] Classify errors (missing command, wrong render, data issue)
+- [ ] Generate HTML report
+- [ ] Track metrics over time
+
+### Epic TDD-2: Tier 1 Demos (Weeks 2-4)
+
+**Story TDD-2.1: simple.dem Compliance** 🔴 P0 (21 SP)
+**Target**: Pass all 8 plots in simple.dem
+
+**Missing Features**:
+- [ ] Data file reading ('1.dat', '2.dat', '3.dat')
+- [ ] `with impulses` plot style
+- [ ] `set key left box` and key positioning
+- [ ] `set style data points`
+- [ ] Open-ended ranges `[0:*]`
+- [ ] Ternary operator in expressions
+- [ ] Complex expressions: `besj0(x)*0.12e1`
+
+**Story TDD-2.2: controls.dem Compliance** 🔴 P0 (13 SP)
+**Target**: Pass all control flow tests
+
+**Missing Features**:
+- [ ] `if/else/endif` statements
+- [ ] `for` loops
+- [ ] `while` loops
+- [ ] `do` loops
+- [ ] Variable assignments
+- [ ] Command-line arguments
+
+**Story TDD-2.3: using.dem Compliance** 🔴 P0 (21 SP)
+**Target**: Pass all data file usage tests
+
+**Missing Features**:
+- [ ] CSV file reading
+- [ ] Whitespace-separated data
+- [ ] `using` column specifications (using 1:2, using 1:($2*2))
+- [ ] Column expressions
+- [ ] Header row handling (`set datafile columnheaders`)
+- [ ] Missing data handling
+
+**Story TDD-2.4: fillstyle.dem Compliance** 🔴 P0 (13 SP)
+**Target**: Pass all fill style tests
+
+**Missing Features**:
+- [ ] Fill patterns (solid, transparent, pattern)
+- [ ] Fill density control
+- [ ] Border styles for filled areas
+- [ ] Pattern index support
+
+### Epic TDD-3: Tier 2 Demos (Weeks 5-8)
+
+**Story TDD-3.1: Polar Coordinate Demos** 🟡 P1 (13 SP)
+- polar.dem
+- poldat.dem
+- polargrid.dem
+- polar_quadrants.dem
+
+**Story TDD-3.2: Histogram Demos** 🟡 P1 (21 SP)
+- histograms.dem
+- histograms2.dem
+- histerror.dem
+
+**Story TDD-3.3: Statistical Plot Demos** 🟡 P1 (21 SP)
+- boxplot.dem
+- violinplot.dem
+- jitter.dem
+
+**Story TDD-3.4: Smoothing Demos** 🟡 P1 (21 SP)
+- smooth.dem
+- spline.dem
+- smooth_splines.dem
+
+### Epic TDD-4: Continuous Validation
+
+**Process**: For each feature implementation:
+1. Run relevant demo(s)
+2. Compare output
+3. Identify gaps
+4. Implement missing features
+5. Re-test until passing
+6. Move to next demo
+
+**Metrics Tracked**:
+- Demo pass rate (X/100+)
+- Command coverage (Y/Z commands)
+- Visual similarity (avg pixel diff)
+- Test coverage (keep >95%)
 
 ---
 
