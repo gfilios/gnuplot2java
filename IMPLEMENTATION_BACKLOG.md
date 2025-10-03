@@ -2919,24 +2919,53 @@ String function support requires similar changes for String type support. Both a
 
 ---
 
-### Story 7.1.2: CLI Interface 🔴 P0
+### Story 7.1.2: CLI Interface ✅ COMPLETE
 **As a** command-line user
 **I want** a CLI tool
 **So that** I can use gnuplot from terminal
 
 **Acceptance Criteria**:
-- [ ] Interactive shell
-- [ ] Script execution
-- [ ] Pipe support
-- [ ] Output to terminal/file
+- [x] Interactive shell
+- [x] Script execution
+- [x] Pipe support
+- [x] Output to terminal/file
 
 **Tasks**:
-- [ ] Task 7.1.2.1: Design CLI architecture - 5 SP
-- [ ] Task 7.1.2.2: Implement interactive mode - 8 SP
-- [ ] Task 7.1.2.3: Implement batch mode - 5 SP
-- [ ] Task 7.1.2.4: Add pipe support - 5 SP
+- [x] Task 7.1.2.1: Design CLI architecture - 5 SP
+- [x] Task 7.1.2.2: Implement interactive mode - 8 SP
+- [x] Task 7.1.2.3: Implement batch mode - 5 SP
+- [x] Task 7.1.2.4: Add pipe support - 5 SP
 
-**Story Points**: 21
+**Story Points**: 21 SP (COMPLETE)
+
+**Implementation**:
+- Created GnuplotCli main class with Picocli framework
+- Supports 5 execution modes:
+  1. **Interactive mode**: `gnuplot-cli` - REPL shell with JLine support
+  2. **Batch mode**: `gnuplot-cli script.gp` - Execute script file
+  3. **Pipe mode**: `echo "plot sin(x)" | gnuplot-cli` - Read from stdin
+  4. **Single command**: `gnuplot-cli -c "plot sin(x)"` - Execute one command
+  5. **Multiple commands**: `gnuplot-cli -e "set title \"Test\"" -e "plot sin(x)"`
+- Interactive features:
+  - JLine-powered REPL with line editing and history
+  - `help` command for user guidance
+  - `quit`/`exit` commands to exit
+  - Ctrl+C interrupt handling
+  - Ctrl+D EOF handling
+- Standard CLI features:
+  - `--help` for usage information
+  - `--version` for version display
+  - Proper exit codes (0 success, 1 error)
+  - Error handling with helpful messages
+- **8 CLI tests passing** covering all modes and error cases
+- **31 total gnuplot-cli tests** (8 CLI + 4 integration + 17 parser + 2 debug)
+
+**Test Coverage**:
+- Help and version options
+- Batch mode with valid/invalid scripts
+- Single and multiple command execution
+- Pipe mode simulation
+- Invalid command handling
 
 ---
 
