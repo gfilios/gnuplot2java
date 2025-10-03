@@ -403,6 +403,66 @@ class BarChartTest {
                 () -> chart.getGroups().add(new BarChart.BarGroup(2.0, List.of(3.0))));
     }
 
+    // Error bar tests
+
+    @Test
+    void testBarWithErrorBars() {
+        BarChart.Bar bar = new BarChart.Bar(1.0, 10.0, "#FF0000", "Test", 2.0, 3.0);
+        assertEquals(1.0, bar.getX());
+        assertEquals(10.0, bar.getHeight());
+        assertEquals(2.0, bar.getErrorLow());
+        assertEquals(3.0, bar.getErrorHigh());
+        assertTrue(bar.hasErrorBars());
+    }
+
+    @Test
+    void testBarWithOnlyLowError() {
+        BarChart.Bar bar = new BarChart.Bar(1.0, 10.0, "#FF0000", "Test", 2.0, null);
+        assertEquals(2.0, bar.getErrorLow());
+        assertNull(bar.getErrorHigh());
+        assertTrue(bar.hasErrorBars());
+    }
+
+    @Test
+    void testBarWithOnlyHighError() {
+        BarChart.Bar bar = new BarChart.Bar(1.0, 10.0, "#FF0000", "Test", null, 3.0);
+        assertNull(bar.getErrorLow());
+        assertEquals(3.0, bar.getErrorHigh());
+        assertTrue(bar.hasErrorBars());
+    }
+
+    @Test
+    void testBarWithoutErrorBars() {
+        BarChart.Bar bar = new BarChart.Bar(1.0, 10.0);
+        assertNull(bar.getErrorLow());
+        assertNull(bar.getErrorHigh());
+        assertFalse(bar.hasErrorBars());
+    }
+
+    @Test
+    void testChartWithErrorBars() {
+        BarChart chart = BarChart.builder()
+                .id("chart")
+                .addBar(1.0, 10.0, "#FF0000", "A", 2.0, 3.0)
+                .addBar(2.0, 15.0, "#00FF00", "B", 1.5, 2.5)
+                .build();
+
+        assertEquals(2, chart.getBars().size());
+        assertTrue(chart.getBars().get(0).hasErrorBars());
+        assertTrue(chart.getBars().get(1).hasErrorBars());
+    }
+
+    @Test
+    void testBarEqualityWithErrorBars() {
+        BarChart.Bar bar1 = new BarChart.Bar(1.0, 10.0, "#FF0000", "Test", 2.0, 3.0);
+        BarChart.Bar bar2 = new BarChart.Bar(1.0, 10.0, "#FF0000", "Test", 2.0, 3.0);
+        BarChart.Bar bar3 = new BarChart.Bar(1.0, 10.0, "#FF0000", "Test", 1.0, 3.0);
+
+        assertEquals(bar1, bar2);
+        assertNotEquals(bar1, bar3);
+        assertEquals(bar1.hashCode(), bar2.hashCode());
+    }
+
     private static class TestVisitor implements SceneElementVisitor {
         boolean visitedBarChart = false;
 

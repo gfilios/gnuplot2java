@@ -246,7 +246,7 @@ mvn test -Dtest=ExpressionParserTest#shouldParseAddition
 | Phase 0: Setup | ✅ Complete | 100% |
 | Phase 1: Core Math Engine | 🟢 Complete (MVP) | 66% |
 | Phase 2: Data Processing | 🔵 Planned | 0% |
-| Phase 3: Rendering Engine | 🟡 In Progress | 41% (353 tests passing) |
+| Phase 3: Rendering Engine | 🟡 In Progress | 42% (359 tests passing) |
 | Phase 4: Backend Server | 🔵 Planned | 0% |
 | Phase 5: Web Frontend | 🔵 Planned | 0% |
 
@@ -272,7 +272,7 @@ mvn test -Dtest=ExpressionParserTest#shouldParseAddition
 
 ### Phase 3 Highlights
 
-**✅ Completed (6/14 P0 stories - 43%)**:
+**✅ Completed (7/14 P0 stories - 50%)**:
 - ✅ **Story 3.1.1**: Rendering Pipeline Architecture (21 SP)
   - Scene graph with visitor pattern
   - Viewport coordinate system
@@ -304,21 +304,22 @@ mvn test -Dtest=ExpressionParserTest#shouldParseAddition
   - Filled and unfilled markers
   - Custom colors per point
   - MarkerStyle record with fluent API
-- 🟡 **Story 3.2.3**: Bar Chart Renderer (10/13 SP - 77% Complete)
+- ✅ **Story 3.2.3**: Bar Chart Renderer (13/13 SP - COMPLETE)
   - Vertical and horizontal bars
   - Grouped bars (side-by-side)
   - Stacked bars (cumulative)
+  - Error bars (symmetric, asymmetric, upper/lower only)
   - Configurable bar width (0-1 range)
   - Per-bar and per-series colors
   - Automatic width calculation for groups
-  - SVG rect-based rendering
+  - SVG rect-based rendering with error bar lines
 
-**📊 Test Coverage**: 353 passing tests (926 total)
+**📊 Test Coverage**: 359 passing tests (932 total)
 - Rendering pipeline: 58 tests
 - Axis system: 71 tests
 - Color system: 52 tests
 - Text rendering: 38 tests
-- Plot renderers: 81 tests (LinePlot: 15, ScatterPlot: 7, BarChart: 39, Styles: 20)
+- Plot renderers: 87 tests (LinePlot: 15, ScatterPlot: 7, BarChart: 45, Styles: 20)
 - Line rendering: 27 tests (LineStyle, StrokeStyle, clipping)
 - Scatter rendering: 24 tests (PointStyle, MarkerStyle, ScatterPlot)
 - Style system: 22 tests

@@ -191,16 +191,24 @@ public final class BarChart implements SceneElement {
         private final double height;
         private final String color;
         private final String label;
+        private final Double errorLow;
+        private final Double errorHigh;
 
         public Bar(double x, double height) {
-            this(x, height, "#4A90E2", null);
+            this(x, height, "#4A90E2", null, null, null);
         }
 
         public Bar(double x, double height, String color, String label) {
+            this(x, height, color, label, null, null);
+        }
+
+        public Bar(double x, double height, String color, String label, Double errorLow, Double errorHigh) {
             this.x = x;
             this.height = height;
             this.color = Objects.requireNonNull(color, "color cannot be null");
             this.label = label;
+            this.errorLow = errorLow;
+            this.errorHigh = errorHigh;
         }
 
         public double getX() {
@@ -219,6 +227,18 @@ public final class BarChart implements SceneElement {
             return label;
         }
 
+        public Double getErrorLow() {
+            return errorLow;
+        }
+
+        public Double getErrorHigh() {
+            return errorHigh;
+        }
+
+        public boolean hasErrorBars() {
+            return errorLow != null || errorHigh != null;
+        }
+
         @Override
         public String toString() {
             return String.format("Bar{x=%.2f, height=%.2f, color='%s'}", x, height, color);
@@ -232,12 +252,14 @@ public final class BarChart implements SceneElement {
             return Double.compare(x, other.x) == 0
                     && Double.compare(height, other.height) == 0
                     && color.equals(other.color)
-                    && Objects.equals(label, other.label);
+                    && Objects.equals(label, other.label)
+                    && Objects.equals(errorLow, other.errorLow)
+                    && Objects.equals(errorHigh, other.errorHigh);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(x, height, color, label);
+            return Objects.hash(x, height, color, label, errorLow, errorHigh);
         }
     }
 
@@ -270,6 +292,11 @@ public final class BarChart implements SceneElement {
 
         public Builder addBar(double x, double height, String color, String label) {
             this.bars.add(new Bar(x, height, color, label));
+            return this;
+        }
+
+        public Builder addBar(double x, double height, String color, String label, Double errorLow, Double errorHigh) {
+            this.bars.add(new Bar(x, height, color, label, errorLow, errorHigh));
             return this;
         }
 

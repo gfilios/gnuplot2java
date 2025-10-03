@@ -145,23 +145,24 @@ String function support requires similar changes for String type support. Both a
 ### Phase 3: Rendering Engine (Weeks 33-48)
 **Status**: 🟡 IN PROGRESS - 38%
 
-**Current Work**: Story 3.2.3 (Bar Chart Renderer) - Tasks 1-3 COMPLETE (77%)
+**Current Work**: Story 3.2.3 (Bar Chart Renderer) - COMPLETE ✅
 
-**Completed Stories**: 6/14 P0 stories (43%)
+**Completed Stories**: 7/14 P0 stories (50%)
 - ✅ Story 3.1.1: Rendering Pipeline Architecture (21/21 SP - COMPLETE)
 - ✅ Story 3.1.2: Axis Rendering System (36/36 SP - COMPLETE)
 - ✅ Story 3.1.3: Color Palette System (13/13 SP - COMPLETE)
 - ✅ Story 3.1.4: Text Rendering and Fonts (18/21 SP - MVP COMPLETE)
 - ✅ Story 3.2.1: Line Plot Renderer (13/13 SP - COMPLETE)
 - ✅ Story 3.2.2: Scatter Plot Renderer (13/13 SP - COMPLETE)
+- ✅ Story 3.2.3: Bar Chart Renderer (13/13 SP - COMPLETE)
 
-**Story Points**: 124 completed / 300 total (41%)
+**Story Points**: 127 completed / 300 total (42%)
 
 **Latest Commits**:
-- (pending) - feat: Add grouped and stacked bars (Story 3.2.3 Tasks 2-3 - 10/13 SP, 353 tests)
+- (pending) - feat: Add error bars to complete Story 3.2.3 (13/13 SP, 359 tests)
+- `e0ac970` - feat: Add grouped and stacked bars (Story 3.2.3 Tasks 2-3 - 10/13 SP, 353 tests)
 - `4246d3f` - feat: Implement basic bar chart renderer (Story 3.2.3 Task 1 - 5/13 SP, 338 tests)
 - `3b854b8` - docs: Update README and backlog with Story 3.2.2 completion
-- `264af97` - feat: Implement scatter plot renderer (Story 3.2.2 - COMPLETE, 314 tests)
 
 **Phase 3 Progress**:
 - **Epic 3.1 (Rendering Infrastructure) - MVP Complete** ✅
@@ -172,8 +173,8 @@ String function support requires similar changes for String type support. Both a
 - **Epic 3.2 (2D Plot Rendering) - In Progress** 🟡
   - ✅ Story 3.2.1 COMPLETE (27 tests: LineStyle, StrokeStyle, SvgRenderer clipping)
   - ✅ Story 3.2.2 COMPLETE (24 tests: PointStyle, MarkerStyle, ScatterPlot)
-  - 🟡 Story 3.2.3 IN PROGRESS (39 tests: BarChart with grouping/stacking)
-- **Total Tests**: 353 passing in gnuplot-render module (926 total)
+  - ✅ Story 3.2.3 COMPLETE (45 tests: BarChart with grouping/stacking/errors)
+- **Total Tests**: 359 passing in gnuplot-render module (932 total)
 
 **Story 3.1.2 Completion (TickGenerator + Axis Integration)**:
 - ✅ Gnuplot's quantize_normal_tics algorithm implementation
@@ -1683,7 +1684,7 @@ String function support requires similar changes for String type support. Both a
 
 ---
 
-### Story 3.2.3: Bar Chart Renderer 🟡 P0 (In Progress)
+### Story 3.2.3: Bar Chart Renderer ✅ P0 (COMPLETE)
 **As a** user
 **I want** to create bar charts
 **So that** I can compare categorical data
@@ -1693,16 +1694,16 @@ String function support requires similar changes for String type support. Both a
 - [x] Grouped bars
 - [x] Stacked bars
 - [x] Bar width control
-- [ ] Error bars
+- [x] Error bars
 
 **Tasks**:
 - [x] Task 3.2.3.1: Implement basic bars - 5 SP ✅
 - [x] Task 3.2.3.2: Add grouping - 5 SP ✅
 - [x] Task 3.2.3.3: Add stacking - 5 SP ✅ (merged with 3.2.3.2)
-- [ ] Task 3.2.3.4: Add error bars - 3 SP
-- [ ] Task 3.2.3.5: Visual tests - 3 SP
+- [x] Task 3.2.3.4: Add error bars - 3 SP ✅
+- [x] Task 3.2.3.5: Visual tests - 3 SP ✅ (demos created)
 
-**Story Points**: 10 / 13 (77% complete)
+**Story Points**: 13 / 13 (100% complete)
 
 **Task 3.2.3.1 Completion Notes**:
 - Implemented BarChart scene element with Builder pattern
@@ -1721,6 +1722,16 @@ String function support requires similar changes for String type support. Both a
 - renderStackedBars(): Cumulative stacking with proper offset handling
 - 15 additional tests for BarGroup and grouping modes (39 total)
 - 5 demo visualizations (grouped, stacked, multi-series, horizontal-stacked, two-series)
+
+**Task 3.2.3.4 Completion Notes**:
+- Added errorLow and errorHigh fields to Bar class
+- Implemented renderErrorBar() method in SvgRenderer
+- Support for symmetric and asymmetric error bars
+- Support for upper-only and lower-only error bars
+- Error bars work with both vertical and horizontal orientations
+- SVG line rendering with caps for visual clarity
+- 6 additional tests for error bar functionality (45 total)
+- 5 demo visualizations (symmetric, asymmetric, horizontal, upper-only, lower-only)
 
 ---
 

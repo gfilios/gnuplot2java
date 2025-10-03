@@ -432,6 +432,12 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
                 writer.write(String.format(Locale.US,
                         "  <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" fill=\"%s\"/>\n",
                         barX, mappedY, screenBarWidth, mappedHeight, bar.getColor()));
+
+                // Render error bars if present
+                if (bar.hasErrorBars()) {
+                    renderErrorBar(mappedX, bar.getHeight(), bar.getErrorLow(), bar.getErrorHigh(),
+                                 screenBarWidth, barChart.getOrientation());
+                }
             } else {
                 // Horizontal bars: x is baseline (0), height determines bar length
                 double barY = mappedX - screenBarWidth / 2;
@@ -440,6 +446,12 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
                 writer.write(String.format(Locale.US,
                         "  <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" fill=\"%s\"/>\n",
                         barX, barY, barWidth, screenBarWidth, bar.getColor()));
+
+                // Render error bars if present
+                if (bar.hasErrorBars()) {
+                    renderErrorBar(mappedX, bar.getHeight(), bar.getErrorLow(), bar.getErrorHigh(),
+                                 screenBarWidth, barChart.getOrientation());
+                }
             }
         }
     }
@@ -523,6 +535,70 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
                 }
 
                 cumulativeValue += value;
+            }
+        }
+    }
+
+    /**
+     * Render error bar for a bar chart.
+     */
+    private void renderErrorBar(double centerX, double value, Double errorLow, Double errorHigh,
+                               double barWidth, BarChart.Orientation orientation) throws IOException {
+        if (orientation == BarChart.Orientation.VERTICAL) {
+            // Vertical error bars
+            double valueY = mapY(value);
+            double capWidth = barWidth * 0.3; // Cap is 30% of bar width
+
+            if (errorHigh != null) {
+                double highY = mapY(value + errorHigh);
+                // Vertical line
+                writer.write(String.format(Locale.US,
+                        "  <line x1=\"%.2f\" y1=\"%.2f\" x2=\"%.2f\" y2=\"%.2f\" stroke=\"black\" stroke-width=\"1.5\"/>\n",
+                        centerX, valueY, centerX, highY));
+                // Top cap
+                writer.write(String.format(Locale.US,
+                        "  <line x1=\"%.2f\" y1=\"%.2f\" x2=\"%.2f\" y2=\"%.2f\" stroke=\"black\" stroke-width=\"1.5\"/>\n",
+                        centerX - capWidth / 2, highY, centerX + capWidth / 2, highY));
+            }
+
+            if (errorLow != null) {
+                double lowY = mapY(value - errorLow);
+                // Vertical line
+                writer.write(String.format(Locale.US,
+                        "  <line x1=\"%.2f\" y1=\"%.2f\" x2=\"%.2f\" y2=\"%.2f\" stroke=\"black\" stroke-width=\"1.5\"/>\n",
+                        centerX, valueY, centerX, lowY));
+                // Bottom cap
+                writer.write(String.format(Locale.US,
+                        "  <line x1=\"%.2f\" y1=\"%.2f\" x2=\"%.2f\" y2=\"%.2f\" stroke=\"black\" stroke-width=\"1.5\"/>\n",
+                        centerX - capWidth / 2, lowY, centerX + capWidth / 2, lowY));
+            }
+        } else {
+            // Horizontal error bars
+            double valueX = mapX(value);
+            double capHeight = barWidth * 0.3; // Cap is 30% of bar width
+
+            if (errorHigh != null) {
+                double highX = mapX(value + errorHigh);
+                // Horizontal line
+                writer.write(String.format(Locale.US,
+                        "  <line x1=\"%.2f\" y1=\"%.2f\" x2=\"%.2f\" y2=\"%.2f\" stroke=\"black\" stroke-width=\"1.5\"/>\n",
+                        valueX, centerX, highX, centerX));
+                // Right cap
+                writer.write(String.format(Locale.US,
+                        "  <line x1=\"%.2f\" y1=\"%.2f\" x2=\"%.2f\" y2=\"%.2f\" stroke=\"black\" stroke-width=\"1.5\"/>\n",
+                        highX, centerX - capHeight / 2, highX, centerX + capHeight / 2));
+            }
+
+            if (errorLow != null) {
+                double lowX = mapX(value - errorLow);
+                // Horizontal line
+                writer.write(String.format(Locale.US,
+                        "  <line x1=\"%.2f\" y1=\"%.2f\" x2=\"%.2f\" y2=\"%.2f\" stroke=\"black\" stroke-width=\"1.5\"/>\n",
+                        valueX, centerX, lowX, centerX));
+                // Left cap
+                writer.write(String.format(Locale.US,
+                        "  <line x1=\"%.2f\" y1=\"%.2f\" x2=\"%.2f\" y2=\"%.2f\" stroke=\"black\" stroke-width=\"1.5\"/>\n",
+                        lowX, centerX - capHeight / 2, lowX, centerX + capHeight / 2));
             }
         }
     }
