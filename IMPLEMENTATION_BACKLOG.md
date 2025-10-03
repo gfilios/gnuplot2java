@@ -145,7 +145,7 @@ String function support requires similar changes for String type support. Both a
 ### Phase 3: Rendering Engine (Weeks 33-48)
 **Status**: 🟡 IN PROGRESS - 38%
 
-**Current Work**: Story 3.2.3 (Bar Chart Renderer) - Task 3.2.3.1 COMPLETE
+**Current Work**: Story 3.2.3 (Bar Chart Renderer) - Tasks 1-3 COMPLETE (77%)
 
 **Completed Stories**: 6/14 P0 stories (43%)
 - ✅ Story 3.1.1: Rendering Pipeline Architecture (21/21 SP - COMPLETE)
@@ -155,13 +155,13 @@ String function support requires similar changes for String type support. Both a
 - ✅ Story 3.2.1: Line Plot Renderer (13/13 SP - COMPLETE)
 - ✅ Story 3.2.2: Scatter Plot Renderer (13/13 SP - COMPLETE)
 
-**Story Points**: 119 completed / 300 total (40%)
+**Story Points**: 124 completed / 300 total (41%)
 
 **Latest Commits**:
-- (pending) - feat: Implement basic bar chart renderer (Story 3.2.3 Task 1 - 5/13 SP, 338 tests)
+- (pending) - feat: Add grouped and stacked bars (Story 3.2.3 Tasks 2-3 - 10/13 SP, 353 tests)
+- `4246d3f` - feat: Implement basic bar chart renderer (Story 3.2.3 Task 1 - 5/13 SP, 338 tests)
 - `3b854b8` - docs: Update README and backlog with Story 3.2.2 completion
 - `264af97` - feat: Implement scatter plot renderer (Story 3.2.2 - COMPLETE, 314 tests)
-- `ede10ac` - docs: Update README and backlog with Story 3.2.1 completion
 
 **Phase 3 Progress**:
 - **Epic 3.1 (Rendering Infrastructure) - MVP Complete** ✅
@@ -172,8 +172,8 @@ String function support requires similar changes for String type support. Both a
 - **Epic 3.2 (2D Plot Rendering) - In Progress** 🟡
   - ✅ Story 3.2.1 COMPLETE (27 tests: LineStyle, StrokeStyle, SvgRenderer clipping)
   - ✅ Story 3.2.2 COMPLETE (24 tests: PointStyle, MarkerStyle, ScatterPlot)
-  - 🟡 Story 3.2.3 IN PROGRESS (24 tests: BarChart basic rendering)
-- **Total Tests**: 338 passing in gnuplot-render module (911 total)
+  - 🟡 Story 3.2.3 IN PROGRESS (39 tests: BarChart with grouping/stacking)
+- **Total Tests**: 353 passing in gnuplot-render module (926 total)
 
 **Story 3.1.2 Completion (TickGenerator + Axis Integration)**:
 - ✅ Gnuplot's quantize_normal_tics algorithm implementation
@@ -1690,19 +1690,19 @@ String function support requires similar changes for String type support. Both a
 
 **Acceptance Criteria**:
 - [x] Vertical and horizontal bars
-- [ ] Grouped bars
-- [ ] Stacked bars
+- [x] Grouped bars
+- [x] Stacked bars
 - [x] Bar width control
 - [ ] Error bars
 
 **Tasks**:
 - [x] Task 3.2.3.1: Implement basic bars - 5 SP ✅
-- [ ] Task 3.2.3.2: Add grouping - 5 SP
-- [ ] Task 3.2.3.3: Add stacking - 5 SP
+- [x] Task 3.2.3.2: Add grouping - 5 SP ✅
+- [x] Task 3.2.3.3: Add stacking - 5 SP ✅ (merged with 3.2.3.2)
 - [ ] Task 3.2.3.4: Add error bars - 3 SP
 - [ ] Task 3.2.3.5: Visual tests - 3 SP
 
-**Story Points**: 5 / 13 (38% complete)
+**Story Points**: 10 / 13 (77% complete)
 
 **Task 3.2.3.1 Completion Notes**:
 - Implemented BarChart scene element with Builder pattern
@@ -1713,6 +1713,14 @@ String function support requires similar changes for String type support. Both a
 - visitBarChart() in SvgRenderer using SVG <rect> elements
 - 24 comprehensive tests in BarChartTest
 - 5 demo visualizations (vertical, horizontal, comparison, narrow, wide)
+
+**Tasks 3.2.3.2 & 3.2.3.3 Completion Notes**:
+- Added BarGroup class for multiple values at same x position
+- Implemented GroupingMode enum (NONE, GROUPED, STACKED)
+- renderGroupedBars(): Side-by-side bars with automatic width calculation
+- renderStackedBars(): Cumulative stacking with proper offset handling
+- 15 additional tests for BarGroup and grouping modes (39 total)
+- 5 demo visualizations (grouped, stacked, multi-series, horizontal-stacked, two-series)
 
 ---
 

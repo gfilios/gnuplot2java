@@ -265,6 +265,144 @@ class BarChartTest {
         assertThrows(NullPointerException.class, () -> builder.id(null));
     }
 
+    // BarGroup tests
+
+    @Test
+    void testBarGroupCreation() {
+        BarChart.BarGroup group = new BarChart.BarGroup(1.0, List.of(5.0, 8.0, 3.0));
+        assertEquals(1.0, group.getX());
+        assertEquals(3, group.getBarCount());
+        assertEquals(List.of(5.0, 8.0, 3.0), group.getValues());
+        assertNull(group.getColors());
+        assertNull(group.getSeriesLabels());
+    }
+
+    @Test
+    void testBarGroupWithColors() {
+        List<String> colors = List.of("#FF0000", "#00FF00", "#0000FF");
+        BarChart.BarGroup group = new BarChart.BarGroup(1.0, List.of(5.0, 8.0, 3.0), colors, null, null);
+        assertEquals(colors, group.getColors());
+    }
+
+    @Test
+    void testBarGroupWithLabels() {
+        List<String> labels = List.of("Series A", "Series B", "Series C");
+        BarChart.BarGroup group = new BarChart.BarGroup(1.0, List.of(5.0, 8.0, 3.0), null, labels, "Group 1");
+        assertEquals(labels, group.getSeriesLabels());
+        assertEquals("Group 1", group.getGroupLabel());
+    }
+
+    @Test
+    void testBarGroupEmptyValuesRejected() {
+        assertThrows(IllegalArgumentException.class,
+                () -> new BarChart.BarGroup(1.0, List.of()));
+    }
+
+    @Test
+    void testBarGroupColorsSizeMismatch() {
+        List<String> colors = List.of("#FF0000", "#00FF00");
+        assertThrows(IllegalArgumentException.class,
+                () -> new BarChart.BarGroup(1.0, List.of(5.0, 8.0, 3.0), colors, null, null));
+    }
+
+    @Test
+    void testBarGroupLabelsSizeMismatch() {
+        List<String> labels = List.of("A", "B");
+        assertThrows(IllegalArgumentException.class,
+                () -> new BarChart.BarGroup(1.0, List.of(5.0, 8.0, 3.0), null, labels, null));
+    }
+
+    @Test
+    void testBarGroupEquality() {
+        BarChart.BarGroup group1 = new BarChart.BarGroup(1.0, List.of(5.0, 8.0));
+        BarChart.BarGroup group2 = new BarChart.BarGroup(1.0, List.of(5.0, 8.0));
+        BarChart.BarGroup group3 = new BarChart.BarGroup(1.0, List.of(5.0, 9.0));
+
+        assertEquals(group1, group2);
+        assertNotEquals(group1, group3);
+        assertEquals(group1.hashCode(), group2.hashCode());
+    }
+
+    // Grouped bar chart tests
+
+    @Test
+    void testGroupedBarChartCreation() {
+        BarChart chart = BarChart.builder()
+                .id("grouped-chart")
+                .addGroup(1.0, List.of(5.0, 8.0, 3.0))
+                .addGroup(2.0, List.of(7.0, 4.0, 9.0))
+                .build();
+
+        assertEquals("grouped-chart", chart.getId());
+        assertEquals(2, chart.getGroups().size());
+        assertEquals(BarChart.GroupingMode.GROUPED, chart.getGroupingMode());
+        assertTrue(chart.getBars().isEmpty());
+    }
+
+    @Test
+    void testGroupedBarChartWithColors() {
+        List<String> colors = List.of("#FF0000", "#00FF00", "#0000FF");
+        BarChart chart = BarChart.builder()
+                .id("chart")
+                .addGroup(1.0, List.of(5.0, 8.0, 3.0), colors)
+                .build();
+
+        assertEquals(1, chart.getGroups().size());
+        assertEquals(colors, chart.getGroups().get(0).getColors());
+    }
+
+    @Test
+    void testStackedBarChartCreation() {
+        BarChart chart = BarChart.builder()
+                .id("stacked-chart")
+                .addGroup(1.0, List.of(5.0, 8.0, 3.0))
+                .addGroup(2.0, List.of(7.0, 4.0, 9.0))
+                .groupingMode(BarChart.GroupingMode.STACKED)
+                .build();
+
+        assertEquals(BarChart.GroupingMode.STACKED, chart.getGroupingMode());
+        assertEquals(2, chart.getGroups().size());
+    }
+
+    @Test
+    void testCannotMixBarsAndGroups() {
+        BarChart.Builder builder = BarChart.builder()
+                .id("chart")
+                .addBar(1.0, 5.0)
+                .addGroup(2.0, List.of(3.0, 4.0));
+
+        assertThrows(IllegalStateException.class, builder::build);
+    }
+
+    @Test
+    void testGroupingModeValidation() {
+        BarChart.Builder builder = BarChart.builder().id("chart").addBar(1.0, 5.0);
+        assertThrows(NullPointerException.class, () -> builder.groupingMode(null));
+    }
+
+    @Test
+    void testNullGroupRejected() {
+        BarChart.Builder builder = BarChart.builder().id("chart");
+        assertThrows(NullPointerException.class, () -> builder.addGroup(null));
+    }
+
+    @Test
+    void testNullGroupsListRejected() {
+        BarChart.Builder builder = BarChart.builder().id("chart");
+        assertThrows(NullPointerException.class, () -> builder.groups(null));
+    }
+
+    @Test
+    void testGroupImmutability() {
+        BarChart chart = BarChart.builder()
+                .id("chart")
+                .addGroup(1.0, List.of(5.0, 8.0))
+                .build();
+
+        assertThrows(UnsupportedOperationException.class,
+                () -> chart.getGroups().add(new BarChart.BarGroup(2.0, List.of(3.0))));
+    }
+
     private static class TestVisitor implements SceneElementVisitor {
         boolean visitedBarChart = false;
 

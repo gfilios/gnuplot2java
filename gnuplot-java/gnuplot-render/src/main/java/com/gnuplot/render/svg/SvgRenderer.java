@@ -399,35 +399,131 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
     @Override
     public void visitBarChart(BarChart barChart) {
         try {
-            for (BarChart.Bar bar : barChart.getBars()) {
-                double mappedX = mapX(bar.getX());
-                double mappedHeight = Math.abs(mapY(bar.getHeight()) - mapY(0));
-                double mappedY = mapY(Math.max(0, bar.getHeight()));
-
-                // Calculate bar width in screen coordinates
-                double dataBarWidth = barChart.getBarWidth();
-                double screenBarWidth = (viewport != null)
-                    ? (dataBarWidth / viewport.getWidth()) * scene.getWidth()
-                    : dataBarWidth;
-
-                if (barChart.getOrientation() == BarChart.Orientation.VERTICAL) {
-                    // Vertical bars: x is position, height determines bar height
-                    double barX = mappedX - screenBarWidth / 2;
-                    writer.write(String.format(Locale.US,
-                            "  <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" fill=\"%s\"/>\n",
-                            barX, mappedY, screenBarWidth, mappedHeight, bar.getColor()));
-                } else {
-                    // Horizontal bars: x is baseline (0), height determines bar length
-                    double barY = mappedX - screenBarWidth / 2;
-                    double barWidth = Math.abs(mapX(bar.getHeight()) - mapX(0));
-                    double barX = mapX(Math.min(0, bar.getHeight()));
-                    writer.write(String.format(Locale.US,
-                            "  <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" fill=\"%s\"/>\n",
-                            barX, barY, barWidth, screenBarWidth, bar.getColor()));
-                }
+            if (barChart.getGroupingMode() == BarChart.GroupingMode.NONE) {
+                // Render individual bars
+                renderIndividualBars(barChart);
+            } else if (barChart.getGroupingMode() == BarChart.GroupingMode.GROUPED) {
+                // Render grouped bars side-by-side
+                renderGroupedBars(barChart);
+            } else if (barChart.getGroupingMode() == BarChart.GroupingMode.STACKED) {
+                // Render stacked bars
+                renderStackedBars(barChart);
             }
         } catch (IOException e) {
             throw new RuntimeException("Failed to render bar chart", e);
+        }
+    }
+
+    private void renderIndividualBars(BarChart barChart) throws IOException {
+        for (BarChart.Bar bar : barChart.getBars()) {
+            double mappedX = mapX(bar.getX());
+            double mappedHeight = Math.abs(mapY(bar.getHeight()) - mapY(0));
+            double mappedY = mapY(Math.max(0, bar.getHeight()));
+
+            // Calculate bar width in screen coordinates
+            double dataBarWidth = barChart.getBarWidth();
+            double screenBarWidth = (viewport != null)
+                ? (dataBarWidth / viewport.getWidth()) * scene.getWidth()
+                : dataBarWidth;
+
+            if (barChart.getOrientation() == BarChart.Orientation.VERTICAL) {
+                // Vertical bars: x is position, height determines bar height
+                double barX = mappedX - screenBarWidth / 2;
+                writer.write(String.format(Locale.US,
+                        "  <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" fill=\"%s\"/>\n",
+                        barX, mappedY, screenBarWidth, mappedHeight, bar.getColor()));
+            } else {
+                // Horizontal bars: x is baseline (0), height determines bar length
+                double barY = mappedX - screenBarWidth / 2;
+                double barWidth = Math.abs(mapX(bar.getHeight()) - mapX(0));
+                double barX = mapX(Math.min(0, bar.getHeight()));
+                writer.write(String.format(Locale.US,
+                        "  <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" fill=\"%s\"/>\n",
+                        barX, barY, barWidth, screenBarWidth, bar.getColor()));
+            }
+        }
+    }
+
+    private void renderGroupedBars(BarChart barChart) throws IOException {
+        String[] defaultColors = {"#4A90E2", "#50C878", "#FFD700", "#FF6B6B", "#9C27B0", "#FF9800", "#00BCD4"};
+
+        for (BarChart.BarGroup group : barChart.getGroups()) {
+            int barCount = group.getBarCount();
+            double groupX = mapX(group.getX());
+
+            // Calculate total width for the group
+            double dataBarWidth = barChart.getBarWidth();
+            double totalGroupWidth = (viewport != null)
+                ? (dataBarWidth / viewport.getWidth()) * scene.getWidth()
+                : dataBarWidth;
+
+            // Calculate individual bar width and spacing
+            double individualBarWidth = totalGroupWidth / barCount;
+            double startX = groupX - totalGroupWidth / 2;
+
+            for (int i = 0; i < barCount; i++) {
+                double value = group.getValues().get(i);
+                String color = (group.getColors() != null && i < group.getColors().size())
+                    ? group.getColors().get(i)
+                    : defaultColors[i % defaultColors.length];
+
+                double mappedHeight = Math.abs(mapY(value) - mapY(0));
+                double mappedY = mapY(Math.max(0, value));
+
+                if (barChart.getOrientation() == BarChart.Orientation.VERTICAL) {
+                    double barX = startX + i * individualBarWidth;
+                    writer.write(String.format(Locale.US,
+                            "  <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" fill=\"%s\"/>\n",
+                            barX, mappedY, individualBarWidth, mappedHeight, color));
+                } else {
+                    double barY = startX + i * individualBarWidth;
+                    double barWidth = Math.abs(mapX(value) - mapX(0));
+                    double barX = mapX(Math.min(0, value));
+                    writer.write(String.format(Locale.US,
+                            "  <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" fill=\"%s\"/>\n",
+                            barX, barY, barWidth, individualBarWidth, color));
+                }
+            }
+        }
+    }
+
+    private void renderStackedBars(BarChart barChart) throws IOException {
+        String[] defaultColors = {"#4A90E2", "#50C878", "#FFD700", "#FF6B6B", "#9C27B0", "#FF9800", "#00BCD4"};
+
+        for (BarChart.BarGroup group : barChart.getGroups()) {
+            double groupX = mapX(group.getX());
+            double dataBarWidth = barChart.getBarWidth();
+            double screenBarWidth = (viewport != null)
+                ? (dataBarWidth / viewport.getWidth()) * scene.getWidth()
+                : dataBarWidth;
+
+            double cumulativeValue = 0;
+            for (int i = 0; i < group.getBarCount(); i++) {
+                double value = group.getValues().get(i);
+                String color = (group.getColors() != null && i < group.getColors().size())
+                    ? group.getColors().get(i)
+                    : defaultColors[i % defaultColors.length];
+
+                if (barChart.getOrientation() == BarChart.Orientation.VERTICAL) {
+                    double barHeight = Math.abs(mapY(cumulativeValue + value) - mapY(cumulativeValue));
+                    double barY = mapY(cumulativeValue + value);
+                    double barX = groupX - screenBarWidth / 2;
+
+                    writer.write(String.format(Locale.US,
+                            "  <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" fill=\"%s\"/>\n",
+                            barX, barY, screenBarWidth, barHeight, color));
+                } else {
+                    double barWidth = Math.abs(mapX(cumulativeValue + value) - mapX(cumulativeValue));
+                    double barX = mapX(cumulativeValue);
+                    double barY = groupX - screenBarWidth / 2;
+
+                    writer.write(String.format(Locale.US,
+                            "  <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\" fill=\"%s\"/>\n",
+                            barX, barY, barWidth, screenBarWidth, color));
+                }
+
+                cumulativeValue += value;
+            }
         }
     }
 
