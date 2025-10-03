@@ -143,23 +143,24 @@ String function support requires similar changes for String type support. Both a
 ---
 
 ### Phase 3: Rendering Engine (Weeks 33-48)
-**Status**: 🟡 IN PROGRESS - 31%
+**Status**: 🟡 IN PROGRESS - 34%
 
-**Current Work**: Story 3.2.1 (Line Plot Renderer) - polyline rendering with StrokeStyle
+**Current Work**: Ready to start Story 3.2.2 (Scatter Plot Renderer)
 
-**Completed Stories**: 4/14 P0 stories (29%)
+**Completed Stories**: 5/14 P0 stories (36%)
 - ✅ Story 3.1.1: Rendering Pipeline Architecture (21/21 SP - COMPLETE)
 - ✅ Story 3.1.2: Axis Rendering System (36/36 SP - COMPLETE)
 - ✅ Story 3.1.3: Color Palette System (13/13 SP - COMPLETE)
 - ✅ Story 3.1.4: Text Rendering and Fonts (18/21 SP - MVP COMPLETE)
+- ✅ Story 3.2.1: Line Plot Renderer (13/13 SP - COMPLETE)
 
-**Story Points**: 88 completed / 300 total (29%)
+**Story Points**: 101 completed / 300 total (34%)
 
 **Latest Commits**:
-- `pending` - feat: Complete polyline rendering with StrokeStyle (Story 3.2.1 - 8/13 SP, 287 tests)
+- `pending` - feat: Implement viewport clipping (Story 3.2.1 - COMPLETE, 290 tests)
+- `cdb107d` - feat: Complete polyline rendering with StrokeStyle (Story 3.2.1 - 8/13 SP, 287 tests)
 - `f0d2be2` - feat: Implement line styles (Story 3.2.1 - partial, 22 tests)
 - `cc67ff0` - feat: Implement text rendering and fonts (Story 3.1.4 - MVP complete)
-- `b1cc00b` - feat: Implement color palette system (Story 3.1.3)
 
 **Phase 3 Progress**:
 - **Epic 3.1 (Rendering Infrastructure) - MVP Complete** ✅
@@ -1607,24 +1608,36 @@ String function support requires similar changes for String type support. Both a
 **So that** I can visualize continuous data
 
 **Acceptance Criteria**:
-- [ ] Draw polylines
+- [x] Draw polylines - ✅ DONE
 - [x] Line styles (solid, dashed, dotted) - ✅ DONE
 - [x] Line width control - ✅ DONE
 - [x] Color support - ✅ DONE
-- [ ] Clipping to plot area
+- [x] Clipping to plot area - ✅ DONE
 
 **Tasks**:
-- [ ] Task 3.2.1.1: Implement line drawing - 5 SP
+- [x] Task 3.2.1.1: Implement line drawing - 5 SP - ✅ DONE
+  - ✅ Added lineWidth field to LinePlot
+  - ✅ Added Color.fromHexString() for hex color parsing
+  - ✅ Updated SvgRenderer.visitLinePlot() to use StrokeStyle
+  - ✅ Polylines now render with proper stroke attributes
+  - ✅ Created LineStyleDemo.java generating line-styles-demo.svg
+  - ✅ 2 additional tests for Color.fromHexString() (287 total tests passing)
 - [x] Task 3.2.1.2: Add line styles - 3 SP - ✅ DONE
   - ✅ Created LineStyle enum (7 styles: SOLID, DASHED, DOTTED, DASH_DOT, DASH_DOT_DOT, LONG_DASH, SHORT_DASH)
   - ✅ Created StrokeStyle record (width, color, lineStyle)
   - ✅ Added LinePlot.LineStyle.toStyleLineStyle() conversion method
   - ✅ Enhanced SvgRenderer with Color and StrokeStyle imports
   - ✅ 22 tests passing (8 LineStyleTest + 14 StrokeStyleTest)
-- [ ] Task 3.2.1.3: Implement clipping - 5 SP
+- [x] Task 3.2.1.3: Implement clipping - 5 SP - ✅ DONE
+  - ✅ Added SVG clipPath definition in header when viewport is set
+  - ✅ Applied clip-path="url(#plotClip)" attribute to all polylines
+  - ✅ Fixed viewport handling (don't use DEFAULT when null)
+  - ✅ Created ClippingDemo.java with 5 test cases
+  - ✅ 3 new unit tests: testClipPathDefinedWithViewport, testNoClipPathWithoutViewport, testClippingAppliedToAllPolylines
+  - ✅ 290 tests passing
 - [ ] Task 3.2.1.4: Visual regression tests - 5 SP
 
-**Story Points**: 13 (3/13 SP completed - 23%)
+**Story Points**: 13 (13/13 SP completed - 100%)
 
 ---
 

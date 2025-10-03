@@ -330,4 +330,109 @@ class SvgRendererTest {
         assertTrue(svg.contains("&amp;"));
         assertTrue(svg.contains("&quot;Data&quot;"));
     }
+
+    @Test
+    void testClipPathDefinedWithViewport() throws Exception {
+        Viewport viewport = Viewport.builder()
+                .xRange(0.0, 10.0)
+                .yRange(0.0, 10.0)
+                .build();
+
+        LinePlot linePlot = LinePlot.builder()
+                .id("line1")
+                .lineStyle(LinePlot.LineStyle.SOLID)
+                .lineWidth(1.0)
+                .color("#FF0000")
+                .addPoint(0, 0)
+                .addPoint(10, 10)
+                .build();
+
+        Scene scene = Scene.builder()
+                .dimensions(800, 600)
+                .viewport(viewport)
+                .addElement(linePlot)
+                .build();
+
+        SvgRenderer renderer = new SvgRenderer();
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+
+        renderer.render(scene, output);
+
+        String svg = output.toString(StandardCharsets.UTF_8);
+        // Should define clipPath
+        assertTrue(svg.contains("<clipPath id=\"plotClip\">"));
+        assertTrue(svg.contains("</clipPath>"));
+        // Polyline should reference the clip path
+        assertTrue(svg.contains("clip-path=\"url(#plotClip)\""));
+    }
+
+    @Test
+    void testNoClipPathWithoutViewport() throws Exception {
+        LinePlot linePlot = LinePlot.builder()
+                .id("line1")
+                .lineStyle(LinePlot.LineStyle.SOLID)
+                .lineWidth(1.0)
+                .color("#FF0000")
+                .addPoint(0, 0)
+                .addPoint(10, 10)
+                .build();
+
+        Scene scene = Scene.builder()
+                .dimensions(800, 600)
+                .addElement(linePlot)
+                .build();
+
+        SvgRenderer renderer = new SvgRenderer();
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+
+        renderer.render(scene, output);
+
+        String svg = output.toString(StandardCharsets.UTF_8);
+        // Should NOT define clipPath without viewport
+        assertFalse(svg.contains("<clipPath"));
+        assertFalse(svg.contains("clip-path=\"url(#plotClip)\""));
+    }
+
+    @Test
+    void testClippingAppliedToAllPolylines() throws Exception {
+        Viewport viewport = Viewport.builder()
+                .xRange(0.0, 10.0)
+                .yRange(0.0, 10.0)
+                .build();
+
+        LinePlot line1 = LinePlot.builder()
+                .id("line1")
+                .lineStyle(LinePlot.LineStyle.SOLID)
+                .lineWidth(1.0)
+                .color("#FF0000")
+                .addPoint(0, 0)
+                .addPoint(10, 10)
+                .build();
+
+        LinePlot line2 = LinePlot.builder()
+                .id("line2")
+                .lineStyle(LinePlot.LineStyle.DASHED)
+                .lineWidth(2.0)
+                .color("#00FF00")
+                .addPoint(0, 10)
+                .addPoint(10, 0)
+                .build();
+
+        Scene scene = Scene.builder()
+                .dimensions(800, 600)
+                .viewport(viewport)
+                .addElement(line1)
+                .addElement(line2)
+                .build();
+
+        SvgRenderer renderer = new SvgRenderer();
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+
+        renderer.render(scene, output);
+
+        String svg = output.toString(StandardCharsets.UTF_8);
+        // Count occurrences of clip-path attribute
+        int clipPathCount = svg.split("clip-path=\"url\\(#plotClip\\)\"").length - 1;
+        assertEquals(2, clipPathCount, "Both polylines should have clip-path attribute");
+    }
 }

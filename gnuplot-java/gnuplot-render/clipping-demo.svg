@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+  <defs>
+    <clipPath id="plotClip">
+      <rect x="0" y="0" width="800" height="600"/>
+    </clipPath>
+  </defs>
+  <rect width="800" height="600" fill="#FFFFFF"/>
+  <text x="400" y="21" font-size="16" text-anchor="middle">Viewport Clipping Demonstration</text>
+  <polyline points="-400.00 300.00 400.00 300.00 1200.00 300.00" fill="none" stroke="#FF0000" stroke-width="3.0" stroke-linecap="round" stroke-linejoin="round" clip-path="url(#plotClip)"/>
+  <polyline points="-160.00 720.00 960.00 -120.00" fill="none" stroke="#00FF00" stroke-width="2.0" stroke-dasharray="8,4" stroke-linecap="round" stroke-linejoin="round" clip-path="url(#plotClip)"/>
+  <polyline points="1200.00 -300.00 1600.00 -600.00" fill="none" stroke="#0000FF" stroke-width="2.0" stroke-dasharray="2,2" stroke-linecap="round" stroke-linejoin="round" clip-path="url(#plotClip)"/>
+  <polyline points="160.00 480.00 640.00 120.00" fill="none" stroke="#FF00FF" stroke-width="2.0" stroke-linecap="round" stroke-linejoin="round" clip-path="url(#plotClip)"/>
+  <polyline points="-160.00 463.67 -144.00 475.29 -128.00 479.92 -112.00 477.38 -96.00 467.77 -80.00 451.46 -64.00 429.12 -48.00 401.64 -32.00 370.10 -16.00 335.76 -0.00 300.00 16.00 264.24 32.00 229.90 48.00 198.36 64.00 170.88 80.00 148.54 96.00 132.23 112.00 122.62 128.00 120.08 144.00 124.71 160.00 136.33 176.00 154.47 192.00 178.42 208.00 207.21 224.00 239.70 240.00 274.60 256.00 310.51 272.00 346.00 288.00 379.65 304.00 410.13 320.00 436.22 336.00 456.88 352.00 471.29 368.00 478.86 384.00 479.31 400.00 472.61 416.00 459.02 432.00 439.10 448.00 413.63 464.00 383.63 480.00 350.29 496.00 314.96 512.00 279.02 528.00 243.92 544.00 211.06 560.00 181.74 576.00 157.14 592.00 138.23 608.00 125.77 624.00 120.26 640.00 121.92 656.00 130.67 672.00 146.17 688.00 167.81 704.00 194.71 720.00 225.82 736.00 259.88 752.00 295.54 768.00 331.38 784.00 365.97 800.00 397.92 816.00 425.98 832.00 449.01 848.00 466.10 864.00 476.57 880.00 480.00 896.00 476.25 912.00 465.48 928.00 448.11 944.00 424.83 960.00 396.58" fill="none" stroke="#FFA500" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" clip-path="url(#plotClip)"/>
+</svg>

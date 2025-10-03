@@ -29,7 +29,7 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
     @Override
     public void render(Scene scene, OutputStream output) throws IOException, RenderException {
         this.scene = scene;
-        this.viewport = scene.getViewport() != null ? scene.getViewport() : Viewport.DEFAULT;
+        this.viewport = scene.getViewport();
         this.writer = new OutputStreamWriter(output, StandardCharsets.UTF_8);
 
         try {
@@ -75,6 +75,17 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
                 "width=\"%d\" height=\"%d\" viewBox=\"0 0 %d %d\">\n",
                 scene.getWidth(), scene.getHeight(),
                 scene.getWidth(), scene.getHeight()));
+
+        // Define clip path for plot area (if viewport is set)
+        if (viewport != null) {
+            writer.write("  <defs>\n");
+            writer.write(String.format(Locale.US,
+                    "    <clipPath id=\"plotClip\">\n" +
+                    "      <rect x=\"0\" y=\"0\" width=\"%d\" height=\"%d\"/>\n" +
+                    "    </clipPath>\n",
+                    scene.getWidth(), scene.getHeight()));
+            writer.write("  </defs>\n");
+        }
 
         // Background
         String bgColor = scene.getHints().get(RenderingHints.Keys.BACKGROUND_COLOR)
@@ -125,10 +136,11 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
             com.gnuplot.render.style.LineStyle styleLineStyle = linePlot.getLineStyle().toStyleLineStyle();
             StrokeStyle stroke = new StrokeStyle(linePlot.getLineWidth(), color, styleLineStyle);
 
-            // Write polyline with stroke attributes
+            // Write polyline with stroke attributes and clipping
+            String clipAttr = (viewport != null) ? " clip-path=\"url(#plotClip)\"" : "";
             writer.write(String.format(Locale.US,
-                    "  <polyline points=\"%s\" fill=\"none\" %s/>\n",
-                    points, stroke.toSvgAttributes()));
+                    "  <polyline points=\"%s\" fill=\"none\" %s%s/>\n",
+                    points, stroke.toSvgAttributes(), clipAttr));
 
         } catch (IOException e) {
             throw new RuntimeException("Failed to render line plot", e);
