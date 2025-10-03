@@ -10,7 +10,12 @@ import com.gnuplot.render.Viewport;
 import com.gnuplot.render.elements.LinePlot;
 import com.gnuplot.render.svg.SvgRenderer;
 
+import java.io.BufferedReader;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -77,16 +82,21 @@ public class GnuplotScriptExecutor implements CommandVisitor {
 
     @Override
     public void visitPlotCommand(PlotCommand command) {
-        // Clear previous plots
-        plots.clear();
+        // Don't clear - accumulate all plots in one scene
+        // plots.clear();
 
         for (PlotCommand.PlotSpec spec : command.getPlotSpecs()) {
             String expression = spec.getExpression();
             String plotTitle = spec.getTitle();
             String style = spec.getStyle();
 
-            // Generate points by evaluating the expression
-            LinePlot.Point2D[] points = generatePoints(expression);
+            // Generate points from data file or expression
+            LinePlot.Point2D[] points;
+            if (isDataFile(expression)) {
+                points = readDataFile(expression);
+            } else {
+                points = generatePoints(expression);
+            }
 
             if (points.length > 0) {
                 LinePlot.Builder plotBuilder = LinePlot.builder()
@@ -101,7 +111,7 @@ public class GnuplotScriptExecutor implements CommandVisitor {
             }
         }
 
-        // Render the scene
+        // Render after each plot command
         renderCurrentScene();
     }
 
@@ -216,6 +226,67 @@ public class GnuplotScriptExecutor implements CommandVisitor {
         } catch (Exception e) {
             System.err.println("Failed to render: " + e.getMessage());
         }
+    }
+
+    /**
+     * Check if expression is a data file path.
+     */
+    private boolean isDataFile(String expression) {
+        // Data files are quoted strings (single or double quotes)
+        return (expression.startsWith("'") && expression.endsWith("'")) ||
+               (expression.startsWith("\"") && expression.endsWith("\""));
+    }
+
+    /**
+     * Read data file and return points.
+     */
+    private LinePlot.Point2D[] readDataFile(String filePath) {
+        // Remove quotes from file path
+        String cleanPath = filePath.substring(1, filePath.length() - 1);
+
+        // Try multiple path resolution strategies
+        Path dataFile = Paths.get(cleanPath);
+
+        // If not found, try relative to current directory
+        if (!Files.exists(dataFile)) {
+            dataFile = Paths.get("gnuplot-c/demo").resolve(cleanPath);
+        }
+
+        // If not found, try from project root (go up from gnuplot-cli to gnuplot-java to gnuplot-master)
+        if (!Files.exists(dataFile)) {
+            Path currentDir = Paths.get(System.getProperty("user.dir"));
+            dataFile = currentDir.getParent().getParent().resolve("gnuplot-c/demo").resolve(cleanPath);
+        }
+
+        List<LinePlot.Point2D> pointsList = new ArrayList<>();
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(dataFile.toFile()))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                line = line.trim();
+                if (line.isEmpty() || line.startsWith("#")) {
+                    continue; // Skip empty lines and comments
+                }
+
+                // Split by whitespace
+                String[] parts = line.split("\\s+");
+                if (parts.length >= 2) {
+                    try {
+                        double x = Double.parseDouble(parts[0]);
+                        double y = Double.parseDouble(parts[1]);
+                        pointsList.add(new LinePlot.Point2D(x, y));
+                    } catch (NumberFormatException e) {
+                        // Skip malformed lines
+                        System.err.println("Skipping malformed line: " + line);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to read data file " + cleanPath + ": " + e.getMessage());
+            return new LinePlot.Point2D[0];
+        }
+
+        return pointsList.toArray(new LinePlot.Point2D[0]);
     }
 
     /**
