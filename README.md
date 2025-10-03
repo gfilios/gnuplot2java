@@ -246,7 +246,7 @@ mvn test -Dtest=ExpressionParserTest#shouldParseAddition
 | Phase 0: Setup | ✅ Complete | 100% |
 | Phase 1: Core Math Engine | 🟢 Complete (MVP) | 66% |
 | Phase 2: Data Processing | 🔵 Planned | 0% |
-| Phase 3: Rendering Engine | 🟡 In Progress | 42% (359 tests passing) |
+| Phase 3: Rendering Engine | 🟡 In Progress | 43% (375 tests passing) |
 | Phase 4: Backend Server | 🔵 Planned | 0% |
 | Phase 5: Web Frontend | 🔵 Planned | 0% |
 
@@ -313,8 +313,15 @@ mvn test -Dtest=ExpressionParserTest#shouldParseAddition
   - Per-bar and per-series colors
   - Automatic width calculation for groups
   - SVG rect-based rendering with error bar lines
+- ⏳ **Story 3.5.1**: Multi-Plot Layouts (15/21 SP - IN PROGRESS)
+  - Grid layout with configurable rows/columns
+  - Custom positioning with fractional coordinates (0.0-1.0)
+  - MultiPlotLayout with Builder pattern
+  - SVG transform and clipPath for subplot isolation
+  - 16 comprehensive unit tests + 4 demo files
+  - Axis sharing deferred to future work
 
-**📊 Test Coverage**: 359 passing tests (932 total)
+**📊 Test Coverage**: 375 passing tests (948 total)
 - Rendering pipeline: 58 tests
 - Axis system: 71 tests
 - Color system: 52 tests
@@ -322,6 +329,7 @@ mvn test -Dtest=ExpressionParserTest#shouldParseAddition
 - Plot renderers: 87 tests (LinePlot: 15, ScatterPlot: 7, BarChart: 45, Styles: 20)
 - Line rendering: 27 tests (LineStyle, StrokeStyle, clipping)
 - Scatter rendering: 24 tests (PointStyle, MarkerStyle, ScatterPlot)
+- Layout system: 16 tests (MultiPlotLayout)
 - Style system: 22 tests
 - Other: 22 tests (Scene, Viewport, RenderingHints, etc.)
 
@@ -330,6 +338,10 @@ mvn test -Dtest=ExpressionParserTest#shouldParseAddition
 - ClippingDemo: 5 viewport clipping scenarios
 - ScatterPlotDemo: 10 marker types with variable sizing
 - TextRenderingDemo: Fonts, styles, sizes, alignment, Unicode
+- MultiPlotDemo: 4 multi-plot layouts (2x2 grid, 3x1 horizontal, 1x3 vertical, custom dashboard)
+- BarChartDemo: 5 bar chart variations (vertical, horizontal, comparison, narrow, wide)
+- GroupedBarChartDemo: 5 grouped/stacked bar chart demos
+- ErrorBarDemo: 5 error bar variations (symmetric, asymmetric, upper/lower only)
 
 **Timeline**: 12-18 months to full MVP
 

@@ -143,9 +143,9 @@ String function support requires similar changes for String type support. Both a
 ---
 
 ### Phase 3: Rendering Engine (Weeks 33-48)
-**Status**: 🟡 IN PROGRESS - 38%
+**Status**: 🟡 IN PROGRESS - 43%
 
-**Current Work**: Story 3.2.3 (Bar Chart Renderer) - COMPLETE ✅
+**Current Work**: Story 3.5.1 (Multi-Plot Layouts) - IN PROGRESS ⏳
 
 **Completed Stories**: 7/14 P0 stories (50%)
 - ✅ Story 3.1.1: Rendering Pipeline Architecture (21/21 SP - COMPLETE)
@@ -156,7 +156,7 @@ String function support requires similar changes for String type support. Both a
 - ✅ Story 3.2.2: Scatter Plot Renderer (13/13 SP - COMPLETE)
 - ✅ Story 3.2.3: Bar Chart Renderer (13/13 SP - COMPLETE)
 
-**Story Points**: 127 completed / 300 total (42%)
+**Story Points**: 130 completed / 300 total (43%)
 
 **Latest Commits**:
 - (pending) - feat: Add error bars to complete Story 3.2.3 (13/13 SP, 359 tests)
@@ -2039,25 +2039,35 @@ String function support requires similar changes for String type support. Both a
 
 ## Epic 3.5: Layout and Composition
 
-### Story 3.5.1: Multi-Plot Layouts 🔴 P0
+### Story 3.5.1: Multi-Plot Layouts 🔴 P0 - IN PROGRESS ⏳
 **As a** user
 **I want** multiple plots in one figure
 **So that** I can create dashboards
 
 **Acceptance Criteria**:
-- [ ] Grid layout
-- [ ] Custom positioning
+- [x] Grid layout
+- [x] Custom positioning
 - [ ] Shared axes
 - [ ] Independent axes
 
 **Tasks**:
-- [ ] Task 3.5.1.1: Design layout system - 5 SP
-- [ ] Task 3.5.1.2: Implement grid layout - 5 SP
-- [ ] Task 3.5.1.3: Implement custom positioning - 5 SP
-- [ ] Task 3.5.1.4: Handle axis sharing - 5 SP
-- [ ] Task 3.5.1.5: Visual tests - 3 SP
+- [x] Task 3.5.1.1: Design layout system - 5 SP (COMPLETE - MultiPlotLayout with Builder pattern)
+- [x] Task 3.5.1.2: Implement grid layout - 5 SP (COMPLETE - Grid with rows/cols)
+- [x] Task 3.5.1.3: Implement custom positioning - 5 SP (COMPLETE - Fractional positioning 0.0-1.0)
+- [ ] Task 3.5.1.4: Handle axis sharing - 5 SP (PENDING - Deferred)
+- [x] Task 3.5.1.5: Visual tests - 3 SP (COMPLETE - 4 demos + 16 unit tests)
 
-**Story Points**: 21
+**Story Points**: 15 / 21 (71% - MVP complete, axis sharing deferred)
+
+**Implementation Details**:
+- Created `MultiPlotLayout` class with `LayoutMode` enum (GRID, CUSTOM)
+- `SubPlot` inner class for scene positioning
+- Builder pattern with validation (no mixing grid/custom)
+- Updated `SvgRenderer` with `render(MultiPlotLayout)` method
+- SVG clipPath and transform for subplot isolation
+- 16 comprehensive unit tests in `MultiPlotLayoutTest`
+- 4 demo files: 2x2 grid, 3x1 horizontal, 1x3 vertical, custom dashboard
+- All tests passing (375 total tests)
 
 ---
 

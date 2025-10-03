@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="500" viewBox="0 0 1600 500">
+  <rect width="1600" height="500" fill="#FFFFFF"/>
+  <text x="800" y="21" font-size="18" text-anchor="middle" font-weight="bold">3x1 Grid Layout - Horizontal Panels</text>
+  <g transform="translate(0,40)" clip-path="url(#clip-0-0)">
+    <clipPath id="clip-0-0">
+      <rect x="0" y="0" width="533" height="460"/>
+    </clipPath>
+    <text x="266" y="15" font-size="12" text-anchor="middle">Sine Wave</text>
+  <polyline points="0.00 230.00 5.33 217.97 10.66 205.98 15.99 194.09 21.32 182.33 26.65 170.77 31.98 159.44 37.31 148.39 42.64 137.66 47.97 127.30 53.30 117.34 58.63 107.83 63.96 98.80 69.29 90.28 74.62 82.32 79.95 74.94 85.28 68.17 90.61 62.04 95.94 56.57 101.27 51.79 106.60 47.71 111.93 44.35 117.26 41.73 122.59 39.84 127.92 38.71 133.25 38.33 138.58 38.71 143.91 39.84 149.24 41.73 154.57 44.35 159.90 47.71 165.23 51.79 170.56 56.57 175.89 62.04 181.22 68.17 186.55 74.94 191.88 82.32 197.21 90.28 202.54 98.80 207.87 107.83 213.20 117.34 218.53 127.30 223.86 137.66 229.19 148.39 234.52 159.44 239.85 170.77 245.18 182.33 250.51 194.09 255.84 205.98 261.17 217.97 266.50 230.00 271.83 242.03 277.16 254.02 282.49 265.91 287.82 277.67 293.15 289.23 298.48 300.56 303.81 311.61 309.14 322.34 314.47 332.70 319.80 342.66 325.13 352.17 330.46 361.20 335.79 369.72 341.12 377.68 346.45 385.06 351.78 391.83 357.11 397.96 362.44 403.43 367.77 408.21 373.10 412.29 378.43 415.65 383.76 418.27 389.09 420.16 394.42 421.29 399.75 421.67 405.08 421.29 410.41 420.16 415.74 418.27 421.07 415.65 426.40 412.29 431.73 408.21 437.06 403.43 442.39 397.96 447.72 391.83 453.05 385.06 458.38 377.68 463.71 369.72 469.04 361.20 474.37 352.17 479.70 342.66 485.03 332.70 490.36 322.34 495.69 311.61 501.02 300.56 506.35 289.23 511.68 277.67 517.01 265.91 522.34 254.02 527.67 242.03" fill="none" stroke="#4A90E2" stroke-width="1.0" stroke-linecap="round" stroke-linejoin="round" clip-path="url(#plotClip)"/>
+  </g>
+  <g transform="translate(533,40)" clip-path="url(#clip-0-1)">
+    <clipPath id="clip-0-1">
+      <rect x="0" y="0" width="533" height="460"/>
+    </clipPath>
+    <text x="266" y="15" font-size="12" text-anchor="middle">Cosine Wave</text>
+  <polyline points="0.00 38.33 5.33 38.71 10.66 39.84 15.99 41.73 21.32 44.35 26.65 47.71 31.98 51.79 37.31 56.57 42.64 62.04 47.97 68.17 53.30 74.94 58.63 82.32 63.96 90.28 69.29 98.80 74.62 107.83 79.95 117.34 85.28 127.30 90.61 137.66 95.94 148.39 101.27 159.44 106.60 170.77 111.93 182.33 117.26 194.09 122.59 205.98 127.92 217.97 133.25 230.00 138.58 242.03 143.91 254.02 149.24 265.91 154.57 277.67 159.90 289.23 165.23 300.56 170.56 311.61 175.89 322.34 181.22 332.70 186.55 342.66 191.88 352.17 197.21 361.20 202.54 369.72 207.87 377.68 213.20 385.06 218.53 391.83 223.86 397.96 229.19 403.43 234.52 408.21 239.85 412.29 245.18 415.65 250.51 418.27 255.84 420.16 261.17 421.29 266.50 421.67 271.83 421.29 277.16 420.16 282.49 418.27 287.82 415.65 293.15 412.29 298.48 408.21 303.81 403.43 309.14 397.96 314.47 391.83 319.80 385.06 325.13 377.68 330.46 369.72 335.79 361.20 341.12 352.17 346.45 342.66 351.78 332.70 357.11 322.34 362.44 311.61 367.77 300.56 373.10 289.23 378.43 277.67 383.76 265.91 389.09 254.02 394.42 242.03 399.75 230.00 405.08 217.97 410.41 205.98 415.74 194.09 421.07 182.33 426.40 170.77 431.73 159.44 437.06 148.39 442.39 137.66 447.72 127.30 453.05 117.34 458.38 107.83 463.71 98.80 469.04 90.28 474.37 82.32 479.70 74.94 485.03 68.17 490.36 62.04 495.69 56.57 501.02 51.79 506.35 47.71 511.68 44.35 517.01 41.73 522.34 39.84 527.67 38.71" fill="none" stroke="#50C878" stroke-width="1.0" stroke-linecap="round" stroke-linejoin="round" clip-path="url(#plotClip)"/>
+  </g>
+  <g transform="translate(1066,40)" clip-path="url(#clip-0-2)">
+    <clipPath id="clip-0-2">
+      <rect x="0" y="0" width="533" height="460"/>
+    </clipPath>
+    <text x="266" y="15" font-size="12" text-anchor="middle">Scatter Plot</text>
+  <circle cx="325.53" cy="169.90" r="8.00" fill="#FF6B6B" clip-path="url(#plotClip)"/>
+  <circle cx="15.76" cy="284.78" r="8.00" fill="#FF6B6B" clip-path="url(#plotClip)"/>
+  <circle cx="203.91" cy="434.42" r="8.00" fill="#FF6B6B" clip-path="url(#plotClip)"/>
+  <circle cx="236.26" cy="34.26" r="8.00" fill="#FF6B6B" clip-path="url(#plotClip)"/>
+  <circle cx="314.19" cy="437.45" r="8.00" fill="#FF6B6B" clip-path="url(#plotClip)"/>
+  <circle cx="326.88" cy="394.62" r="8.00" fill="#FF6B6B" clip-path="url(#plotClip)"/>
+  <circle cx="415.90" cy="102.11" r="8.00" fill="#FF6B6B" clip-path="url(#plotClip)"/>
+  <circle cx="87.21" cy="286.25" r="8.00" fill="#FF6B6B" clip-path="url(#plotClip)"/>
+  <circle cx="303.72" cy="12.84" r="8.00" fill="#FF6B6B" clip-path="url(#plotClip)"/>
+  <circle cx="394.07" cy="190.01" r="8.00" fill="#FF6B6B" clip-path="url(#plotClip)"/>
+  <circle cx="452.40" cy="419.87" r="8.00" fill="#FF6B6B" clip-path="url(#plotClip)"/>
+  <circle cx="449.15" cy="432.09" r="8.00" fill="#FF6B6B" clip-path="url(#plotClip)"/>
+  <circle cx="246.06" cy="175.84" r="8.00" fill="#FF6B6B" clip-path="url(#plotClip)"/>
+  <circle cx="251.57" cy="453.78" r="8.00" fill="#FF6B6B" clip-path="url(#plotClip)"/>
+  <circle cx="1.75" cy="194.14" r="8.00" fill="#FF6B6B" clip-path="url(#plotClip)"/>
+  <circle cx="428.91" cy="327.50" r="8.00" fill="#FF6B6B" clip-path="url(#plotClip)"/>
+  <circle cx="472.11" cy="331.04" r="8.00" fill="#FF6B6B" clip-path="url(#plotClip)"/>
+  <circle cx="230.15" cy="33.64" r="8.00" fill="#FF6B6B" clip-path="url(#plotClip)"/>
+  <circle cx="58.23" cy="152.50" r="8.00" fill="#FF6B6B" clip-path="url(#plotClip)"/>
+  <circle cx="106.22" cy="281.53" r="8.00" fill="#FF6B6B" clip-path="url(#plotClip)"/>
+  <circle cx="125.05" cy="170.34" r="8.00" fill="#FF6B6B" clip-path="url(#plotClip)"/>
+  <circle cx="288.44" cy="122.23" r="8.00" fill="#FF6B6B" clip-path="url(#plotClip)"/>
+  <circle cx="479.33" cy="42.39" r="8.00" fill="#FF6B6B" clip-path="url(#plotClip)"/>
+  <circle cx="159.38" cy="360.81" r="8.00" fill="#FF6B6B" clip-path="url(#plotClip)"/>
+  <circle cx="450.46" cy="246.30" r="8.00" fill="#FF6B6B" clip-path="url(#plotClip)"/>
+  <circle cx="220.84" cy="331.58" r="8.00" fill="#FF6B6B" clip-path="url(#plotClip)"/>
+  <circle cx="443.83" cy="278.00" r="8.00" fill="#FF6B6B" clip-path="url(#plotClip)"/>
+  <circle cx="294.90" cy="370.87" r="8.00" fill="#FF6B6B" clip-path="url(#plotClip)"/>
+  <circle cx="3.54" cy="92.03" r="8.00" fill="#FF6B6B" clip-path="url(#plotClip)"/>
+  <circle cx="360.98" cy="388.77" r="8.00" fill="#FF6B6B" clip-path="url(#plotClip)"/>
+  <circle cx="130.52" cy="313.38" r="8.00" fill="#FF6B6B" clip-path="url(#plotClip)"/>
+  <circle cx="430.61" cy="24.13" r="8.00" fill="#FF6B6B" clip-path="url(#plotClip)"/>
+  <circle cx="413.84" cy="268.33" r="8.00" fill="#FF6B6B" clip-path="url(#plotClip)"/>
+  <circle cx="400.97" cy="4.77" r="8.00" fill="#FF6B6B" clip-path="url(#plotClip)"/>
+  <circle cx="471.54" cy="65.04" r="8.00" fill="#FF6B6B" clip-path="url(#plotClip)"/>
+  <circle cx="187.16" cy="68.97" r="8.00" fill="#FF6B6B" clip-path="url(#plotClip)"/>
+  <circle cx="440.11" cy="343.89" r="8.00" fill="#FF6B6B" clip-path="url(#plotClip)"/>
+  <circle cx="475.95" cy="393.60" r="8.00" fill="#FF6B6B" clip-path="url(#plotClip)"/>
+  <circle cx="99.80" cy="12.32" r="8.00" fill="#FF6B6B" clip-path="url(#plotClip)"/>
+  <circle cx="371.05" cy="439.28" r="8.00" fill="#FF6B6B" clip-path="url(#plotClip)"/>
+  <circle cx="420.28" cy="339.03" r="8.00" fill="#FF6B6B" clip-path="url(#plotClip)"/>
+  <circle cx="268.66" cy="223.49" r="8.00" fill="#FF6B6B" clip-path="url(#plotClip)"/>
+  <circle cx="468.82" cy="88.59" r="8.00" fill="#FF6B6B" clip-path="url(#plotClip)"/>
+  <circle cx="138.45" cy="109.06" r="8.00" fill="#FF6B6B" clip-path="url(#plotClip)"/>
+  <circle cx="445.72" cy="168.94" r="8.00" fill="#FF6B6B" clip-path="url(#plotClip)"/>
+  <circle cx="17.00" cy="287.15" r="8.00" fill="#FF6B6B" clip-path="url(#plotClip)"/>
+  <circle cx="408.93" cy="121.57" r="8.00" fill="#FF6B6B" clip-path="url(#plotClip)"/>
+  <circle cx="185.61" cy="1.40" r="8.00" fill="#FF6B6B" clip-path="url(#plotClip)"/>
+  <circle cx="240.15" cy="246.91" r="8.00" fill="#FF6B6B" clip-path="url(#plotClip)"/>
+  <circle cx="511.81" cy="243.15" r="8.00" fill="#FF6B6B" clip-path="url(#plotClip)"/>
+  </g>
+</svg>

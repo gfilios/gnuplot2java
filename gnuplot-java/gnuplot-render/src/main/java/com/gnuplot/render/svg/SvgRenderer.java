@@ -46,6 +46,134 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
         }
     }
 
+    /**
+     * Render a multi-plot layout to SVG.
+     */
+    public void render(MultiPlotLayout layout, OutputStream output) throws IOException, RenderException {
+        this.writer = new OutputStreamWriter(output, StandardCharsets.UTF_8);
+
+        try {
+            // Write SVG header for the entire layout
+            writer.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+            writer.write(String.format(Locale.US,
+                    "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"%d\" height=\"%d\" viewBox=\"0 0 %d %d\">\n",
+                    layout.getWidth(), layout.getHeight(), layout.getWidth(), layout.getHeight()));
+
+            // Background
+            writer.write(String.format(Locale.US,
+                    "  <rect width=\"%d\" height=\"%d\" fill=\"#FFFFFF\"/>\n",
+                    layout.getWidth(), layout.getHeight()));
+
+            // Title if present
+            if (layout.getTitle() != null && !layout.getTitle().isEmpty()) {
+                writer.write(String.format(Locale.US,
+                        "  <text x=\"%d\" y=\"21\" font-size=\"18\" text-anchor=\"middle\" font-weight=\"bold\">%s</text>\n",
+                        layout.getWidth() / 2, escapeXml(layout.getTitle())));
+            }
+
+            // Render each subplot
+            if (layout.getMode() == MultiPlotLayout.LayoutMode.GRID) {
+                renderGridLayout(layout);
+            } else {
+                renderCustomLayout(layout);
+            }
+
+            // Close SVG
+            writer.write("</svg>\n");
+            writer.flush();
+        } catch (IOException e) {
+            throw new RenderException("Failed to render multi-plot layout", e);
+        }
+    }
+
+    private void renderGridLayout(MultiPlotLayout layout) throws IOException, RenderException {
+        int rows = layout.getGridRows();
+        int cols = layout.getGridCols();
+        int plotWidth = layout.getWidth() / cols;
+        int plotHeight = (layout.getHeight() - (layout.getTitle() != null ? 40 : 20)) / rows;
+
+        for (MultiPlotLayout.SubPlot subplot : layout.getSubPlots()) {
+            int x = subplot.getCol() * plotWidth;
+            int y = (layout.getTitle() != null ? 40 : 20) + subplot.getRow() * plotHeight;
+
+            // Create a group for this subplot with clipping
+            writer.write(String.format(Locale.US,
+                    "  <g transform=\"translate(%d,%d)\" clip-path=\"url(#clip-%d-%d)\">\n",
+                    x, y, subplot.getRow(), subplot.getCol()));
+            writer.write(String.format(Locale.US,
+                    "    <clipPath id=\"clip-%d-%d\">\n" +
+                    "      <rect x=\"0\" y=\"0\" width=\"%d\" height=\"%d\"/>\n" +
+                    "    </clipPath>\n",
+                    subplot.getRow(), subplot.getCol(), plotWidth, plotHeight));
+
+            // Render the scene in this subplot
+            renderSceneInGroup(subplot.getScene(), plotWidth, plotHeight);
+
+            writer.write("  </g>\n");
+        }
+    }
+
+    private void renderCustomLayout(MultiPlotLayout layout) throws IOException, RenderException {
+        int index = 0;
+        for (MultiPlotLayout.SubPlot subplot : layout.getSubPlots()) {
+            int x = (int) (subplot.getX() * layout.getWidth());
+            int y = (int) (subplot.getY() * layout.getHeight());
+            int width = (int) (subplot.getWidthFraction() * layout.getWidth());
+            int height = (int) (subplot.getHeightFraction() * layout.getHeight());
+
+            // Create a group for this subplot with clipping
+            writer.write(String.format(Locale.US,
+                    "  <g transform=\"translate(%d,%d)\" clip-path=\"url(#clip-custom-%d)\">\n",
+                    x, y, index));
+            writer.write(String.format(Locale.US,
+                    "    <clipPath id=\"clip-custom-%d\">\n" +
+                    "      <rect x=\"0\" y=\"0\" width=\"%d\" height=\"%d\"/>\n" +
+                    "    </clipPath>\n",
+                    index, width, height));
+
+            // Render the scene in this subplot
+            renderSceneInGroup(subplot.getScene(), width, height);
+
+            writer.write("  </g>\n");
+            index++;
+        }
+    }
+
+    private void renderSceneInGroup(Scene scene, int width, int height) throws IOException, RenderException {
+        // Temporarily save state
+        Scene oldScene = this.scene;
+        Viewport oldViewport = this.viewport;
+
+        // Set new scene context
+        this.scene = scene;
+        this.viewport = scene.getViewport();
+
+        // Override scene dimensions for this subplot
+        Scene adjustedScene = Scene.builder()
+                .title(scene.getTitle())
+                .dimensions(width, height)
+                .viewport(scene.getViewport())
+                .elements(scene.getElements())
+                .build();
+        this.scene = adjustedScene;
+
+        // Write title if present
+        if (scene.getTitle() != null && !scene.getTitle().isEmpty()) {
+            writer.write(String.format(Locale.US,
+                    "    <text x=\"%d\" y=\"15\" font-size=\"12\" text-anchor=\"middle\">%s</text>\n",
+                    width / 2, escapeXml(scene.getTitle())));
+        }
+
+        // Render elements
+        for (SceneElement element : scene.getElements()) {
+            element.accept(this);
+        }
+
+        // Restore state
+        this.scene = oldScene;
+        this.viewport = oldViewport;
+    }
+
     @Override
     public String getFormatName() {
         return "SVG";
