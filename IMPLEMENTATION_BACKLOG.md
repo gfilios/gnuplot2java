@@ -157,7 +157,7 @@ String function support requires similar changes for String type support. Both a
 **Story Points**: 101 completed / 300 total (34%)
 
 **Latest Commits**:
-- `pending` - feat: Implement viewport clipping (Story 3.2.1 - COMPLETE, 290 tests)
+- `0b861a3` - feat: Implement viewport clipping (Story 3.2.1 - COMPLETE, 290 tests)
 - `cdb107d` - feat: Complete polyline rendering with StrokeStyle (Story 3.2.1 - 8/13 SP, 287 tests)
 - `f0d2be2` - feat: Implement line styles (Story 3.2.1 - partial, 22 tests)
 - `cc67ff0` - feat: Implement text rendering and fonts (Story 3.1.4 - MVP complete)
@@ -168,7 +168,9 @@ String function support requires similar changes for String type support. Both a
   - ✅ Story 3.1.2 COMPLETE (71 tests: 43 TickGenerator + 28 Axis)
   - ✅ Story 3.1.3 COMPLETE (52 tests: Color, ColorFormula, ColorPalette, NamedPalettes)
   - ✅ Story 3.1.4 MVP COMPLETE (38 tests: Font, TextMetrics, TextAlignment, TextRenderer)
-- **Total Tests**: 775 passing (335 Phase 1 + 238 Phase 2 + 202 Phase 3)
+- **Epic 3.2 (2D Plot Rendering) - In Progress** 🟡
+  - ✅ Story 3.2.1 COMPLETE (27 tests: LineStyle, StrokeStyle, SvgRenderer clipping)
+- **Total Tests**: 290 passing in gnuplot-render module
 
 **Story 3.1.2 Completion (TickGenerator + Axis Integration)**:
 - ✅ Gnuplot's quantize_normal_tics algorithm implementation
