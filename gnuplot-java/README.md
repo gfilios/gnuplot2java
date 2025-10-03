@@ -3,9 +3,12 @@
 ![Java Version](https://img.shields.io/badge/Java-21-blue.svg)
 ![Maven](https://img.shields.io/badge/Maven-3.9+-blue.svg)
 ![Tests](https://img.shields.io/badge/Tests-989%20passing-green.svg)
+![Demo Pass Rate](https://img.shields.io/badge/Demo%20Pass%20Rate-4%2F100+-yellow.svg)
 ![License](https://img.shields.io/badge/License-Gnuplot-green.svg)
 
 Modern, modular Java implementation of Gnuplot with complete script compatibility.
+
+**Development Approach**: Test-driven development using official Gnuplot demo suite (`gnuplot-c/demo/*.dem`) as validation. See [TEST_DRIVEN_PLAN.md](../TEST_DRIVEN_PLAN.md).
 
 ## Modules
 
@@ -258,6 +261,13 @@ set ylabel "Y"
 set samples 100
 plot sin(x), cos(x)
 ```
+
+✅ **Demo Pass Rate**: 4/100+ demos passing
+- scatter.dem ✅ (uses scatter renderer)
+- errorbars.dem ✅ (uses error bar support)
+- simple.dem ❌ (missing: data files, impulses, set key)
+- controls.dem ❌ (missing: if/else, for/while)
+- Most other demos ❌ (incremental implementation in progress)
 
 ✅ **38+ Mathematical Functions**:
 - Trigonometric (sin, cos, tan, asin, acos, atan, atan2, sinh, cosh, tanh)

@@ -52,8 +52,9 @@ This project is a complete modernization of [Gnuplot](http://gnuplot.sourceforge
 - ✅ **Mathematical Engine**: 100+ built-in functions with Apache Commons Math
 - ✅ **Backward Compatibility**: Optional Gnuplot script compatibility layer
 
-**Approach**: Progressive rewrite using C code as reference, not direct conversion.
+**Approach**: Test-Driven Development using official Gnuplot demo suite as test oracle.
 
+📖 **See [TEST_DRIVEN_PLAN.md](TEST_DRIVEN_PLAN.md) for TDD methodology**
 📖 **See [MODERNIZATION_STRATEGY.md](MODERNIZATION_STRATEGY.md) for detailed rationale**
 
 ---
@@ -266,7 +267,15 @@ mvn test -Dtest=ExpressionParserTest#shouldParseAddition
 
 ## 📈 Project Status
 
-### Current Phase: **Phase 3 - Rendering Engine** 🟡 In Progress | **Phase 7 - Epic 7.1** ✅ Complete
+### Current Phase: **Test-Driven Development** 🟡 In Progress | **Phase 7 - Epic 7.1** ✅ Complete
+
+**NEW APPROACH**: Shifted to test-driven development using official Gnuplot demo suite (`gnuplot-c/demo/*.dem`) as test oracle. See [TEST_DRIVEN_PLAN.md](TEST_DRIVEN_PLAN.md) for methodology.
+
+**Current Demo Pass Rate**: 4/100+ (4%)
+- ✅ scatter.dem - Uses existing scatter renderer
+- ✅ errorbars.dem - Uses existing error bar support
+- ❌ simple.dem - Missing data files, impulses, set key
+- ❌ Most other demos - Requires incremental feature implementation
 
 | Phase | Status | Progress | Tests |
 |-------|--------|----------|-------|
@@ -277,6 +286,7 @@ mvn test -Dtest=ExpressionParserTest#shouldParseAddition
 | Phase 4: Backend Server | 🔵 Planned | 0% | - |
 | Phase 5: Web Frontend | 🔵 Planned | 0% | - |
 | **Phase 7: Gnuplot Compatibility** | **✅ Epic 7.1 Complete** | **68% (55/80 SP)** | **31** |
+| **Phase TDD: Demo Suite Validation** | **🟡 In Progress** | **4% (4/100+)** | **-** |
 
 **Total Tests**: 989 passing (583 core + 375 render + 31 cli)
 

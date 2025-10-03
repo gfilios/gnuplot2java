@@ -1,8 +1,10 @@
 # Gnuplot Modernization Strategy: Rewrite vs Convert
 
-## Executive Decision: **HYBRID APPROACH - Progressive Rewrite with Reference Implementation**
+## Executive Decision: **HYBRID APPROACH - Test-Driven Progressive Rewrite**
 
-After analyzing the codebase (134K lines of C across 65+ files, complex mathematical operations, 60+ terminal drivers), I recommend a **progressive rewrite** rather than direct code conversion.
+**UPDATE 2025-10-03**: Shifted to test-driven development using official Gnuplot demo suite (`gnuplot-c/demo/*.dem`) as test oracle and validation framework. See [TEST_DRIVEN_PLAN.md](TEST_DRIVEN_PLAN.md) for details.
+
+After analyzing the codebase (134K lines of C across 65+ files, complex mathematical operations, 60+ terminal drivers), I recommend a **progressive rewrite** rather than direct code conversion, validated against the official demo suite.
 
 ---
 

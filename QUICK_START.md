@@ -2,6 +2,8 @@
 
 This guide will help you get started with the Gnuplot Java implementation quickly.
 
+**Development Approach**: This project uses test-driven development with the official Gnuplot demo suite (`gnuplot-c/demo/*.dem`) as test oracle. See [TEST_DRIVEN_PLAN.md](TEST_DRIVEN_PLAN.md) for details.
+
 ## Prerequisites
 
 - Java 21 or higher
@@ -294,5 +296,10 @@ Generated SVG files will be in the module directory.
 - 3D plotting not yet implemented
 - Some advanced Gnuplot features pending (fit, splot, complex data files)
 - Terminal/ASCII output not available
+- **Demo Pass Rate**: Currently 4/100+ demos passing (scatter.dem, errorbars.dem)
+  - simple.dem fails: Missing data file reading, impulses style, set key
+  - controls.dem fails: Missing control flow (if/else, for/while)
+  - using.dem fails: Missing data file reading and column specifications
+  - Most demos fail: Incremental feature implementation in progress
 
-See [IMPLEMENTATION_BACKLOG.md](IMPLEMENTATION_BACKLOG.md) for the complete roadmap.
+See [IMPLEMENTATION_BACKLOG.md](IMPLEMENTATION_BACKLOG.md) for the complete roadmap and [TEST_DRIVEN_PLAN.md](TEST_DRIVEN_PLAN.md) for TDD methodology.
