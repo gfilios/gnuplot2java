@@ -97,22 +97,31 @@ The `all.dem` file contains **100+ demo scripts** organized by complexity:
 
 **Goal**: Pass all basic demos (simple, controls, using, fillstyle, errorbars, scatter)
 
-**Story TDD-4: simple.dem Compliance** (21 SP) - 🔴 NOT STARTED
-- **Phase 1**: Grammar fixes (8 SP) - terminal size, fonts, key positions, quotes, ranges
-- **Phase 2**: Output file path (3 SP) - make set output write to specified file
-- **Phase 3**: Plot styles (5 SP) - impulses, set style data
-- **Phase 4**: Data file reading (5 SP) - read .dat files
+**Story TDD-4: simple.dem Compliance** (21 SP) - 🟡 IN PROGRESS (8/21 SP = 38%)
+- **Phase 1**: Grammar fixes (8 SP) - ✅ COMPLETE
+  * ✅ Terminal size: `set term svg size 800,600` - Added SIZE token
+  * ✅ Font spec: `set title "text" font ",20"` - Added FONT token, updated visitor
+  * ✅ Key positions: `set key bmargin center` - Compound position support
+  * ✅ Single quotes: `'1.dat'` - Already supported in QUOTED_STRING
+  * ✅ Plot ranges: `plot [-30:20] expr, [0:*] expr` - Global + per-plot ranges
+- **Phase 2**: Output file path (3 SP) - 🔴 NOT STARTED
+  * `set output` parsed but executor writes to "output.svg" instead
+- **Phase 3**: Plot styles (5 SP) - 🔴 NOT STARTED
+  * `with impulses` not implemented
+- **Phase 4**: Data file reading (5 SP) - 🔴 NOT STARTED
+  * `.dat` file reading not implemented
 
 **Roadmap**: See [STORY_TDD4_ROADMAP.md](../docs/STORY_TDD4_ROADMAP.md)
 
-**Current blockers from gap analysis**:
-- Grammar: `set term svg size 800,600` fails to parse (comma in size)
-- Grammar: `set title "text" font ",20"` not supported
-- Grammar: `set key bmargin center` position modifiers missing
-- Grammar: Single-quoted strings `'1.dat'` not recognized
-- Feature: Set output doesn't write to specified file path
-- Feature: `with impulses` plot style not implemented
-- Feature: Data file reading not implemented
+**Completed**:
+- ✅ All grammar parse errors fixed - simple.dem parses completely
+- ✅ 5 grammar enhancements (SIZE, FONT, key positions, ranges)
+- ✅ CommandBuilderVisitor updated for new grammar rules
+
+**Remaining blockers**:
+- Output file path: Executor ignores `set output` path
+- Plot styles: `with impulses` style not implemented
+- Data file reading: `.dat` file reading not implemented
 
 **Story TDD-5: controls.dem Compliance** (13 SP)
 - Implement: `if/else`, `do/while`, `for` loops

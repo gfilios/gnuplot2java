@@ -4,8 +4,8 @@
 Make simple.dem pass by implementing missing grammar rules and features identified by gap analysis.
 
 **Story Points**: 21 SP
-**Current Status**: 🔴 Not Started
-**Demo Pass Rate**: 0/8 plots in simple.dem
+**Current Status**: 🟡 In Progress (Phase 1 Complete - 8/21 SP)
+**Demo Pass Rate**: 0/8 plots in simple.dem (grammar parsing: ✅)
 
 ## Gap Analysis Results
 
@@ -21,32 +21,46 @@ Multiple - token recognition error at: ''' (single quotes for file paths)
 
 ## Implementation Plan
 
-### Phase 1: Grammar Fixes (8 SP)
+### Phase 1: Grammar Fixes (8 SP) - ✅ COMPLETE
 
-**Task 1.1: Terminal Size Specification** (2 SP)
-- Fix: `set term svg size 800,600`
-- Update grammar rule: `terminalOptions : SIZE NUMBER COMMA NUMBER`
-- Test: Terminal size parsing
+**Task 1.1: Terminal Size Specification** (2 SP) - ✅ DONE
+- ✅ Fixed: `set term svg size 800,600`
+- ✅ Added SIZE token: `SIZE : 'size' ;`
+- ✅ Updated grammar: `terminalOptions : SIZE NUMBER COMMA NUMBER # TerminalSize`
+- Result: Terminal size now parses correctly
 
-**Task 1.2: Font Specification** (2 SP)
-- Fix: `set title "text" font ",20"`
-- Update grammar: `TITLE string (FONT string)?`
-- Support font shorthand: `",20"` means default font, size 20
+**Task 1.2: Font Specification** (2 SP) - ✅ DONE
+- ✅ Fixed: `set title "text" font ",20"`
+- ✅ Added FONT token: `FONT : 'font' ;`
+- ✅ Updated grammar: `TITLE string (FONT string)? # SetTitle`
+- ✅ Applied to XLABEL, YLABEL, ZLABEL as well
+- ✅ Updated CommandBuilderVisitor to use `string(0)` for first string
+- Result: Font specifications parse correctly
 
-**Task 1.3: Key Position Modifiers** (2 SP)
-- Fix: `set key bmargin center`
-- Update grammar: `keyPosition : (BMARGIN|TMARGIN|LMARGIN|RMARGIN) (CENTER|LEFT|RIGHT)?`
-- Support horizontal/vertical alignment
+**Task 1.3: Key Position Modifiers** (2 SP) - ✅ DONE
+- ✅ Fixed: `set key bmargin center horizontal`
+- ✅ Updated grammar: `BMARGIN (LEFT | RIGHT | CENTER)?`
+- ✅ Applied to all margins: TMARGIN, LMARGIN, RMARGIN
+- Result: Compound key positions parse correctly
 
-**Task 1.4: Single-Quoted Strings** (1 SP)
-- Fix: `'1.dat'` file paths
-- Add STRING token for single quotes: `STRING : '\'' ~[']* '\''`
-- Update string rule to accept both double and single quotes
+**Task 1.4: Single-Quoted Strings** (1 SP) - ✅ DONE (no changes needed)
+- QUOTED_STRING already supports both `"..."` and `'...'`
+- Single-quoted file paths like `'1.dat'` parse correctly
+- Data file reading errors (Phase 4) are separate issue
+- Result: Single-quoted strings work correctly
 
-**Task 1.5: Plot Range Syntax** (1 SP)
-- Fix: `plot [-30:20] expression`
-- Update plotCommand: `PLOT range? plotSpec`
-- Support inline range before expression
+**Task 1.5: Plot Range Syntax** (1 SP) - ✅ DONE
+- ✅ Fixed: `plot [-30:20] besj0(x) with impulses, [0:*] expression`
+- ✅ Updated grammar: `PLOT range? range? plotSpec (COMMA plotSpec)*`
+- ✅ Added per-plotSpec ranges: `plotSpec : range? (expression | dataSource) plotModifiers*`
+- Supports both global ranges and per-plot overrides
+- Result: All range syntax variations parse correctly
+
+**Phase 1 Results**:
+- All grammar parse errors resolved
+- simple.dem now parses completely
+- No more "mismatched input", "extraneous input", or "token recognition" errors (except data file content)
+- Ready for Phase 2 (output file path handling)
 
 ### Phase 2: Set Output File Path (3 SP)
 

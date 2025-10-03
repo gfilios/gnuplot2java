@@ -38,10 +38,10 @@ setCommand
     ;
 
 setOption
-    : TITLE string                                  # SetTitle
-    | XLABEL string                                 # SetXLabel
-    | YLABEL string                                 # SetYLabel
-    | ZLABEL string                                 # SetZLabel
+    : TITLE string (FONT string)?                   # SetTitle
+    | XLABEL string (FONT string)?                  # SetXLabel
+    | YLABEL string (FONT string)?                  # SetYLabel
+    | ZLABEL string (FONT string)?                  # SetZLabel
     | KEY keyPosition keyOptions*                   # SetKey
     | SAMPLES NUMBER                                # SetSamples
     | XRANGE range                                  # SetXRange
@@ -62,7 +62,10 @@ setOption
 
 keyPosition
     : LEFT | RIGHT | TOP | BOTTOM | CENTER
-    | BMARGIN | TMARGIN | LMARGIN | RMARGIN
+    | BMARGIN (LEFT | RIGHT | CENTER)?
+    | TMARGIN (LEFT | RIGHT | CENTER)?
+    | LMARGIN (TOP | BOTTOM | CENTER)?
+    | RMARGIN (TOP | BOTTOM | CENTER)?
     ;
 
 keyOptions
@@ -90,9 +93,10 @@ terminalType
     ;
 
 terminalOptions
-    : IDENTIFIER
-    | NUMBER
-    | string
+    : SIZE NUMBER COMMA NUMBER          # TerminalSize
+    | IDENTIFIER                        # TerminalOption
+    | NUMBER                            # TerminalNumber
+    | string                            # TerminalString
     ;
 
 styleType
@@ -125,7 +129,7 @@ unsetOption
 
 // PLOT command
 plotCommand
-    : PLOT plotSpec (COMMA plotSpec)*
+    : PLOT range? range? plotSpec (COMMA plotSpec)*
     ;
 
 plotSpec
@@ -278,6 +282,7 @@ XLABEL      : 'xlabel' ;
 YLABEL      : 'ylabel' ;
 ZLABEL      : 'zlabel' ;
 KEY         : 'key' ;
+FONT        : 'font' ;
 SAMPLES     : 'samples' ;
 XRANGE      : 'xrange' ;
 YRANGE      : 'yrange' ;
@@ -288,6 +293,7 @@ LOGSCALE    : 'logscale' ;
 TERMINAL    : 'terminal' | 'term' ;
 OUTPUT      : 'output' ;
 STYLE       : 'style' ;
+SIZE        : 'size' ;
 PARAMETRIC  : 'parametric' ;
 VIEW        : 'view' ;
 TICSLEVEL   : 'ticslevel' ;
