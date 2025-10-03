@@ -272,7 +272,7 @@ mvn test -Dtest=ExpressionParserTest#shouldParseAddition
 
 ### Phase 3 Highlights
 
-**✅ Completed (5/14 P0 stories - 34%)**:
+**✅ Completed (6/14 P0 stories - 43%)**:
 - ✅ **Story 3.1.1**: Rendering Pipeline Architecture (21 SP)
   - Scene graph with visitor pattern
   - Viewport coordinate system
@@ -293,24 +293,32 @@ mvn test -Dtest=ExpressionParserTest#shouldParseAddition
   - Accurate text metrics using Java AWT
   - Text alignment (left, center, right)
   - Unicode support with validation
-- ✅ **Story 3.2.1**: Line Plot Renderer (13 SP) 🎉
+- ✅ **Story 3.2.1**: Line Plot Renderer (13 SP)
   - Full polyline rendering with StrokeStyle
   - 7 line styles (solid, dashed, dotted, dash-dot, etc.)
   - Variable line width and hex color support
   - Viewport clipping with SVG clipPath
+- ✅ **Story 3.2.2**: Scatter Plot Renderer (13 SP) 🎉
+  - 10 marker styles (circle, square, triangles, diamond, plus, cross, star, hexagon, pentagon)
+  - Variable point sizing (per-point or global)
+  - Filled and unfilled markers
+  - Custom colors per point
+  - MarkerStyle record with fluent API
 
-**📊 Test Coverage**: 290 passing tests
+**📊 Test Coverage**: 314 passing tests
 - Rendering pipeline: 58 tests
 - Axis system: 71 tests
 - Color system: 52 tests
 - Text rendering: 38 tests
 - Line rendering: 27 tests (LineStyle, StrokeStyle, clipping)
+- Scatter rendering: 24 tests (PointStyle, MarkerStyle, ScatterPlot)
 - Style system: 22 tests
 - Other: 22 tests (Scene, Viewport, RenderingHints, etc.)
 
 **🎨 Demo Applications**:
 - LineStyleDemo: 7 line styles with varying widths
 - ClippingDemo: 5 viewport clipping scenarios
+- ScatterPlotDemo: 10 marker types with variable sizing
 - TextRenderingDemo: Fonts, styles, sizes, alignment, Unicode
 
 **Timeline**: 12-18 months to full MVP
