@@ -420,6 +420,25 @@ mvn test -Dtest=ExpressionParserTest#shouldParseAddition
 Gnuplot Script → ANTLR Parser → Command AST → Executor → SVG Output
 ```
 
+### Phase TDD Highlights (Test-Driven Development)
+
+**✅ Story TDD-1 Complete (8 SP)**: Demo Test Infrastructure
+- ✅ **DemoTestRunner**: Execute demos in C and Java, capture outputs
+- ✅ **TestResultRepository**: Persistent storage with timestamped runs
+- ✅ **HtmlReportGenerator**: Beautiful HTML reports with side-by-side comparison
+- ✅ **DemoTestSuite**: JUnit 5 test suite (3 demos: simple, scatter, controls)
+
+**📊 Test Infrastructure**: Fully operational
+- Executes 231 available demos (3 currently tested)
+- Captures scripts, SVG outputs, stdout/stderr logs
+- Generates HTML reports in `test-results/` directory
+- Automatic "latest" symlink for easy access
+- Historical tracking across test runs
+
+**🔍 Current Demo Status**: 3/231 tested (1.3%)
+- C Gnuplot: 3/3 success (100%)
+- Java Gnuplot: 3/3 execution, 0/3 output (missing `set output` support)
+
 **Timeline**: 12-18 months to full MVP
 
 ---

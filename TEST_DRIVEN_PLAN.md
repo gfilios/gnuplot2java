@@ -52,25 +52,33 @@ The `all.dem` file contains **100+ demo scripts** organized by complexity:
 
 ## Implementation Plan
 
-### Phase 1: Test Infrastructure (1 week)
+### Phase 1: Test Infrastructure (1 week) - ✅ COMPLETE
 
-**Story TDD-1: Test Execution Framework** (8 SP)
-- Create `DemoTestRunner.java` to execute .dem files
-- Implement script parser to extract commands
-- Create output capture mechanism
-- Compare C gnuplot output vs Java output
+**Story TDD-1: Test Execution Framework** (8 SP) - ✅ COMPLETE
+- ✅ Create `DemoTestRunner.java` to execute .dem files
+- ✅ Implement script modification (set terminal, remove pauses)
+- ✅ Create output capture mechanism (stdout, stderr, SVG files)
+- ✅ Compare C gnuplot output vs Java output
+- ✅ Create `TestResultRepository` for persistent storage
+- ✅ Generate HTML reports with side-by-side comparison
+- ✅ Timestamped test runs with "latest" symlink
+- ✅ Store all artifacts: scripts, outputs, logs
 
-**Story TDD-2: Visual Comparison System** (13 SP)
+**Completed**: 2025-10-03
+**Tests**: 3 demos (simple.dem, scatter.dem, controls.dem)
+**Infrastructure**: DemoTestRunner, TestResultRepository, HtmlReportGenerator, DemoTestSuite
+
+**Story TDD-2: Visual Comparison System** (13 SP) - 🟡 IN PROGRESS
 - SVG diff tool (structural comparison)
 - Pixel-based comparison (rasterize SVGs)
 - Difference highlighting
 - Acceptance threshold configuration
 
-**Story TDD-3: Gap Analysis Reporting** (5 SP)
+**Story TDD-3: Gap Analysis Reporting** (5 SP) - 🔵 PLANNED
 - Parse error messages
 - Classify errors (command missing, rendering wrong, data issue)
-- Generate HTML report with side-by-side comparisons
-- Track progress metrics
+- Generate gap analysis dashboard
+- Track progress metrics over time
 
 ### Phase 2: Tier 1 - Basic Demos (2-3 weeks)
 
