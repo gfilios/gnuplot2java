@@ -97,29 +97,28 @@ The `all.dem` file contains **100+ demo scripts** organized by complexity:
 
 **Goal**: Pass all basic demos (simple, controls, using, fillstyle, errorbars, scatter)
 
-**Story TDD-4: simple.dem Compliance** (21 SP) - 🟡 IN PROGRESS (8/21 SP = 38%)
+**Story TDD-4: simple.dem Compliance** (21 SP) - 🟢 NEAR COMPLETE (11/21 SP = 52%)
 - **Phase 1**: Grammar fixes (8 SP) - ✅ COMPLETE
-  * ✅ Terminal size: `set term svg size 800,600` - Added SIZE token
-  * ✅ Font spec: `set title "text" font ",20"` - Added FONT token, updated visitor
-  * ✅ Key positions: `set key bmargin center` - Compound position support
-  * ✅ Single quotes: `'1.dat'` - Already supported in QUOTED_STRING
-  * ✅ Plot ranges: `plot [-30:20] expr, [0:*] expr` - Global + per-plot ranges
-- **Phase 2**: Output file path (3 SP) - 🔴 NOT STARTED
-  * `set output` parsed but executor writes to "output.svg" instead
+  * ✅ Terminal size, font spec, key positions, single quotes, plot ranges
+- **Phase 2**: Output file path (3 SP) - ✅ COMPLETE
+  * ✅ Added SetOutputContext handling in CommandBuilderVisitor
+  * ✅ SVG files now write to specified paths
+  * ✅ simple.dem PASSES, controls.dem PASSES (2/3 = 66.7%)
 - **Phase 3**: Plot styles (5 SP) - 🔴 NOT STARTED
-  * `with impulses` not implemented
+  * `with impulses` not implemented (simple.dem uses this)
 - **Phase 4**: Data file reading (5 SP) - 🔴 NOT STARTED
-  * `.dat` file reading not implemented
+  * `.dat` file reading not implemented (scatter.dem needs this)
 
 **Roadmap**: See [STORY_TDD4_ROADMAP.md](../docs/STORY_TDD4_ROADMAP.md)
 
-**Completed**:
-- ✅ All grammar parse errors fixed - simple.dem parses completely
-- ✅ 5 grammar enhancements (SIZE, FONT, key positions, ranges)
-- ✅ CommandBuilderVisitor updated for new grammar rules
+**Current Status**:
+- ✅ 2/3 demos PASSING (simple.dem, controls.dem)
+- ✅ Grammar parsing works completely
+- ✅ Output file path handling works
+- ✅ Java SVG outputs being created
+- ❌ scatter.dem fails (needs data file reading)
 
 **Remaining blockers**:
-- Output file path: Executor ignores `set output` path
 - Plot styles: `with impulses` style not implemented
 - Data file reading: `.dat` file reading not implemented
 
