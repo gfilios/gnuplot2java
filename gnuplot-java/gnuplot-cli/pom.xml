@@ -26,6 +26,12 @@
             <artifactId>gnuplot-render</artifactId>
         </dependency>
 
+        <!-- ANTLR4 Runtime -->
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr4-runtime</artifactId>
+        </dependency>
+
         <!-- Picocli - CLI Framework -->
         <dependency>
             <groupId>info.picocli</groupId>
@@ -65,6 +71,16 @@
 
     <build>
         <plugins>
+            <!-- ANTLR4 Plugin -->
+            <plugin>
+                <groupId>org.antlr</groupId>
+                <artifactId>antlr4-maven-plugin</artifactId>
+                <configuration>
+                    <listener>true</listener>
+                    <visitor>true</visitor>
+                </configuration>
+            </plugin>
+
             <!-- Build executable JAR -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
