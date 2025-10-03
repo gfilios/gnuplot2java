@@ -252,9 +252,14 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
                 return;
             }
 
-            // Build polyline points string
+            // Build polyline points string, skipping NaN/Infinity values
             StringBuilder points = new StringBuilder();
             for (LinePlot.Point2D point : linePlot.getPoints()) {
+                // Skip invalid points (NaN or Infinity)
+                if (!Double.isFinite(point.getX()) || !Double.isFinite(point.getY())) {
+                    continue;
+                }
+
                 double x = mapX(point.getX());
                 double y = mapY(point.getY());
                 if (points.length() > 0) {
@@ -290,6 +295,11 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
             String clipAttr = (viewport != null) ? " clip-path=\"url(#plotClip)\"" : "";
 
             for (ScatterPlot.DataPoint point : scatterPlot.getPoints()) {
+                // Skip invalid points (NaN or Infinity)
+                if (!Double.isFinite(point.getX()) || !Double.isFinite(point.getY())) {
+                    continue;
+                }
+
                 double x = mapX(point.getX());
                 double y = mapY(point.getY());
 
