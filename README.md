@@ -428,9 +428,17 @@ Gnuplot Script → ANTLR Parser → Command AST → Executor → SVG Output
 - ✅ **HtmlReportGenerator**: Beautiful HTML reports with side-by-side comparison
 - ✅ **DemoTestSuite**: JUnit 5 test suite (3 demos: simple, scatter, controls)
 
+**✅ Story TDD-2 Complete (13 SP)**: Visual Comparison System
+- ✅ **SvgComparator**: Structural SVG comparison (element counts, dimensions, text)
+- ✅ **PixelComparator**: Pixel-based comparison with Apache Batik
+- ✅ **Difference highlighting**: Visual diff images with red pixels
+- ✅ **Similarity metrics**: Configurable thresholds and tolerance
+- ✅ **4 unit tests**: Full test coverage for comparison tools
+
 **📊 Test Infrastructure**: Fully operational
 - Executes 231 available demos (3 currently tested)
 - Captures scripts, SVG outputs, stdout/stderr logs
+- Structural and pixel-based SVG comparison
 - Generates HTML reports in `test-results/` directory
 - Automatic "latest" symlink for easy access
 - Historical tracking across test runs
@@ -438,6 +446,8 @@ Gnuplot Script → ANTLR Parser → Command AST → Executor → SVG Output
 **🔍 Current Demo Status**: 3/231 tested (1.3%)
 - C Gnuplot: 3/3 success (100%)
 - Java Gnuplot: 3/3 execution, 0/3 output (missing `set output` support)
+
+**Story Points Complete**: 21/26 SP (81%) - Phase TDD Infrastructure
 
 **Timeline**: 12-18 months to full MVP
 

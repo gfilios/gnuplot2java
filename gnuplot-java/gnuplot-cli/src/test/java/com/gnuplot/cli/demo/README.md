@@ -31,6 +31,19 @@ The test infrastructure executes Gnuplot demo scripts (`.dem` files) in both C G
 - Currently tests: simple.dem, scatter.dem, controls.dem
 - Automatically generates reports after test run
 
+### 5. [SvgComparator.java](SvgComparator.java) - ✅ NEW
+- Structural SVG comparison (element counts, dimensions)
+- Text content comparison
+- Similarity metrics with configurable thresholds
+- SVG statistics for reporting
+
+### 6. [PixelComparator.java](PixelComparator.java) - ✅ NEW
+- Pixel-based comparison using Apache Batik
+- Rasterizes SVGs to BufferedImages
+- Generates visual diff images (red pixels for differences)
+- Color distance calculation with tolerance
+- Similarity percentage calculation
+
 ## Usage
 
 ### Run All Demo Tests

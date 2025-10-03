@@ -68,11 +68,17 @@ The `all.dem` file contains **100+ demo scripts** organized by complexity:
 **Tests**: 3 demos (simple.dem, scatter.dem, controls.dem)
 **Infrastructure**: DemoTestRunner, TestResultRepository, HtmlReportGenerator, DemoTestSuite
 
-**Story TDD-2: Visual Comparison System** (13 SP) - 🟡 IN PROGRESS
-- SVG diff tool (structural comparison)
-- Pixel-based comparison (rasterize SVGs)
-- Difference highlighting
-- Acceptance threshold configuration
+**Story TDD-2: Visual Comparison System** (13 SP) - ✅ COMPLETE
+- ✅ SVG diff tool (structural comparison)
+- ✅ Pixel-based comparison (rasterize SVGs with Apache Batik)
+- ✅ Difference highlighting (red pixels for differences)
+- ✅ Acceptance threshold configuration
+- ✅ SVG statistics (element counts, dimensions)
+- ✅ Text content comparison
+
+**Completed**: 2025-10-03
+**Components**: SvgComparator, PixelComparator
+**Tests**: 4 unit tests passing
 
 **Story TDD-3: Gap Analysis Reporting** (5 SP) - 🔵 PLANNED
 - Parse error messages
