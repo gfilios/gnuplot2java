@@ -1,7 +1,7 @@
 # Story TDD-6: Color Assignment & Legend Integration for simple.dem
 
-**Status**: PLANNED
-**Story Points**: 13 SP (3 SP color + 2+2+3+1+2 SP legend)
+**Status**: IN PROGRESS (Phase 0 complete - 3/13 SP = 23%)
+**Story Points**: 13 SP (3 SP color ✅ + 2+2+3+1+2 SP legend)
 **Priority**: CRITICAL (Required for simple.dem to pass visual comparison)
 
 ## Goal
@@ -151,6 +151,12 @@ void executeMultiPlotCommandWithDifferentColors() throws IOException {
 - simple.dem plots now have distinct colors matching C Gnuplot
 - Visual differentiation even without legend
 - File sizes unchanged (just color attribute changes)
+
+**COMPLETED** ✅ (commit a6fa9b0):
+- Test passes: executeMultiPlotCommandWithDifferentColors()
+- Colors verified: Purple #9400D3, Green #009E73, Blue #56B4E9
+- Demo test confirmed: `mvn test -Dtest=DemoTestSuite`
+- Visual comparison: test-results/latest/index.html shows matching colors
 
 ---
 
@@ -449,12 +455,15 @@ mvn test -Dtest=DemoTestSuite -q
 
 ## Implementation Order (TDD Red-Green-Refactor)
 
-**PHASE 0 (COLOR) - DO FIRST:**
-1. **Red**: Write test expecting different colors for multi-plot ❌
+**PHASE 0 (COLOR) - ✅ COMPLETE:**
+1. **Red**: Write test expecting different colors for multi-plot ✅
 2. **Green**: Add DEFAULT_COLORS array to executor ✅
 3. **Green**: Update visitPlotCommand to assign colors ✅
-4. **Refactor**: Verify color cycling works correctly
-5. **Test**: Run simple.dem, verify colors match C Gnuplot (purple, green, blue)
+4. **Refactor**: Verify color cycling works correctly ✅
+5. **Test**: Run `mvn test -Dtest=DemoTestSuite`, verify colors match C Gnuplot ✅
+   - Verified: simple_java.svg has #9400D3, #009E73, #56B4E9 (purple, green, blue)
+   - Verified: Matches C output exactly (rgb(148,0,211), rgb(0,158,115), rgb(86,180,233))
+   - Visual report: test-results/latest/index.html
 
 **PHASE 1-4 (LEGEND):**
 6. **Red**: Write parser test expecting structured key settings ❌

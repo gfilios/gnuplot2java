@@ -14,6 +14,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Integration tests that parse and execute complete Gnuplot scripts.
+ *
+ * IMPORTANT: After making changes that affect visual output, run DemoTestSuite:
+ * mvn test -Dtest=DemoTestSuite
+ *
+ * This runs the full demo comparison (C vs Java) and generates HTML report at:
+ * test-results/latest/index.html
  */
 class ScriptExecutionTest {
 
