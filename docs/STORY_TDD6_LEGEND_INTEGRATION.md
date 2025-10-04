@@ -1,12 +1,12 @@
-# Story TDD-6: Legend Integration for simple.dem
+# Story TDD-6: Color Assignment & Legend Integration for simple.dem
 
 **Status**: PLANNED
-**Story Points**: 8 SP
-**Priority**: HIGH (Required for simple.dem to pass visual comparison)
+**Story Points**: 13 SP (3 SP color + 2+2+3+1+2 SP legend)
+**Priority**: CRITICAL (Required for simple.dem to pass visual comparison)
 
 ## Goal
 
-Integrate Legend rendering into CLI to match C Gnuplot output. This addresses the primary visual gap in simple.dem where Java output has no legend/key display.
+Implement automatic color assignment for multi-plot commands AND integrate Legend rendering to match C Gnuplot output. These two features work together to make plots distinguishable.
 
 ## Gap Analysis
 
@@ -14,18 +14,29 @@ After comparing C vs Java SVG outputs for simple.dem:
 
 ### Missing Features (Priority Order):
 
-1. **Legend/Key Display** ⭐ CRITICAL
-   - C Output: Shows legend box with plot labels ("sin(x)", "atan(x)", "cos(atan(x))")
-   - Java Output: No legend visible
-   - Impact: Makes it impossible to identify which line is which
-   - Gnuplot command: `set key left box`, `set key right nobox`, `set key bmargin center horizontal`
+1. **Plot Color Assignment** 🔴 **MOST CRITICAL** - NEW FINDING!
+   - C Output: Uses distinct colors for each plot line
+     * Plot 1: Purple #9400D3, Green #009E73, Blue #56B4E9 (3 lines)
+     * Plot 2: Purple, Green (2 lines)
+     * etc.
+   - Java Output: **ALL PLOTS ARE BLACK #000000**
+   - Impact: **All lines look identical - impossible to distinguish!**
+   - Root cause: `LinePlot.Builder` defaults to black, no color assignment in executor
+   - **This must be fixed BEFORE legend** - legend without colors is useless!
 
-2. **Plot Area Border/Frame**
+2. **Legend/Key Display** ⭐ CRITICAL
+   - C Output: Shows legend box with plot labels ("sin(x)", "atan(x)", "cos(atan(x)"))
+   - Java Output: No legend visible
+   - Impact: Makes it impossible to identify which line is which function
+   - Gnuplot command: `set key left box`, `set key right nobox`, `set key bmargin center horizontal`
+   - **Depends on #1** - Legend needs colors to display correctly
+
+3. **Plot Area Border/Frame**
    - C Output: Black border around plot area
    - Java Output: No border
    - Impact: Less defined plot region
 
-3. **Point Markers** (for `set style data points`)
+4. **Point Markers** (for `set style data points`)
    - C Output: 15 point types (circles, squares, triangles)
    - Java Output: Only renders lines
    - Impact: Cannot show data as points
@@ -63,6 +74,85 @@ set key left box              # Plot 7: Legend at left with border
 ```
 
 ## Implementation Plan (TDD Approach)
+
+### Phase 0: Plot Color Assignment (3 SP) 🔴 **DO THIS FIRST!**
+
+**Task**: Assign distinct colors to plots in multi-plot commands
+
+**Why first**: Legend without colors is useless - all lines look identical. This is the #1 visual gap.
+
+**Changes to GnuplotScriptExecutor.java**:
+```java
+// Add color palette field (Gnuplot default colors)
+private static final String[] DEFAULT_COLORS = {
+    "#9400D3",  // Purple
+    "#009E73",  // Green
+    "#56B4E9",  // Blue
+    "#E69F00",  // Orange
+    "#F0E442",  // Yellow
+    "#0072B2",  // Dark Blue
+    "#D55E00",  // Red-Orange
+    "#CC79A7"   // Pink
+};
+
+@Override
+public void visitPlotCommand(PlotCommand command) {
+    plots.clear();
+    plotTitles.clear();
+
+    int colorIndex = 0;  // Track color cycling
+    for (PlotCommand.PlotSpec spec : command.getPlotSpecs()) {
+        // ... existing code to generate points ...
+
+        LinePlot.Builder plotBuilder = LinePlot.builder()
+                .id("plot_" + plots.size())
+                .points(List.of(points))
+                .color(DEFAULT_COLORS[colorIndex % DEFAULT_COLORS.length]);  // ← ADD THIS!
+
+        if (plotTitle != null && !plotTitle.isEmpty()) {
+            plotBuilder.label(plotTitle);
+        }
+
+        plots.add(plotBuilder.build());
+        colorIndex++;  // Next color for next plot
+    }
+
+    createAndAddScene();
+}
+```
+
+**Test** (ScriptExecutionTest.java):
+```java
+@Test
+void executeMultiPlotCommandWithDifferentColors() throws IOException {
+    String script = """
+            plot sin(x), cos(x), tan(x)
+            """;
+
+    GnuplotScript gnuplotScript = parser.parse(script);
+    executor.execute(gnuplotScript);
+
+    Path outputFile = Path.of("output.svg");
+    String svgContent = Files.readString(outputFile);
+
+    // Verify each plot has different color
+    assertThat(svgContent).contains("#9400D3");  // Purple - first plot
+    assertThat(svgContent).contains("#009E73");  // Green - second plot
+    assertThat(svgContent).contains("#56B4E9");  // Blue - third plot
+
+    // Verify NO black lines (default)
+    assertThat(svgContent).doesNotContain("stroke=\"#000000\"");
+
+    Files.deleteIfExists(outputFile);
+}
+```
+
+**Expected improvements**:
+- simple.dem plots now have distinct colors matching C Gnuplot
+- Visual differentiation even without legend
+- File sizes unchanged (just color attribute changes)
+
+---
 
 ### Phase 1: Parser Enhancement (2 SP)
 
@@ -359,16 +449,24 @@ mvn test -Dtest=DemoTestSuite -q
 
 ## Implementation Order (TDD Red-Green-Refactor)
 
-1. **Red**: Write parser test expecting structured key settings ❌
-2. **Green**: Implement SetKeyContext parsing ✅
-3. **Refactor**: Clean up parseKeyPosition method
-4. **Red**: Write executor test expecting legend in scene ❌
-5. **Green**: Implement key state management in executor ✅
-6. **Green**: Implement legend creation in createAndAddScene ✅
-7. **Refactor**: Extract legend creation to helper method
-8. **Red**: Write integration test expecting legend in SVG ❌
-9. **Green**: Run test, verify it passes ✅
-10. **Test**: Run simple.dem, open HTML report, verify legends match C output
+**PHASE 0 (COLOR) - DO FIRST:**
+1. **Red**: Write test expecting different colors for multi-plot ❌
+2. **Green**: Add DEFAULT_COLORS array to executor ✅
+3. **Green**: Update visitPlotCommand to assign colors ✅
+4. **Refactor**: Verify color cycling works correctly
+5. **Test**: Run simple.dem, verify colors match C Gnuplot (purple, green, blue)
+
+**PHASE 1-4 (LEGEND):**
+6. **Red**: Write parser test expecting structured key settings ❌
+7. **Green**: Implement SetKeyContext parsing ✅
+8. **Refactor**: Clean up parseKeyPosition method
+9. **Red**: Write executor test expecting legend in scene ❌
+10. **Green**: Implement key state management in executor ✅
+11. **Green**: Implement legend creation in createAndAddScene ✅
+12. **Refactor**: Extract legend creation to helper method
+13. **Red**: Write integration test expecting legend in SVG ❌
+14. **Green**: Run test, verify it passes ✅
+15. **Test**: Run simple.dem, open HTML report, verify legends match C output
 
 ## File Size Impact
 
