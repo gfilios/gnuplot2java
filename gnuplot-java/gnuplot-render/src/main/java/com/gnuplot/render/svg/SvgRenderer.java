@@ -27,15 +27,33 @@ import java.util.Locale;
  */
 public class SvgRenderer implements Renderer, SceneElementVisitor {
 
+    // Plot area margins (matching gnuplot C behavior)
+    private static final int MARGIN_LEFT = 54;
+    private static final int MARGIN_RIGHT = 25;
+    private static final int MARGIN_TOP = 25;
+    private static final int MARGIN_BOTTOM = 36;
+
     private Writer writer;
     private Scene scene;
     private Viewport viewport;
+
+    // Plot bounds (actual drawing area after margins)
+    private int plotLeft;
+    private int plotRight;
+    private int plotTop;
+    private int plotBottom;
 
     @Override
     public void render(Scene scene, OutputStream output) throws IOException, RenderException {
         this.scene = scene;
         this.viewport = scene.getViewport();
         this.writer = new OutputStreamWriter(output, StandardCharsets.UTF_8);
+
+        // Calculate plot bounds (scene dimensions minus margins)
+        this.plotLeft = MARGIN_LEFT;
+        this.plotRight = scene.getWidth() - MARGIN_RIGHT;
+        this.plotTop = MARGIN_TOP;
+        this.plotBottom = scene.getHeight() - MARGIN_BOTTOM;
 
         try {
             writeSvgHeader();
@@ -650,17 +668,17 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
     }
 
     private int[] getLegendPosition(Legend.Position position, int legendWidth, int legendHeight) {
-        int margin = 10;
+        int padding = 5; // Small padding inside plot area
         return switch (position) {
-            case TOP_LEFT -> new int[]{margin, margin};
-            case TOP_RIGHT -> new int[]{scene.getWidth() - legendWidth - margin, margin};
-            case BOTTOM_LEFT -> new int[]{margin, scene.getHeight() - legendHeight - margin};
-            case BOTTOM_RIGHT -> new int[]{scene.getWidth() - legendWidth - margin, scene.getHeight() - legendHeight - margin};
-            case TOP_CENTER -> new int[]{(scene.getWidth() - legendWidth) / 2, margin};
-            case BOTTOM_CENTER -> new int[]{(scene.getWidth() - legendWidth) / 2, scene.getHeight() - legendHeight - margin};
-            case LEFT_CENTER -> new int[]{margin, (scene.getHeight() - legendHeight) / 2};
-            case RIGHT_CENTER -> new int[]{scene.getWidth() - legendWidth - margin, (scene.getHeight() - legendHeight) / 2};
-            case CENTER -> new int[]{(scene.getWidth() - legendWidth) / 2, (scene.getHeight() - legendHeight) / 2};
+            case TOP_LEFT -> new int[]{plotLeft + padding, plotTop + padding};
+            case TOP_RIGHT -> new int[]{plotRight - legendWidth - padding, plotTop + padding};
+            case BOTTOM_LEFT -> new int[]{plotLeft + padding, plotBottom - legendHeight - padding};
+            case BOTTOM_RIGHT -> new int[]{plotRight - legendWidth - padding, plotBottom - legendHeight - padding};
+            case TOP_CENTER -> new int[]{(plotLeft + plotRight - legendWidth) / 2, plotTop + padding};
+            case BOTTOM_CENTER -> new int[]{(plotLeft + plotRight - legendWidth) / 2, plotBottom - legendHeight - padding};
+            case LEFT_CENTER -> new int[]{plotLeft + padding, (plotTop + plotBottom - legendHeight) / 2};
+            case RIGHT_CENTER -> new int[]{plotRight - legendWidth - padding, (plotTop + plotBottom - legendHeight) / 2};
+            case CENTER -> new int[]{(plotLeft + plotRight - legendWidth) / 2, (plotTop + plotBottom - legendHeight) / 2};
         };
     }
 
@@ -879,8 +897,8 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
             return dataX;
         }
         double viewportWidth = viewport.getWidth();
-        double sceneWidth = scene.getWidth();
-        return ((dataX - viewport.getXMin()) / viewportWidth) * sceneWidth;
+        double plotWidth = plotRight - plotLeft;
+        return plotLeft + ((dataX - viewport.getXMin()) / viewportWidth) * plotWidth;
     }
 
     /**
@@ -891,9 +909,9 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
             return dataY;
         }
         double viewportHeight = viewport.getHeight();
-        double sceneHeight = scene.getHeight();
+        double plotHeight = plotBottom - plotTop;
         // Invert Y axis (SVG has origin at top-left)
-        return sceneHeight - ((dataY - viewport.getYMin()) / viewportHeight) * sceneHeight;
+        return plotBottom - ((dataY - viewport.getYMin()) / viewportHeight) * plotHeight;
     }
 
     /**
