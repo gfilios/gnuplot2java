@@ -119,6 +119,28 @@ public class GnuplotScriptExecutor implements CommandVisitor {
         // Clear plots from previous plot command
         plots.clear();
 
+        // Update X range from plot command
+        if (command.getXRange() != null) {
+            PlotCommand.Range xRange = command.getXRange();
+            currentXMin = xRange.getMin() != null ? xRange.getMin() : -10.0;
+            currentXMax = xRange.getMax() != null ? xRange.getMax() : 10.0;
+        } else {
+            // Reset to default if no range specified
+            currentXMin = -10.0;
+            currentXMax = 10.0;
+        }
+
+        // Update Y range from plot command
+        if (command.getYRange() != null) {
+            PlotCommand.Range yRange = command.getYRange();
+            currentYMin = yRange.getMin();
+            currentYMax = yRange.getMax();
+        } else {
+            // Reset to auto-scale if no range specified
+            currentYMin = null;
+            currentYMax = null;
+        }
+
         int colorIndex = 0;  // Track color cycling for multi-plot commands
         for (PlotCommand.PlotSpec spec : command.getPlotSpecs()) {
             String expression = spec.getExpression();
@@ -190,15 +212,21 @@ public class GnuplotScriptExecutor implements CommandVisitor {
         variables.clear();
     }
 
+    // Current plot ranges (updated from plot command)
+    private double currentXMin = -10.0;
+    private double currentXMax = 10.0;
+    private Double currentYMin = null;  // null means auto-scale
+    private Double currentYMax = null;  // null means auto-scale
+
     /**
      * Generate points by evaluating the expression for x in a range.
      */
     private LinePlot.Point2D[] generatePoints(String expression) {
         LinePlot.Point2D[] points = new LinePlot.Point2D[samples];
 
-        // Default range: -10 to 10
-        double xMin = -10.0;
-        double xMax = 10.0;
+        // Use current X range
+        double xMin = currentXMin;
+        double xMax = currentXMax;
         double step = (xMax - xMin) / (samples - 1);
 
         // Parse expression once
@@ -241,34 +269,44 @@ public class GnuplotScriptExecutor implements CommandVisitor {
             return;
         }
 
-        // Auto-calculate Y range from plot data
-        double yMin = Double.POSITIVE_INFINITY;
-        double yMax = Double.NEGATIVE_INFINITY;
+        // Determine Y range: use explicit range if specified, otherwise auto-calculate
+        double yMin;
+        double yMax;
 
-        for (LinePlot plot : plots) {
-            for (LinePlot.Point2D point : plot.getPoints()) {
-                double y = point.getY();
-                if (Double.isFinite(y)) {
-                    yMin = Math.min(yMin, y);
-                    yMax = Math.max(yMax, y);
+        if (currentYMin != null && currentYMax != null) {
+            // Use explicit Y range from plot command
+            yMin = currentYMin;
+            yMax = currentYMax;
+        } else {
+            // Auto-calculate Y range from plot data
+            yMin = Double.POSITIVE_INFINITY;
+            yMax = Double.NEGATIVE_INFINITY;
+
+            for (LinePlot plot : plots) {
+                for (LinePlot.Point2D point : plot.getPoints()) {
+                    double y = point.getY();
+                    if (Double.isFinite(y)) {
+                        yMin = Math.min(yMin, y);
+                        yMax = Math.max(yMax, y);
+                    }
                 }
+            }
+
+            // Add 10% padding to auto-calculated Y range
+            if (Double.isFinite(yMin) && Double.isFinite(yMax)) {
+                double yRange = yMax - yMin;
+                double padding = yRange * 0.1;
+                yMin -= padding;
+                yMax += padding;
+            } else {
+                // Fallback if no valid data
+                yMin = -10;
+                yMax = 10;
             }
         }
 
-        // Add 10% padding to Y range
-        if (Double.isFinite(yMin) && Double.isFinite(yMax)) {
-            double yRange = yMax - yMin;
-            double padding = yRange * 0.1;
-            yMin -= padding;
-            yMax += padding;
-        } else {
-            // Fallback if no valid data
-            yMin = -10;
-            yMax = 10;
-        }
-
-        // Create viewport with auto-calculated Y range
-        Viewport viewport = Viewport.of2D(-10, 10, yMin, yMax);
+        // Create viewport with X range from plot command and calculated/specified Y range
+        Viewport viewport = Viewport.of2D(currentXMin, currentXMax, yMin, yMax);
 
         // Build scene
         Scene.Builder sceneBuilder = Scene.builder()
@@ -279,11 +317,11 @@ public class GnuplotScriptExecutor implements CommandVisitor {
             sceneBuilder.title(title);
         }
 
-        // Create and add X axis
+        // Create and add X axis with range from plot command
         Axis xAxis = Axis.builder()
                 .id("xaxis")
                 .axisType(Axis.AxisType.X_AXIS)
-                .range(-10.0, 10.0)
+                .range(currentXMin, currentXMax)
                 .showTicks(true)
                 .showGrid(grid)
                 .label(xlabel.isEmpty() ? null : xlabel)
@@ -291,7 +329,7 @@ public class GnuplotScriptExecutor implements CommandVisitor {
 
         sceneBuilder.addElement(xAxis);
 
-        // Create and add Y axis with auto-calculated range
+        // Create and add Y axis with calculated/specified range
         Axis yAxis = Axis.builder()
                 .id("yaxis")
                 .axisType(Axis.AxisType.Y_AXIS)

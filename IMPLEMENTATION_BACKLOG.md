@@ -3022,7 +3022,7 @@ See [TEST_DRIVEN_PLAN.md](TEST_DRIVEN_PLAN.md) for complete methodology.
 
 **Total**: ~1/100 demos passing (1%) - but with complete test infrastructure!
 
-**Latest Update**: 2025-10-04 - Completed Story TDD-4 (simple.dem) with full test infrastructure
+**Latest Update**: 2025-10-04 - Completed Story TDD-4 (simple.dem) + Range Parsing Implementation
 
 ### Epic TDD-1: Test Infrastructure (Week 1) ✅ COMPLETE
 
@@ -3087,9 +3087,22 @@ See [TEST_DRIVEN_PLAN.md](TEST_DRIVEN_PLAN.md) for complete methodology.
 - [x] Test infrastructure (DemoTestRunner, TestResultRepository, HtmlReportGenerator)
 - [x] C multi-page SVG splitting for visual comparison
 - [x] HTML report with all 8 plots side-by-side
+- [x] **Plot range parsing and application** (NEW - 2025-10-04):
+  * Parse X-range from `plot [xmin:xmax]` syntax
+  * Parse Y-range from `plot [xmin:xmax] [ymin:ymax]` syntax
+  * Evaluate range expressions: `-10`, `pi`, `-5*pi`, `5*pi/2`
+  * Handle auto-ranges: `[*:max]`, `[min:*]`, `[*:*]`
+  * Apply X-range to viewport, axes, and point generation
+  * Apply Y-range to viewport and axes (or auto-scale if not specified)
+  * Updated PlotCommand class with Range inner class
+  * Enhanced CommandBuilderVisitor with expression evaluation
+  * Modified GnuplotScriptExecutor to use ranges from commands
 
 **Completed**: 2025-10-04
-**Tests**: simple.dem ✅ PASSING (all 7 plots render correctly)
+**Tests**: simple.dem ✅ PASSING (all 8 plots render correctly with proper ranges)
+**Verification**:
+- Plot 1: `plot [-10:10] sin(x)` → X: -10 to 10, Y: auto-scaled to ±1.0 ✅
+- Plot 6: `plot [-5*pi:5*pi] [-5:5] func` → X: ±15 (5π≈15.7), Y: ±5 ✅
 
 **Story TDD-2.2: controls.dem Compliance** 🔴 P0 (13 SP)
 **Target**: Pass all control flow tests

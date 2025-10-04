@@ -9,13 +9,29 @@ import java.util.Objects;
  */
 public final class PlotCommand implements Command {
     private final List<PlotSpec> plotSpecs;
+    private final Range xRange;
+    private final Range yRange;
 
     public PlotCommand(List<PlotSpec> plotSpecs) {
+        this(plotSpecs, null, null);
+    }
+
+    public PlotCommand(List<PlotSpec> plotSpecs, Range xRange, Range yRange) {
         this.plotSpecs = Collections.unmodifiableList(Objects.requireNonNull(plotSpecs, "plotSpecs cannot be null"));
+        this.xRange = xRange;
+        this.yRange = yRange;
     }
 
     public List<PlotSpec> getPlotSpecs() {
         return plotSpecs;
+    }
+
+    public Range getXRange() {
+        return xRange;
+    }
+
+    public Range getYRange() {
+        return yRange;
     }
 
     @Override
@@ -25,7 +41,38 @@ public final class PlotCommand implements Command {
 
     @Override
     public String toString() {
-        return String.format("PLOT %s", plotSpecs);
+        return String.format("PLOT %s%s %s",
+            xRange != null ? xRange + " " : "",
+            yRange != null ? yRange + " " : "",
+            plotSpecs);
+    }
+
+    /**
+     * Represents a range specification [min:max].
+     */
+    public static final class Range {
+        private final Double min;  // null means auto (*)
+        private final Double max;  // null means auto (*)
+
+        public Range(Double min, Double max) {
+            this.min = min;
+            this.max = max;
+        }
+
+        public Double getMin() {
+            return min;
+        }
+
+        public Double getMax() {
+            return max;
+        }
+
+        @Override
+        public String toString() {
+            String minStr = min != null ? String.valueOf(min) : "*";
+            String maxStr = max != null ? String.valueOf(max) : "*";
+            return String.format("[%s:%s]", minStr, maxStr);
+        }
     }
 
     /**

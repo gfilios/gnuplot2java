@@ -93,6 +93,18 @@ public class CommandBuilderVisitor extends GnuplotCommandBaseVisitor<List<Comman
     public List<Command> visitPlotCommand(GnuplotCommandParser.PlotCommandContext ctx) {
         List<PlotCommand.PlotSpec> plotSpecs = new ArrayList<>();
 
+        // Extract X and Y ranges from plot command
+        PlotCommand.Range xRange = null;
+        PlotCommand.Range yRange = null;
+
+        List<GnuplotCommandParser.RangeContext> ranges = ctx.range();
+        if (!ranges.isEmpty()) {
+            xRange = parseRange(ranges.get(0));
+            if (ranges.size() > 1) {
+                yRange = parseRange(ranges.get(1));
+            }
+        }
+
         for (GnuplotCommandParser.PlotSpecContext specCtx : ctx.plotSpec()) {
             String expression;
             String title = null;
@@ -123,7 +135,7 @@ public class CommandBuilderVisitor extends GnuplotCommandBaseVisitor<List<Comman
             plotSpecs.add(new PlotCommand.PlotSpec(expression, title, style));
         }
 
-        commands.add(new PlotCommand(plotSpecs));
+        commands.add(new PlotCommand(plotSpecs, xRange, yRange));
         return commands;
     }
 
@@ -196,5 +208,110 @@ public class CommandBuilderVisitor extends GnuplotCommandBaseVisitor<List<Comman
         if (ctx.CENTER() != null) return "CENTER";
 
         return "TOP_RIGHT"; // default
+    }
+
+    /**
+     * Parse a range specification [min:max].
+     * Returns null for auto (*) values.
+     */
+    private PlotCommand.Range parseRange(GnuplotCommandParser.RangeContext ctx) {
+        if (ctx == null || ctx.rangeSpec() == null) {
+            return null;
+        }
+
+        GnuplotCommandParser.RangeSpecContext spec = ctx.rangeSpec();
+        Double min = null;
+        Double max = null;
+
+        // Parse min expression
+        if (spec.expression() != null && !spec.expression().isEmpty()) {
+            try {
+                min = evaluateExpression(spec.expression(0));
+            } catch (Exception e) {
+                // If evaluation fails, leave as null (auto)
+            }
+        }
+
+        // Parse max expression
+        if (spec.expression() != null && spec.expression().size() > 1) {
+            try {
+                max = evaluateExpression(spec.expression(1));
+            } catch (Exception e) {
+                // If evaluation fails, leave as null (auto)
+            }
+        }
+
+        // Handle explicit STAR tokens
+        if (spec.STAR() != null) {
+            // [*:expr] or [expr:*] or [*:*]
+            // Already handled by leaving min/max as null
+        }
+
+        return new PlotCommand.Range(min, max);
+    }
+
+    /**
+     * Evaluate a simple expression to a double value.
+     * Supports numbers, pi, and basic arithmetic.
+     */
+    private Double evaluateExpression(GnuplotCommandParser.ExpressionContext ctx) {
+        if (ctx == null) {
+            return null;
+        }
+
+        String text = ctx.getText();
+
+        // Handle special constants
+        if (text.equals("pi")) {
+            return Math.PI;
+        }
+
+        // Try to parse as number
+        try {
+            return Double.parseDouble(text);
+        } catch (NumberFormatException e) {
+            // Not a simple number
+        }
+
+        // Handle simple expressions like -10, -pi, 5*pi, -5*pi
+        if (text.contains("*")) {
+            String[] parts = text.split("\\*");
+            if (parts.length == 2) {
+                try {
+                    double left = evaluateSimpleValue(parts[0]);
+                    double right = evaluateSimpleValue(parts[1]);
+                    return left * right;
+                } catch (Exception e) {
+                    // Fall through
+                }
+            }
+        }
+
+        if (text.contains("/")) {
+            String[] parts = text.split("/");
+            if (parts.length == 2) {
+                try {
+                    double left = evaluateSimpleValue(parts[0]);
+                    double right = evaluateSimpleValue(parts[1]);
+                    return left / right;
+                } catch (Exception e) {
+                    // Fall through
+                }
+            }
+        }
+
+        // Try as simple value
+        return evaluateSimpleValue(text);
+    }
+
+    private double evaluateSimpleValue(String text) {
+        text = text.trim();
+        if (text.equals("pi")) {
+            return Math.PI;
+        }
+        if (text.startsWith("-pi")) {
+            return -Math.PI;
+        }
+        return Double.parseDouble(text);
     }
 }
