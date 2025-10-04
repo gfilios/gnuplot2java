@@ -116,4 +116,38 @@ class ScriptExecutionTest {
         // This test verifies the execution doesn't crash with multiple plots
         // Actual file verification would require setting output path to tempDir
     }
+
+    @Test
+    void executeScriptWithAxesRendering() throws IOException {
+        String script = """
+                set title "Plot with Axes"
+                set xlabel "X Values"
+                set ylabel "Y Values"
+                plot sin(x)
+                """;
+
+        GnuplotScript gnuplotScript = parser.parse(script);
+        executor.execute(gnuplotScript);
+
+        // Verify output file was created
+        Path outputFile = Path.of("output.svg");
+        assertThat(outputFile).exists();
+
+        // Read SVG content
+        String svgContent = Files.readString(outputFile);
+
+        // Verify axes are rendered (should have multiple <line> elements for axes and ticks)
+        int lineCount = svgContent.split("<line").length - 1;
+        assertThat(lineCount).as("Should render axis lines and tick marks").isGreaterThan(5);
+
+        // Verify axis labels are rendered
+        assertThat(svgContent).as("Should render X axis label").contains("X Values");
+        assertThat(svgContent).as("Should render Y axis label").contains("Y Values");
+
+        // Verify tick labels are rendered (should have numeric labels like "0", "2", "4", etc.)
+        assertThat(svgContent).as("Should render tick labels").contains("<text");
+
+        // Clean up
+        Files.deleteIfExists(outputFile);
+    }
 }

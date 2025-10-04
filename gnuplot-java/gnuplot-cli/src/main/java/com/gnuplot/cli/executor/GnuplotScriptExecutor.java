@@ -7,6 +7,7 @@ import com.gnuplot.core.parser.ExpressionParser;
 import com.gnuplot.core.parser.ParseResult;
 import com.gnuplot.render.Scene;
 import com.gnuplot.render.Viewport;
+import com.gnuplot.render.elements.Axis;
 import com.gnuplot.render.elements.LinePlot;
 import com.gnuplot.render.svg.SvgRenderer;
 
@@ -221,6 +222,30 @@ public class GnuplotScriptExecutor implements CommandVisitor {
         if (!title.isEmpty()) {
             sceneBuilder.title(title);
         }
+
+        // Create and add X axis
+        Axis xAxis = Axis.builder()
+                .id("xaxis")
+                .axisType(Axis.AxisType.X_AXIS)
+                .range(-10.0, 10.0)
+                .showTicks(true)
+                .showGrid(grid)
+                .label(xlabel.isEmpty() ? null : xlabel)
+                .build();
+
+        sceneBuilder.addElement(xAxis);
+
+        // Create and add Y axis
+        Axis yAxis = Axis.builder()
+                .id("yaxis")
+                .axisType(Axis.AxisType.Y_AXIS)
+                .range(-10.0, 10.0)
+                .showTicks(true)
+                .showGrid(grid)
+                .label(ylabel.isEmpty() ? null : ylabel)
+                .build();
+
+        sceneBuilder.addElement(yAxis);
 
         // Add all plots
         for (LinePlot plot : plots) {
