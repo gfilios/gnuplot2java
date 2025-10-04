@@ -312,13 +312,21 @@ public class DemoTestRunner {
                 String baseName = expectedOutputFile.getFileName().toString().replace(".svg", "");
                 Path parent = expectedOutputFile.getParent();
 
-                // Scan for numbered files
-                for (int i = 2; i <= 100; i++) { // Check up to 100 plots
-                    Path numberedFile = parent.resolve(String.format("%s_%03d.svg", baseName, i));
-                    if (Files.exists(numberedFile)) {
-                        additionalFiles.add(numberedFile);
-                    } else {
-                        break; // Stop when we find a gap
+                // Check if this is a multi-page SVG (C gnuplot creates these)
+                // If so, split it into separate files
+                List<Path> splitFiles = splitMultiPageSvg(outputFile, parent, baseName);
+                if (!splitFiles.isEmpty()) {
+                    // Multi-page SVG was split successfully
+                    additionalFiles.addAll(splitFiles);
+                } else {
+                    // Single-page SVG - scan for pre-existing numbered files (Java gnuplot creates these)
+                    for (int i = 2; i <= 100; i++) { // Check up to 100 plots
+                        Path numberedFile = parent.resolve(String.format("%s_%03d.svg", baseName, i));
+                        if (Files.exists(numberedFile)) {
+                            additionalFiles.add(numberedFile);
+                        } else {
+                            break; // Stop when we find a gap
+                        }
                     }
                 }
             }
@@ -330,6 +338,66 @@ public class DemoTestRunner {
             Thread.currentThread().interrupt();
             throw new IOException("Process execution interrupted", e);
         }
+    }
+
+    /**
+     * Split a multi-page SVG file (with multiple <svg> elements) into separate files.
+     * Returns list of additional SVG files created (excludes the first page which stays in original file).
+     */
+    private List<Path> splitMultiPageSvg(Path svgFile, Path outputDir, String baseName) throws IOException {
+        List<Path> additionalFiles = new ArrayList<>();
+
+        // Read the SVG file
+        String content = Files.readString(svgFile);
+
+        // Check if this is a multi-page SVG by counting <svg> tags
+        int svgCount = 0;
+        int pos = 0;
+        while ((pos = content.indexOf("<svg", pos)) != -1) {
+            svgCount++;
+            pos += 4;
+        }
+
+        // If only 1 <svg> element, no splitting needed
+        if (svgCount <= 1) {
+            return additionalFiles;
+        }
+
+        // Extract individual SVG elements
+        List<String> svgElements = new ArrayList<>();
+        int startPos = 0;
+        while (true) {
+            int svgStart = content.indexOf("<svg", startPos);
+            if (svgStart == -1) break;
+
+            int svgEnd = content.indexOf("</svg>", svgStart);
+            if (svgEnd == -1) break;
+            svgEnd += 6; // Include </svg>
+
+            String svgElement = content.substring(svgStart, svgEnd);
+            svgElements.add(svgElement);
+            startPos = svgEnd;
+        }
+
+        // Write each SVG to a separate file
+        for (int i = 0; i < svgElements.size(); i++) {
+            String svgContent = "<?xml version=\"1.0\" encoding=\"utf-8\"  standalone=\"no\"?>\n" + svgElements.get(i);
+
+            if (i == 0) {
+                // Overwrite the original file with just the first page
+                Files.writeString(svgFile, svgContent);
+            } else {
+                // Create numbered files for additional pages
+                Path numberedFile = outputDir.resolve(String.format("%s_%03d.svg", baseName, i + 1));
+                // Only write if file doesn't exist (avoid recursion)
+                if (!Files.exists(numberedFile)) {
+                    Files.writeString(numberedFile, svgContent);
+                }
+                additionalFiles.add(numberedFile);
+            }
+        }
+
+        return additionalFiles;
     }
 
     /**
