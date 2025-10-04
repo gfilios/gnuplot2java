@@ -199,12 +199,31 @@ public class HtmlReportGenerator {
         html.append("          <div class=\"implementation\">\n");
         html.append("            <h4>C Gnuplot</h4>\n");
         if (record.getCSvgOutput() != null && Files.exists(record.getCSvgOutput())) {
+            // Show main output
             Path relativePath = runDirectory.relativize(record.getCSvgOutput());
             html.append("            <div class=\"svg-output\">\n");
-            html.append("              <img src=\"").append(relativePath).append("\" alt=\"C Gnuplot output\">\n");
+            html.append("              <img src=\"").append(relativePath).append("\" alt=\"C Gnuplot output 1\">\n");
             html.append("            </div>\n");
-            html.append("            <p style=\"margin-top: 0.5rem; font-size: 0.85rem; color: #666;\">Size: ")
+            html.append("            <p style=\"margin-top: 0.5rem; font-size: 0.85rem; color: #666;\">Plot 1 - Size: ")
                 .append(Files.size(record.getCSvgOutput())).append(" bytes</p>\n");
+
+            // Look for numbered files (_002.svg, _003.svg, etc.)
+            String baseName = record.getCSvgOutput().getFileName().toString().replace(".svg", "");
+            Path outputDir = record.getCSvgOutput().getParent();
+            for (int i = 2; i <= 100; i++) {
+                Path numberedFile = outputDir.resolve(String.format("%s_%03d.svg", baseName, i));
+                if (Files.exists(numberedFile)) {
+                    Path numberedRelativePath = runDirectory.relativize(numberedFile);
+                    html.append("            <div class=\"svg-output\" style=\"margin-top: 1rem;\">\n");
+                    html.append("              <img src=\"").append(numberedRelativePath)
+                        .append("\" alt=\"C Gnuplot output ").append(i).append("\">\n");
+                    html.append("            </div>\n");
+                    html.append("            <p style=\"margin-top: 0.5rem; font-size: 0.85rem; color: #666;\">Plot ")
+                        .append(i).append(" - Size: ").append(Files.size(numberedFile)).append(" bytes</p>\n");
+                } else {
+                    break; // Stop when we find a gap
+                }
+            }
         } else {
             html.append("            <p style=\"color: #dc3545;\">No output generated</p>\n");
         }
@@ -228,12 +247,31 @@ public class HtmlReportGenerator {
         html.append("          <div class=\"implementation\">\n");
         html.append("            <h4>Java Gnuplot</h4>\n");
         if (record.getJavaSvgOutput() != null && Files.exists(record.getJavaSvgOutput())) {
+            // Show main output
             Path relativePath = runDirectory.relativize(record.getJavaSvgOutput());
             html.append("            <div class=\"svg-output\">\n");
-            html.append("              <img src=\"").append(relativePath).append("\" alt=\"Java Gnuplot output\">\n");
+            html.append("              <img src=\"").append(relativePath).append("\" alt=\"Java Gnuplot output 1\">\n");
             html.append("            </div>\n");
-            html.append("            <p style=\"margin-top: 0.5rem; font-size: 0.85rem; color: #666;\">Size: ")
+            html.append("            <p style=\"margin-top: 0.5rem; font-size: 0.85rem; color: #666;\">Plot 1 - Size: ")
                 .append(Files.size(record.getJavaSvgOutput())).append(" bytes</p>\n");
+
+            // Look for numbered files (_002.svg, _003.svg, etc.)
+            String baseName = record.getJavaSvgOutput().getFileName().toString().replace(".svg", "");
+            Path outputDir = record.getJavaSvgOutput().getParent();
+            for (int i = 2; i <= 100; i++) {
+                Path numberedFile = outputDir.resolve(String.format("%s_%03d.svg", baseName, i));
+                if (Files.exists(numberedFile)) {
+                    Path numberedRelativePath = runDirectory.relativize(numberedFile);
+                    html.append("            <div class=\"svg-output\" style=\"margin-top: 1rem;\">\n");
+                    html.append("              <img src=\"").append(numberedRelativePath)
+                        .append("\" alt=\"Java Gnuplot output ").append(i).append("\">\n");
+                    html.append("            </div>\n");
+                    html.append("            <p style=\"margin-top: 0.5rem; font-size: 0.85rem; color: #666;\">Plot ")
+                        .append(i).append(" - Size: ").append(Files.size(numberedFile)).append(" bytes</p>\n");
+                } else {
+                    break; // Stop when we find a gap
+                }
+            }
         } else {
             html.append("            <p style=\"color: #dc3545;\">No output generated</p>\n");
         }
