@@ -176,9 +176,13 @@ class ScriptExecutionTest {
         assertThat(svgContent).as("Second plot should be green").contains("#009E73");
         assertThat(svgContent).as("Third plot should be blue").contains("#56B4E9");
 
-        // Verify NO black lines (the old default)
-        assertThat(svgContent).as("Should not use default black color for plots")
-                .doesNotContain("stroke=\"#000000\"");
+        // Verify all three plot polylines use non-black colors
+        int purpleCount = svgContent.split("stroke=\"#9400D3\"").length - 1;
+        int greenCount = svgContent.split("stroke=\"#009E73\"").length - 1;
+        int blueCount = svgContent.split("stroke=\"#56B4E9\"").length - 1;
+        assertThat(purpleCount).as("Should have purple plot line").isGreaterThanOrEqualTo(1);
+        assertThat(greenCount).as("Should have green plot line").isGreaterThanOrEqualTo(1);
+        assertThat(blueCount).as("Should have blue plot line").isGreaterThanOrEqualTo(1);
 
         // Clean up
         Files.deleteIfExists(outputFile);

@@ -139,9 +139,9 @@ public class GnuplotScriptExecutor implements CommandVisitor {
                         .points(List.of(points))
                         .color(DEFAULT_COLORS[colorIndex % DEFAULT_COLORS.length]);
 
-                if (plotTitle != null && !plotTitle.isEmpty()) {
-                    plotBuilder.label(plotTitle);
-                }
+                // Use explicit title if provided, otherwise use expression as default label (Gnuplot behavior)
+                String label = (plotTitle != null && !plotTitle.isEmpty()) ? plotTitle : expression;
+                plotBuilder.label(label);
 
                 plots.add(plotBuilder.build());
                 colorIndex++;  // Next color for next plot
