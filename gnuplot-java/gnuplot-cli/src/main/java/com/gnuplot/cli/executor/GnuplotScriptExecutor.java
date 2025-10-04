@@ -43,6 +43,9 @@ public class GnuplotScriptExecutor implements CommandVisitor {
     // Current scene elements
     private final List<LinePlot> plots = new ArrayList<>();
 
+    // Accumulated scenes (for multi-page rendering)
+    private final List<Scene> scenes = new ArrayList<>();
+
     @Override
     public void visitSetCommand(SetCommand command) {
         String option = command.getOption();
@@ -82,8 +85,8 @@ public class GnuplotScriptExecutor implements CommandVisitor {
 
     @Override
     public void visitPlotCommand(PlotCommand command) {
-        // Don't clear - accumulate all plots in one scene
-        // plots.clear();
+        // Clear plots from previous plot command
+        plots.clear();
 
         for (PlotCommand.PlotSpec spec : command.getPlotSpecs()) {
             String expression = spec.getExpression();
@@ -111,8 +114,8 @@ public class GnuplotScriptExecutor implements CommandVisitor {
             }
         }
 
-        // Render after each plot command
-        renderCurrentScene();
+        // Create a scene from current plots and add to scenes list
+        createAndAddScene();
     }
 
     @Override
@@ -197,9 +200,13 @@ public class GnuplotScriptExecutor implements CommandVisitor {
     }
 
     /**
-     * Render the current scene to the output file.
+     * Create a scene from current plots and settings, and add to scenes list.
      */
-    private void renderCurrentScene() {
+    private void createAndAddScene() {
+        if (plots.isEmpty()) {
+            return;
+        }
+
         // Create viewport (auto-calculate from data or use defaults)
         Viewport viewport = Viewport.of2D(-10, 10, -10, 10);
 
@@ -217,15 +224,50 @@ public class GnuplotScriptExecutor implements CommandVisitor {
             sceneBuilder.addElement(plot);
         }
 
-        Scene scene = sceneBuilder.build();
+        scenes.add(sceneBuilder.build());
+    }
 
-        // Render to file
+    /**
+     * Render all accumulated scenes as multi-page SVG to the output file.
+     */
+    private void renderAllScenes() {
+        if (scenes.isEmpty()) {
+            return;
+        }
+
         try (FileOutputStream out = new FileOutputStream(outputFile)) {
-            renderer.render(scene, out);
-            System.out.println("Rendered to: " + outputFile);
+            renderMultiPageSvg(scenes, out);
+            System.out.println("Rendered " + scenes.size() + " scenes to: " + outputFile);
         } catch (Exception e) {
             System.err.println("Failed to render: " + e.getMessage());
         }
+    }
+
+    /**
+     * Render multiple scenes as separate SVG elements in one file (multi-page SVG).
+     */
+    private void renderMultiPageSvg(List<Scene> sceneList, FileOutputStream out) throws Exception {
+        java.io.OutputStreamWriter writer = new java.io.OutputStreamWriter(out, java.nio.charset.StandardCharsets.UTF_8);
+
+        // Write XML header once
+        writer.write("<?xml version=\"1.0\" encoding=\"utf-8\"  standalone=\"no\"?>\n");
+
+        // Render each scene as a separate <svg> element
+        for (Scene scene : sceneList) {
+            // Render to a ByteArrayOutputStream first
+            java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+            renderer.render(scene, baos);
+
+            // Extract just the <svg>...</svg> part (skip XML header)
+            String svgContent = baos.toString("UTF-8");
+            int svgStart = svgContent.indexOf("<svg");
+            if (svgStart >= 0) {
+                writer.write(svgContent.substring(svgStart));
+                writer.write("\n");
+            }
+        }
+
+        writer.flush();
     }
 
     /**
@@ -296,5 +338,8 @@ public class GnuplotScriptExecutor implements CommandVisitor {
         for (Command command : script.getCommands()) {
             command.accept(this);
         }
+
+        // After executing all commands, render all accumulated scenes
+        renderAllScenes();
     }
 }
