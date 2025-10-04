@@ -183,4 +183,31 @@ class ScriptExecutionTest {
         // Clean up
         Files.deleteIfExists(outputFile);
     }
+
+    @Test
+    void executeScriptWithLegendRendering() throws IOException {
+        String script = """
+                set key left box
+                plot sin(x) title "Sine", cos(x) title "Cosine"
+                """;
+
+        GnuplotScript gnuplotScript = parser.parse(script);
+        executor.execute(gnuplotScript);
+
+        Path outputFile = Path.of("output.svg");
+        assertThat(outputFile).exists();
+
+        String svgContent = Files.readString(outputFile);
+
+        // Verify legend text labels are rendered
+        assertThat(svgContent).as("Should render 'Sine' label").contains("Sine");
+        assertThat(svgContent).as("Should render 'Cosine' label").contains("Cosine");
+
+        // Verify legend has colored lines (should match plot colors)
+        assertThat(svgContent).as("Should have purple color").contains("#9400D3");
+        assertThat(svgContent).as("Should have green color").contains("#009E73");
+
+        // Clean up
+        Files.deleteIfExists(outputFile);
+    }
 }

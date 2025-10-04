@@ -8,6 +8,7 @@ import com.gnuplot.core.parser.ParseResult;
 import com.gnuplot.render.Scene;
 import com.gnuplot.render.Viewport;
 import com.gnuplot.render.elements.Axis;
+import com.gnuplot.render.elements.Legend;
 import com.gnuplot.render.elements.LinePlot;
 import com.gnuplot.render.svg.SvgRenderer;
 
@@ -53,6 +54,11 @@ public class GnuplotScriptExecutor implements CommandVisitor {
     private String outputFile = "output.svg";
     private final Map<String, Double> variables = new HashMap<>();
 
+    // Legend/key state
+    private String keyPosition = "TOP_RIGHT";
+    private boolean keyShowBorder = true;
+    private boolean keyHorizontal = false;
+
     // Current scene elements
     private final List<LinePlot> plots = new ArrayList<>();
 
@@ -94,6 +100,15 @@ public class GnuplotScriptExecutor implements CommandVisitor {
             case "output":
                 if (value instanceof String) {
                     outputFile = (String) value;
+                }
+                break;
+            case "key":
+                if (value instanceof Map) {
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> keySettings = (Map<String, Object>) value;
+                    keyPosition = (String) keySettings.getOrDefault("position", "TOP_RIGHT");
+                    keyShowBorder = (Boolean) keySettings.getOrDefault("showBorder", true);
+                    keyHorizontal = (Boolean) keySettings.getOrDefault("horizontal", false);
                 }
                 break;
         }
@@ -267,7 +282,46 @@ public class GnuplotScriptExecutor implements CommandVisitor {
             sceneBuilder.addElement(plot);
         }
 
+        // Create and add legend if any plot has a label
+        boolean hasLabels = plots.stream().anyMatch(plot -> plot.getLabel() != null && !plot.getLabel().isEmpty());
+        if (hasLabels) {
+            Legend.Builder legendBuilder = Legend.builder()
+                    .id("legend")
+                    .position(mapPosition(keyPosition))
+                    .showBorder(keyShowBorder)
+                    .columns(keyHorizontal ? plots.size() : 1);
+
+            // Add entry for each plot with a label
+            for (LinePlot plot : plots) {
+                if (plot.getLabel() != null && !plot.getLabel().isEmpty()) {
+                    legendBuilder.addEntry(plot.getLabel(), plot.getColor(), plot.getLineStyle());
+                }
+            }
+
+            sceneBuilder.addElement(legendBuilder.build());
+        }
+
         scenes.add(sceneBuilder.build());
+    }
+
+    /**
+     * Map key position string to Legend.Position enum.
+     */
+    private Legend.Position mapPosition(String position) {
+        return switch (position) {
+            case "LEFT" -> Legend.Position.LEFT_CENTER;
+            case "RIGHT" -> Legend.Position.RIGHT_CENTER;
+            case "TOP" -> Legend.Position.TOP_CENTER;
+            case "BOTTOM" -> Legend.Position.BOTTOM_CENTER;
+            case "CENTER" -> Legend.Position.CENTER;
+            case "TOP_LEFT" -> Legend.Position.TOP_LEFT;
+            case "TOP_RIGHT" -> Legend.Position.TOP_RIGHT;
+            case "BOTTOM_LEFT" -> Legend.Position.BOTTOM_LEFT;
+            case "BOTTOM_RIGHT" -> Legend.Position.BOTTOM_RIGHT;
+            case "TOP_CENTER" -> Legend.Position.TOP_CENTER;
+            case "BOTTOM_CENTER" -> Legend.Position.BOTTOM_CENTER;
+            default -> Legend.Position.TOP_RIGHT;
+        };
     }
 
     /**
