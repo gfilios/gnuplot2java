@@ -1,6 +1,7 @@
 package com.gnuplot.render.svg;
 
 import com.gnuplot.render.*;
+import com.gnuplot.render.axis.TickGenerator;
 import com.gnuplot.render.color.Color;
 import com.gnuplot.render.elements.Axis;
 import com.gnuplot.render.elements.BarChart;
@@ -465,35 +466,101 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
     @Override
     public void visitAxis(Axis axis) {
         try {
-            // For now, render a simple axis line
             if (axis.getAxisType() == Axis.AxisType.X_AXIS) {
-                double y = mapY(0);
-                writer.write(String.format(Locale.US,
-                        "  <line x1=\"0\" y1=\"%.2f\" x2=\"%d\" y2=\"%.2f\" stroke=\"#000\" stroke-width=\"1\"/>\n",
-                        y, scene.getWidth(), y));
-
-                // Axis label
-                if (axis.getLabel() != null) {
-                    writer.write(String.format(Locale.US,
-                            "  <text x=\"%d\" y=\"%.2f\" text-anchor=\"middle\" font-size=\"12\">%s</text>\n",
-                            scene.getWidth() / 2, y + 25, escapeXml(axis.getLabel())));
-                }
+                renderXAxis(axis);
             } else if (axis.getAxisType() == Axis.AxisType.Y_AXIS) {
-                double x = mapX(0);
-                writer.write(String.format(Locale.US,
-                        "  <line x1=\"%.2f\" y1=\"0\" x2=\"%.2f\" y2=\"%d\" stroke=\"#000\" stroke-width=\"1\"/>\n",
-                        x, x, scene.getHeight()));
-
-                // Axis label
-                if (axis.getLabel() != null) {
-                    writer.write(String.format(Locale.US,
-                            "  <text x=\"%.2f\" y=\"%d\" text-anchor=\"middle\" font-size=\"12\" transform=\"rotate(-90 %.2f %d)\">%s</text>\n",
-                            x - 30, scene.getHeight() / 2, x - 30, scene.getHeight() / 2, escapeXml(axis.getLabel())));
-                }
+                renderYAxis(axis);
             }
-
         } catch (IOException e) {
             throw new RuntimeException("Failed to render axis", e);
+        }
+    }
+
+    private void renderXAxis(Axis axis) throws IOException {
+        double y = mapY(0);
+
+        // Render axis line
+        writer.write(String.format(Locale.US,
+                "  <line x1=\"0\" y1=\"%.2f\" x2=\"%d\" y2=\"%.2f\" stroke=\"#000\" stroke-width=\"1\"/>\n",
+                y, scene.getWidth(), y));
+
+        // Render ticks and labels if enabled
+        if (axis.isShowTicks()) {
+            var ticks = axis.generateTicks();
+            for (var tick : ticks) {
+                double x = mapX(tick.getPosition());
+
+                // Tick mark (small line perpendicular to axis)
+                int tickLength = tick.getType() == TickGenerator.TickType.MINOR ? 3 : 6;
+                writer.write(String.format(Locale.US,
+                        "  <line x1=\"%.2f\" y1=\"%.2f\" x2=\"%.2f\" y2=\"%.2f\" stroke=\"#000\" stroke-width=\"1\"/>\n",
+                        x, y, x, y + tickLength));
+
+                // Tick label (only for major ticks)
+                if (tick.getType() == TickGenerator.TickType.MAJOR && tick.getLabel() != null) {
+                    writer.write(String.format(Locale.US,
+                            "  <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\" font-size=\"10\">%s</text>\n",
+                            x, y + 18, escapeXml(tick.getLabel())));
+                }
+
+                // Grid line if enabled
+                if (axis.isShowGrid() && tick.getType() == TickGenerator.TickType.MAJOR) {
+                    writer.write(String.format(Locale.US,
+                            "  <line x1=\"%.2f\" y1=\"0\" x2=\"%.2f\" y2=\"%d\" stroke=\"#ccc\" stroke-width=\"0.5\" stroke-dasharray=\"2,2\"/>\n",
+                            x, x, scene.getHeight()));
+                }
+            }
+        }
+
+        // Axis label
+        if (axis.getLabel() != null) {
+            writer.write(String.format(Locale.US,
+                    "  <text x=\"%d\" y=\"%.2f\" text-anchor=\"middle\" font-size=\"12\">%s</text>\n",
+                    scene.getWidth() / 2, y + 35, escapeXml(axis.getLabel())));
+        }
+    }
+
+    private void renderYAxis(Axis axis) throws IOException {
+        double x = mapX(0);
+
+        // Render axis line
+        writer.write(String.format(Locale.US,
+                "  <line x1=\"%.2f\" y1=\"0\" x2=\"%.2f\" y2=\"%d\" stroke=\"#000\" stroke-width=\"1\"/>\n",
+                x, x, scene.getHeight()));
+
+        // Render ticks and labels if enabled
+        if (axis.isShowTicks()) {
+            var ticks = axis.generateTicks();
+            for (var tick : ticks) {
+                double y = mapY(tick.getPosition());
+
+                // Tick mark (small line perpendicular to axis)
+                int tickLength = tick.getType() == TickGenerator.TickType.MINOR ? 3 : 6;
+                writer.write(String.format(Locale.US,
+                        "  <line x1=\"%.2f\" y1=\"%.2f\" x2=\"%.2f\" y2=\"%.2f\" stroke=\"#000\" stroke-width=\"1\"/>\n",
+                        x, y, x - tickLength, y));
+
+                // Tick label (only for major ticks)
+                if (tick.getType() == TickGenerator.TickType.MAJOR && tick.getLabel() != null) {
+                    writer.write(String.format(Locale.US,
+                            "  <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"end\" font-size=\"10\">%s</text>\n",
+                            x - 10, y + 4, escapeXml(tick.getLabel())));
+                }
+
+                // Grid line if enabled
+                if (axis.isShowGrid() && tick.getType() == TickGenerator.TickType.MAJOR) {
+                    writer.write(String.format(Locale.US,
+                            "  <line x1=\"0\" y1=\"%.2f\" x2=\"%d\" y2=\"%.2f\" stroke=\"#ccc\" stroke-width=\"0.5\" stroke-dasharray=\"2,2\"/>\n",
+                            y, scene.getWidth(), y));
+                }
+            }
+        }
+
+        // Axis label
+        if (axis.getLabel() != null) {
+            writer.write(String.format(Locale.US,
+                    "  <text x=\"%.2f\" y=\"%d\" text-anchor=\"middle\" font-size=\"12\" transform=\"rotate(-90 %.2f %d)\">%s</text>\n",
+                    x - 40, scene.getHeight() / 2, x - 40, scene.getHeight() / 2, escapeXml(axis.getLabel())));
         }
     }
 

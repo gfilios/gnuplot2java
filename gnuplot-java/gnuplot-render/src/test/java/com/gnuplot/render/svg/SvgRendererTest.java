@@ -176,6 +176,83 @@ class SvgRendererTest {
     }
 
     @Test
+    void testAxisWithTicksAndLabels() throws Exception {
+        // Create X axis with ticks enabled
+        Axis xAxis = Axis.builder()
+                .id("xaxis")
+                .axisType(Axis.AxisType.X_AXIS)
+                .range(0.0, 10.0)
+                .label("X Axis")
+                .showTicks(true)
+                .build();
+
+        Scene scene = Scene.builder()
+                .dimensions(800, 600)
+                .viewport(Viewport.of2D(0.0, 10.0, -5.0, 5.0))
+                .addElement(xAxis)
+                .build();
+
+        SvgRenderer renderer = new SvgRenderer();
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+
+        renderer.render(scene, output);
+
+        String svg = output.toString(StandardCharsets.UTF_8);
+
+        // Should contain axis line
+        assertTrue(svg.contains("<line"), "Should render axis line");
+
+        // Should contain tick marks (small lines perpendicular to axis)
+        // Tick marks are rendered as small line segments
+        assertTrue(svg.split("<line").length > 2, "Should render multiple tick mark lines");
+
+        // Should contain tick labels (numbers at tick positions)
+        assertTrue(svg.contains("<text"), "Should render tick labels");
+        // Should have numeric labels like "0", "2", "4", "6", "8", "10"
+        assertTrue(svg.contains(">0<") || svg.contains(">0."), "Should have label for 0");
+        assertTrue(svg.contains(">10<") || svg.contains(">10."), "Should have label for 10");
+    }
+
+    @Test
+    void testAxisWithGrid() throws Exception {
+        // Create X axis with grid enabled
+        Axis xAxis = Axis.builder()
+                .id("xaxis")
+                .axisType(Axis.AxisType.X_AXIS)
+                .range(0.0, 10.0)
+                .showGrid(true)
+                .build();
+
+        Axis yAxis = Axis.builder()
+                .id("yaxis")
+                .axisType(Axis.AxisType.Y_AXIS)
+                .range(-5.0, 5.0)
+                .showGrid(true)
+                .build();
+
+        Scene scene = Scene.builder()
+                .dimensions(800, 600)
+                .viewport(Viewport.of2D(0.0, 10.0, -5.0, 5.0))
+                .addElement(xAxis)
+                .addElement(yAxis)
+                .build();
+
+        SvgRenderer renderer = new SvgRenderer();
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+
+        renderer.render(scene, output);
+
+        String svg = output.toString(StandardCharsets.UTF_8);
+
+        // Should contain grid lines
+        assertTrue(svg.contains("stroke-dasharray"), "Grid lines should be dashed");
+
+        // Should have multiple lines (grid + axes)
+        int lineCount = svg.split("<line").length - 1;
+        assertTrue(lineCount > 5, "Should have multiple grid lines, found: " + lineCount);
+    }
+
+    @Test
     void testLegend() throws Exception {
         Legend legend = Legend.builder()
                 .id("legend1")
