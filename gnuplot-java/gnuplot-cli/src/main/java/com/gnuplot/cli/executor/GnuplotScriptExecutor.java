@@ -228,46 +228,39 @@ public class GnuplotScriptExecutor implements CommandVisitor {
     }
 
     /**
-     * Render all accumulated scenes as multi-page SVG to the output file.
+     * Render all accumulated scenes to separate numbered output files.
      */
     private void renderAllScenes() {
         if (scenes.isEmpty()) {
             return;
         }
 
-        try (FileOutputStream out = new FileOutputStream(outputFile)) {
-            renderMultiPageSvg(scenes, out);
-            System.out.println("Rendered " + scenes.size() + " scenes to: " + outputFile);
-        } catch (Exception e) {
-            System.err.println("Failed to render: " + e.getMessage());
+        // Generate base filename (remove .svg extension if present)
+        String baseName = outputFile;
+        if (baseName.endsWith(".svg")) {
+            baseName = baseName.substring(0, baseName.length() - 4);
         }
-    }
 
-    /**
-     * Render multiple scenes as separate SVG elements in one file (multi-page SVG).
-     */
-    private void renderMultiPageSvg(List<Scene> sceneList, FileOutputStream out) throws Exception {
-        java.io.OutputStreamWriter writer = new java.io.OutputStreamWriter(out, java.nio.charset.StandardCharsets.UTF_8);
+        // Render each scene to a separate file
+        for (int i = 0; i < scenes.size(); i++) {
+            String filename;
+            if (i == 0) {
+                // First file uses original name
+                filename = outputFile;
+            } else {
+                // Subsequent files use numbered suffix: output_002.svg, output_003.svg, etc.
+                filename = String.format("%s_%03d.svg", baseName, i + 1);
+            }
 
-        // Write XML header once
-        writer.write("<?xml version=\"1.0\" encoding=\"utf-8\"  standalone=\"no\"?>\n");
-
-        // Render each scene as a separate <svg> element
-        for (Scene scene : sceneList) {
-            // Render to a ByteArrayOutputStream first
-            java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
-            renderer.render(scene, baos);
-
-            // Extract just the <svg>...</svg> part (skip XML header)
-            String svgContent = baos.toString("UTF-8");
-            int svgStart = svgContent.indexOf("<svg");
-            if (svgStart >= 0) {
-                writer.write(svgContent.substring(svgStart));
-                writer.write("\n");
+            try (FileOutputStream out = new FileOutputStream(filename)) {
+                renderer.render(scenes.get(i), out);
+                System.out.println("Rendered scene " + (i + 1) + " to: " + filename);
+            } catch (Exception e) {
+                System.err.println("Failed to render scene " + (i + 1) + ": " + e.getMessage());
             }
         }
 
-        writer.flush();
+        System.out.println("Total: " + scenes.size() + " scenes rendered");
     }
 
     /**
