@@ -27,6 +27,18 @@ import java.util.Map;
  */
 public class GnuplotScriptExecutor implements CommandVisitor {
 
+    // Gnuplot default color palette
+    private static final String[] DEFAULT_COLORS = {
+        "#9400D3",  // Purple
+        "#009E73",  // Green
+        "#56B4E9",  // Blue
+        "#E69F00",  // Orange
+        "#F0E442",  // Yellow
+        "#0072B2",  // Dark Blue
+        "#D55E00",  // Red-Orange
+        "#CC79A7"   // Pink
+    };
+
     private final ExpressionParser expressionParser = new ExpressionParser();
     private final EvaluationContext evaluationContext = new EvaluationContext();
     private final Evaluator evaluator = new Evaluator(evaluationContext);
@@ -92,6 +104,7 @@ public class GnuplotScriptExecutor implements CommandVisitor {
         // Clear plots from previous plot command
         plots.clear();
 
+        int colorIndex = 0;  // Track color cycling for multi-plot commands
         for (PlotCommand.PlotSpec spec : command.getPlotSpecs()) {
             String expression = spec.getExpression();
             String plotTitle = spec.getTitle();
@@ -108,13 +121,15 @@ public class GnuplotScriptExecutor implements CommandVisitor {
             if (points.length > 0) {
                 LinePlot.Builder plotBuilder = LinePlot.builder()
                         .id("plot_" + plots.size())
-                        .points(List.of(points));
+                        .points(List.of(points))
+                        .color(DEFAULT_COLORS[colorIndex % DEFAULT_COLORS.length]);
 
                 if (plotTitle != null && !plotTitle.isEmpty()) {
                     plotBuilder.label(plotTitle);
                 }
 
                 plots.add(plotBuilder.build());
+                colorIndex++;  // Next color for next plot
             }
         }
 

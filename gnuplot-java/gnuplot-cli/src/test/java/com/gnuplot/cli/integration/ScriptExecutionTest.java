@@ -150,4 +150,31 @@ class ScriptExecutionTest {
         // Clean up
         Files.deleteIfExists(outputFile);
     }
+
+    @Test
+    void executeMultiPlotCommandWithDifferentColors() throws IOException {
+        String script = """
+                plot sin(x), cos(x), tan(x)
+                """;
+
+        GnuplotScript gnuplotScript = parser.parse(script);
+        executor.execute(gnuplotScript);
+
+        Path outputFile = Path.of("output.svg");
+        assertThat(outputFile).exists();
+
+        String svgContent = Files.readString(outputFile);
+
+        // Verify each plot has different color (Gnuplot default palette)
+        assertThat(svgContent).as("First plot should be purple").contains("#9400D3");
+        assertThat(svgContent).as("Second plot should be green").contains("#009E73");
+        assertThat(svgContent).as("Third plot should be blue").contains("#56B4E9");
+
+        // Verify NO black lines (the old default)
+        assertThat(svgContent).as("Should not use default black color for plots")
+                .doesNotContain("stroke=\"#000000\"");
+
+        // Clean up
+        Files.deleteIfExists(outputFile);
+    }
 }
