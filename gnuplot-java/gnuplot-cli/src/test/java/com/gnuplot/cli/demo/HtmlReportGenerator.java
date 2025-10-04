@@ -113,9 +113,15 @@ public class HtmlReportGenerator {
         html.append("    .warning-line { color: #ffd93d; }\n");
         html.append("    .success-line { color: #6bcf7f; }\n");
         html.append("    .script-section { margin-top: 1rem; }\n");
-        html.append("    .script-content { background: #f5f5f5; padding: 1rem; border-radius: 4px; ");
-        html.append("                      font-family: 'Courier New', monospace; font-size: 0.85rem; ");
-        html.append("                      overflow-x: auto; max-height: 400px; overflow-y: auto; }\n");
+        html.append("    .script-section h4 { transition: background 0.2s; padding: 0.5rem; ");
+        html.append("                         border-radius: 4px; margin: 0; }\n");
+        html.append("    .script-section h4:hover { background: #f0f0f0; }\n");
+        html.append("    .script-content { background: #f5f5f5; padding: 0; border-radius: 4px; ");
+        html.append("                      overflow-x: auto; max-height: 400px; overflow-y: auto; ");
+        html.append("                      margin-top: 0.5rem; }\n");
+        html.append("    .script-content pre { margin: 0; padding: 1rem; ");
+        html.append("                          font-family: 'Courier New', monospace; font-size: 0.85rem; ");
+        html.append("                          white-space: pre-wrap; word-wrap: break-word; }\n");
         html.append("    .toggle-icon { transition: transform 0.3s; }\n");
         html.append("    .toggle-icon.expanded { transform: rotate(90deg); }\n");
     }
@@ -184,12 +190,17 @@ public class HtmlReportGenerator {
         html.append("      <div class=\"test-details\" id=\"details-")
             .append(record.getDemoName().replace(".dem", "")).append("\">\n");
 
-        // Script content
+        // Script content (collapsible)
         if (record.getOriginalScript() != null && Files.exists(record.getOriginalScript())) {
+            String demoId = record.getDemoName().replace(".dem", "");
             html.append("        <div class=\"script-section\">\n");
-            html.append("          <h4>📝 Original Script</h4>\n");
-            html.append("          <div class=\"script-content\">");
-            html.append(escapeHtml(Files.readString(record.getOriginalScript())));
+            html.append("          <h4 onclick=\"toggleScript('").append(demoId).append("')\" ");
+            html.append("style=\"cursor: pointer; user-select: none;\">");
+            html.append("<span class=\"toggle-icon\" id=\"script-icon-").append(demoId).append("\">▶</span> ");
+            html.append("📝 Original Script</h4>\n");
+            html.append("          <div class=\"script-content\" id=\"script-").append(demoId).append("\" ");
+            html.append("style=\"display: none;\">");
+            html.append("<pre>").append(escapeHtml(Files.readString(record.getOriginalScript()))).append("</pre>");
             html.append("</div>\n");
             html.append("        </div>\n");
         }
@@ -306,6 +317,17 @@ public class HtmlReportGenerator {
         html.append("      const icon = document.getElementById('icon-' + id);\n");
         html.append("      details.classList.toggle('expanded');\n");
         html.append("      icon.classList.toggle('expanded');\n");
+        html.append("    }\n");
+        html.append("    function toggleScript(id) {\n");
+        html.append("      const script = document.getElementById('script-' + id);\n");
+        html.append("      const icon = document.getElementById('script-icon-' + id);\n");
+        html.append("      if (script.style.display === 'none') {\n");
+        html.append("        script.style.display = 'block';\n");
+        html.append("        icon.classList.add('expanded');\n");
+        html.append("      } else {\n");
+        html.append("        script.style.display = 'none';\n");
+        html.append("        icon.classList.remove('expanded');\n");
+        html.append("      }\n");
         html.append("    }\n");
         html.append("  </script>\n");
     }
