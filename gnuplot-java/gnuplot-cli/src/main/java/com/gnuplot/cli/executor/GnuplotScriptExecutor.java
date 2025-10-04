@@ -241,8 +241,34 @@ public class GnuplotScriptExecutor implements CommandVisitor {
             return;
         }
 
-        // Create viewport (auto-calculate from data or use defaults)
-        Viewport viewport = Viewport.of2D(-10, 10, -10, 10);
+        // Auto-calculate Y range from plot data
+        double yMin = Double.POSITIVE_INFINITY;
+        double yMax = Double.NEGATIVE_INFINITY;
+
+        for (LinePlot plot : plots) {
+            for (LinePlot.Point2D point : plot.getPoints()) {
+                double y = point.getY();
+                if (Double.isFinite(y)) {
+                    yMin = Math.min(yMin, y);
+                    yMax = Math.max(yMax, y);
+                }
+            }
+        }
+
+        // Add 10% padding to Y range
+        if (Double.isFinite(yMin) && Double.isFinite(yMax)) {
+            double yRange = yMax - yMin;
+            double padding = yRange * 0.1;
+            yMin -= padding;
+            yMax += padding;
+        } else {
+            // Fallback if no valid data
+            yMin = -10;
+            yMax = 10;
+        }
+
+        // Create viewport with auto-calculated Y range
+        Viewport viewport = Viewport.of2D(-10, 10, yMin, yMax);
 
         // Build scene
         Scene.Builder sceneBuilder = Scene.builder()
@@ -265,11 +291,11 @@ public class GnuplotScriptExecutor implements CommandVisitor {
 
         sceneBuilder.addElement(xAxis);
 
-        // Create and add Y axis
+        // Create and add Y axis with auto-calculated range
         Axis yAxis = Axis.builder()
                 .id("yaxis")
                 .axisType(Axis.AxisType.Y_AXIS)
-                .range(-10.0, 10.0)
+                .range(yMin, yMax)
                 .showTicks(true)
                 .showGrid(grid)
                 .label(ylabel.isEmpty() ? null : ylabel)
