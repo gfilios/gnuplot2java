@@ -5,7 +5,9 @@ import com.gnuplot.cli.GnuplotCommandParser;
 import com.gnuplot.cli.command.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Visitor that builds Command objects from the ANTLR parse tree.
@@ -54,7 +56,29 @@ public class CommandBuilderVisitor extends GnuplotCommandBaseVisitor<List<Comman
                 int samples = Integer.parseInt(samplesCtx.NUMBER().getText());
                 commands.add(new SetCommand("samples", samples));
             } else if (optCtx instanceof GnuplotCommandParser.SetKeyContext) {
-                commands.add(new SetCommand("key", optCtx.getText()));
+                GnuplotCommandParser.SetKeyContext keyCtx = (GnuplotCommandParser.SetKeyContext) optCtx;
+
+                // Extract position
+                String position = parseKeyPosition(keyCtx.keyPosition());
+
+                // Extract options (BOX/NOBOX, HORIZONTAL/VERTICAL)
+                boolean showBorder = true; // default
+                boolean horizontal = false; // default
+
+                for (GnuplotCommandParser.KeyOptionsContext opt : keyCtx.keyOptions()) {
+                    if (opt.BOX() != null) showBorder = true;
+                    if (opt.NOBOX() != null) showBorder = false;
+                    if (opt.HORIZONTAL() != null) horizontal = true;
+                    if (opt.VERTICAL() != null) horizontal = false;
+                }
+
+                // Create structured command
+                Map<String, Object> keySettings = new HashMap<>();
+                keySettings.put("position", position);
+                keySettings.put("showBorder", showBorder);
+                keySettings.put("horizontal", horizontal);
+
+                commands.add(new SetCommand("key", keySettings));
             } else if (optCtx instanceof GnuplotCommandParser.SetGridContext) {
                 commands.add(new SetCommand("grid", true));
             } else if (optCtx instanceof GnuplotCommandParser.SetAutoscaleContext) {
@@ -145,5 +169,32 @@ public class CommandBuilderVisitor extends GnuplotCommandBaseVisitor<List<Comman
             return ctx.IDENTIFIER().getText();
         }
         return "";
+    }
+
+    private String parseKeyPosition(GnuplotCommandParser.KeyPositionContext ctx) {
+        // Check margin-based positions first (they can include LEFT/RIGHT/CENTER as modifiers)
+        if (ctx.BMARGIN() != null) {
+            if (ctx.LEFT() != null) return "BOTTOM_LEFT";
+            if (ctx.RIGHT() != null) return "BOTTOM_RIGHT";
+            if (ctx.CENTER() != null) return "BOTTOM_CENTER";
+            return "BOTTOM_CENTER";
+        }
+        if (ctx.TMARGIN() != null) {
+            if (ctx.LEFT() != null) return "TOP_LEFT";
+            if (ctx.RIGHT() != null) return "TOP_RIGHT";
+            if (ctx.CENTER() != null) return "TOP_CENTER";
+            return "TOP_CENTER";
+        }
+        if (ctx.LMARGIN() != null) return "LEFT";
+        if (ctx.RMARGIN() != null) return "RIGHT";
+
+        // Then check simple positions
+        if (ctx.LEFT() != null) return "LEFT";
+        if (ctx.RIGHT() != null) return "RIGHT";
+        if (ctx.TOP() != null) return "TOP";
+        if (ctx.BOTTOM() != null) return "BOTTOM";
+        if (ctx.CENTER() != null) return "CENTER";
+
+        return "TOP_RIGHT"; // default
     }
 }

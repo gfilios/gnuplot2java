@@ -210,4 +210,47 @@ class GnuplotCommandParserTest {
 
         assertThat(script.getCommands()).hasSize(2);
     }
+
+    @Test
+    void parseSetKeyLeftBox() {
+        String script = "set key left box";
+        GnuplotScript result = parser.parse(script);
+
+        assertThat(result.getCommands()).hasSize(1);
+        Command cmd = result.getCommands().get(0);
+        assertThat(cmd).isInstanceOf(SetCommand.class);
+
+        SetCommand setCmd = (SetCommand) cmd;
+        assertThat(setCmd.getOption()).isEqualTo("key");
+        assertThat(setCmd.getValue()).isInstanceOf(java.util.Map.class);
+
+        @SuppressWarnings("unchecked")
+        java.util.Map<String, Object> settings = (java.util.Map<String, Object>) setCmd.getValue();
+        assertThat(settings.get("position")).isEqualTo("LEFT");
+        assertThat(settings.get("showBorder")).isEqualTo(true);
+    }
+
+    @Test
+    void parseSetKeyRightNoBox() {
+        String script = "set key right nobox";
+        GnuplotScript result = parser.parse(script);
+
+        SetCommand setCmd = (SetCommand) result.getCommands().get(0);
+        @SuppressWarnings("unchecked")
+        java.util.Map<String, Object> settings = (java.util.Map<String, Object>) setCmd.getValue();
+        assertThat(settings.get("position")).isEqualTo("RIGHT");
+        assertThat(settings.get("showBorder")).isEqualTo(false);
+    }
+
+    @Test
+    void parseSetKeyBmarginCenterHorizontal() {
+        String script = "set key bmargin center horizontal";
+        GnuplotScript result = parser.parse(script);
+
+        SetCommand setCmd = (SetCommand) result.getCommands().get(0);
+        @SuppressWarnings("unchecked")
+        java.util.Map<String, Object> settings = (java.util.Map<String, Object>) setCmd.getValue();
+        assertThat(settings.get("position")).isEqualTo("BOTTOM_CENTER");
+        assertThat(settings.get("horizontal")).isEqualTo(true);
+    }
 }
