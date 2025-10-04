@@ -46,6 +46,9 @@ public class GnuplotScriptExecutor implements CommandVisitor {
     // Accumulated scenes (for multi-page rendering)
     private final List<Scene> scenes = new ArrayList<>();
 
+    // Generated output files (for test result tracking)
+    private final List<String> generatedOutputFiles = new ArrayList<>();
+
     @Override
     public void visitSetCommand(SetCommand command) {
         String option = command.getOption();
@@ -254,6 +257,7 @@ public class GnuplotScriptExecutor implements CommandVisitor {
 
             try (FileOutputStream out = new FileOutputStream(filename)) {
                 renderer.render(scenes.get(i), out);
+                generatedOutputFiles.add(filename);
                 System.out.println("Rendered scene " + (i + 1) + " to: " + filename);
             } catch (Exception e) {
                 System.err.println("Failed to render scene " + (i + 1) + ": " + e.getMessage());
@@ -261,6 +265,13 @@ public class GnuplotScriptExecutor implements CommandVisitor {
         }
 
         System.out.println("Total: " + scenes.size() + " scenes rendered");
+    }
+
+    /**
+     * Get list of generated output files (for test result tracking).
+     */
+    public List<String> getGeneratedOutputFiles() {
+        return new ArrayList<>(generatedOutputFiles);
     }
 
     /**

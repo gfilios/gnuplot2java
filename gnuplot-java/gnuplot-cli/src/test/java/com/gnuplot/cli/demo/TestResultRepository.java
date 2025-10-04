@@ -137,11 +137,31 @@ public class TestResultRepository {
             Files.copy(result.getCOutputFile(), cSvgOutput, StandardCopyOption.REPLACE_EXISTING);
         }
 
+        // Copy C additional SVG outputs (e.g., _002.svg, _003.svg)
+        for (int i = 0; i < result.getCAdditionalOutputFiles().size(); i++) {
+            Path additionalFile = result.getCAdditionalOutputFiles().get(i);
+            if (Files.exists(additionalFile)) {
+                Path dest = currentRunDir.resolve("outputs")
+                        .resolve(String.format("%s_c_%03d.svg", baseName, i + 2));
+                Files.copy(additionalFile, dest, StandardCopyOption.REPLACE_EXISTING);
+            }
+        }
+
         // Copy Java SVG output
         Path javaSvgOutput = null;
         if (result.getJavaOutputFile() != null && Files.exists(result.getJavaOutputFile())) {
             javaSvgOutput = currentRunDir.resolve("outputs").resolve(baseName + "_java.svg");
             Files.copy(result.getJavaOutputFile(), javaSvgOutput, StandardCopyOption.REPLACE_EXISTING);
+        }
+
+        // Copy Java additional SVG outputs (e.g., _002.svg, _003.svg)
+        for (int i = 0; i < result.getJavaAdditionalOutputFiles().size(); i++) {
+            Path additionalFile = result.getJavaAdditionalOutputFiles().get(i);
+            if (Files.exists(additionalFile)) {
+                Path dest = currentRunDir.resolve("outputs")
+                        .resolve(String.format("%s_java_%03d.svg", baseName, i + 2));
+                Files.copy(additionalFile, dest, StandardCopyOption.REPLACE_EXISTING);
+            }
         }
 
         // Store C stdout

@@ -35,11 +35,22 @@ public class DemoTestRunner {
         private final String javaError;
         private final Path cOutputFile;
         private final Path javaOutputFile;
+        private final List<Path> cAdditionalOutputFiles;
+        private final List<Path> javaAdditionalOutputFiles;
         private final Path modifiedScript;
 
         public DemoResult(String demoName, boolean cExecutionSuccess, boolean javaExecutionSuccess,
                          String cOutput, String javaOutput, String cError, String javaError,
                          Path cOutputFile, Path javaOutputFile, Path modifiedScript) {
+            this(demoName, cExecutionSuccess, javaExecutionSuccess, cOutput, javaOutput, cError, javaError,
+                 cOutputFile, javaOutputFile, new ArrayList<>(), new ArrayList<>(), modifiedScript);
+        }
+
+        public DemoResult(String demoName, boolean cExecutionSuccess, boolean javaExecutionSuccess,
+                         String cOutput, String javaOutput, String cError, String javaError,
+                         Path cOutputFile, Path javaOutputFile,
+                         List<Path> cAdditionalOutputFiles, List<Path> javaAdditionalOutputFiles,
+                         Path modifiedScript) {
             this.demoName = demoName;
             this.cExecutionSuccess = cExecutionSuccess;
             this.javaExecutionSuccess = javaExecutionSuccess;
@@ -49,6 +60,8 @@ public class DemoTestRunner {
             this.javaError = javaError;
             this.cOutputFile = cOutputFile;
             this.javaOutputFile = javaOutputFile;
+            this.cAdditionalOutputFiles = cAdditionalOutputFiles;
+            this.javaAdditionalOutputFiles = javaAdditionalOutputFiles;
             this.modifiedScript = modifiedScript;
         }
 
@@ -61,6 +74,8 @@ public class DemoTestRunner {
         public String getJavaError() { return javaError; }
         public Path getCOutputFile() { return cOutputFile; }
         public Path getJavaOutputFile() { return javaOutputFile; }
+        public List<Path> getCAdditionalOutputFiles() { return cAdditionalOutputFiles; }
+        public List<Path> getJavaAdditionalOutputFiles() { return javaAdditionalOutputFiles; }
         public Path getModifiedScript() { return modifiedScript; }
 
         public boolean isPassing() {
@@ -162,6 +177,8 @@ public class DemoTestRunner {
             javaResult.stderr,
             cResult.outputFile,
             javaResult.outputFile,
+            cResult.additionalOutputFiles,
+            javaResult.additionalOutputFiles,
             modifiedScript
         );
     }
@@ -180,7 +197,7 @@ public class DemoTestRunner {
         command.add(modifiedScript.toString());
 
         ExecutionResult result = executeProcess(command, demoDirectory, outputFile);
-        return new ExecutionResult(result.exitCode, result.stdout, result.stderr, result.outputFile, modifiedScript);
+        return new ExecutionResult(result.exitCode, result.stdout, result.stderr, result.outputFile, result.additionalOutputFiles, modifiedScript);
     }
 
     /**
@@ -203,7 +220,7 @@ public class DemoTestRunner {
         command.add("-Dexec.args=" + modifiedScript.toString());
 
         ExecutionResult result = executeProcess(command, cliDir, outputFile);
-        return new ExecutionResult(result.exitCode, result.stdout, result.stderr, result.outputFile, modifiedScript);
+        return new ExecutionResult(result.exitCode, result.stdout, result.stderr, result.outputFile, result.additionalOutputFiles, modifiedScript);
     }
 
     /**
@@ -285,8 +302,29 @@ public class DemoTestRunner {
                 stderr.append("Process timed out after ").append(timeoutSeconds).append(" seconds\n");
             }
 
+            // Check for expected output file
+            Path outputFile = Files.exists(expectedOutputFile) ? expectedOutputFile : null;
+
+            // Also check for numbered output files (output_002.svg, output_003.svg, etc.)
+            // These are created when a script has multiple plot commands
+            List<Path> additionalFiles = new ArrayList<>();
+            if (outputFile != null) {
+                String baseName = expectedOutputFile.getFileName().toString().replace(".svg", "");
+                Path parent = expectedOutputFile.getParent();
+
+                // Scan for numbered files
+                for (int i = 2; i <= 100; i++) { // Check up to 100 plots
+                    Path numberedFile = parent.resolve(String.format("%s_%03d.svg", baseName, i));
+                    if (Files.exists(numberedFile)) {
+                        additionalFiles.add(numberedFile);
+                    } else {
+                        break; // Stop when we find a gap
+                    }
+                }
+            }
+
             return new ExecutionResult(exitCode, stdout.toString(), stderr.toString(),
-                                      Files.exists(expectedOutputFile) ? expectedOutputFile : null);
+                                      outputFile, additionalFiles);
 
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -311,17 +349,24 @@ public class DemoTestRunner {
         final String stdout;
         final String stderr;
         final Path outputFile;
+        final List<Path> additionalOutputFiles;
         final Path modifiedScript;
 
         ExecutionResult(int exitCode, String stdout, String stderr, Path outputFile) {
-            this(exitCode, stdout, stderr, outputFile, null);
+            this(exitCode, stdout, stderr, outputFile, new ArrayList<>());
         }
 
-        ExecutionResult(int exitCode, String stdout, String stderr, Path outputFile, Path modifiedScript) {
+        ExecutionResult(int exitCode, String stdout, String stderr, Path outputFile, List<Path> additionalOutputFiles) {
+            this(exitCode, stdout, stderr, outputFile, additionalOutputFiles, null);
+        }
+
+        ExecutionResult(int exitCode, String stdout, String stderr, Path outputFile,
+                       List<Path> additionalOutputFiles, Path modifiedScript) {
             this.exitCode = exitCode;
             this.stdout = stdout;
             this.stderr = stderr;
             this.outputFile = outputFile;
+            this.additionalOutputFiles = additionalOutputFiles != null ? additionalOutputFiles : new ArrayList<>();
             this.modifiedScript = modifiedScript;
         }
     }
