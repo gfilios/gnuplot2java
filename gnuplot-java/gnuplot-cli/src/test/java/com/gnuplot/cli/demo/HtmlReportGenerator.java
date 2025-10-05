@@ -54,7 +54,12 @@ public class HtmlReportGenerator {
 
         html.append("  </div>\n");
 
-        // JavaScript for collapsible sections
+        // Lightbox overlay
+        html.append("  <div class=\"lightbox\" id=\"lightbox\" onclick=\"closeLightbox()\">\n");
+        html.append("    <img id=\"lightbox-img\" src=\"\" alt=\"\">\n");
+        html.append("  </div>\n");
+
+        // JavaScript for collapsible sections and lightbox
         appendJavaScript(html);
 
         html.append("</body>\n");
@@ -133,6 +138,14 @@ public class HtmlReportGenerator {
         html.append("                          white-space: pre-wrap; word-wrap: break-word; }\n");
         html.append("    .toggle-icon { transition: transform 0.3s; }\n");
         html.append("    .toggle-icon.expanded { transform: rotate(90deg); }\n");
+        // Lightbox styles
+        html.append("    .lightbox { display: none; position: fixed; z-index: 9999; left: 0; top: 0; ");
+        html.append("                width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); ");
+        html.append("                justify-content: center; align-items: center; cursor: pointer; }\n");
+        html.append("    .lightbox.active { display: flex; }\n");
+        html.append("    .lightbox img { max-width: 95%; max-height: 95%; object-fit: contain; ");
+        html.append("                    box-shadow: 0 0 30px rgba(255,255,255,0.3); }\n");
+        html.append("    .svg-output img { cursor: zoom-in; }\n");
     }
 
     private static void appendSummary(StringBuilder html, List<TestResultRepository.DemoTestRecord> records) {
@@ -339,6 +352,27 @@ public class HtmlReportGenerator {
         html.append("        icon.classList.remove('expanded');\n");
         html.append("      }\n");
         html.append("    }\n");
+        // Lightbox functions
+        html.append("    function openLightbox(imgSrc) {\n");
+        html.append("      const lightbox = document.getElementById('lightbox');\n");
+        html.append("      const lightboxImg = document.getElementById('lightbox-img');\n");
+        html.append("      lightboxImg.src = imgSrc;\n");
+        html.append("      lightbox.classList.add('active');\n");
+        html.append("    }\n");
+        html.append("    function closeLightbox() {\n");
+        html.append("      const lightbox = document.getElementById('lightbox');\n");
+        html.append("      lightbox.classList.remove('active');\n");
+        html.append("    }\n");
+        // Add click handlers to all SVG images
+        html.append("    document.addEventListener('DOMContentLoaded', function() {\n");
+        html.append("      const images = document.querySelectorAll('.svg-output img');\n");
+        html.append("      images.forEach(img => {\n");
+        html.append("        img.addEventListener('click', function(e) {\n");
+        html.append("          e.stopPropagation();\n");
+        html.append("          openLightbox(this.src);\n");
+        html.append("        });\n");
+        html.append("      });\n");
+        html.append("    });\n");
         html.append("  </script>\n");
     }
 
