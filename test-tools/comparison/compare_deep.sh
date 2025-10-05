@@ -110,11 +110,22 @@ echo "════════════════════════�
 
 # Y-axis ticks and labels
 echo "Y-AXIS TICKS:"
-# C: Uses <path d='M54.53,564.00 L63.53,564.00'/> for ticks
-C_Y_TICKS=$(grep -o "M54\.53,[0-9.]* L63\.53,[0-9.]*" "$C_SVG" | wc -l | tr -d ' ')
-# Java: Uses <line x1="54.00" y1="526.57" x2="48.00" y2="526.57"/> for ticks
-# Look for horizontal lines at x=54 going left (tick marks on Y-axis)
-JAVA_Y_TICKS=$(grep -o '<line x1="54\.[0-9]*" y1="[0-9.]*" x2="48\.[0-9]*" y2="[0-9.]*"' "$JAVA_SVG" | wc -l | tr -d ' ')
+# C: Detect tick marks as short horizontal lines in left margin area (x < 100)
+# Pattern: horizontal path with small x-delta, excluding the main axis line itself
+C_Y_TICKS=$(grep -o 'M[0-9.]*,[0-9.]* L[0-9.]*,[0-9.]*' "$C_SVG" | \
+           awk -F'[M,L ]' '{
+             x1=$2; y1=$3; x2=$5; y2=$6;
+             if (x1 < 100 && y1 == y2 && (x2-x1) > 5 && (x2-x1) < 20) print $0
+           }' | wc -l | tr -d ' ')
+
+# Java: Short horizontal lines in left margin (x < 100), small x-delta
+# Tick marks are short (< 10px) horizontal lines, not the main axis
+JAVA_Y_TICKS=$(grep -o '<line x1="[0-9.]*" y1="[0-9.]*" x2="[0-9.]*" y2="[0-9.]*"' "$JAVA_SVG" | \
+              awk -F'"' '{
+                x1=$2; y1=$4; x2=$6; y2=$8;
+                xdelta = (x1 > x2) ? x1-x2 : x2-x1;
+                if (x1 < 100 && y1 == y2 && y1 > 65 && y1 < 565 && xdelta < 10) print $0
+              }' | wc -l | tr -d ' ')
 
 echo "  C tick count:    $C_Y_TICKS"
 echo "  Java tick count: $JAVA_Y_TICKS"
