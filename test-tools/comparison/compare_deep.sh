@@ -402,11 +402,19 @@ if [ "$C_TOP_TICKS" -gt 0 ] && [ "$JAVA_TOP_TICKS" -eq 0 ]; then
 fi
 
 # Check for point markers on plots (exclude definitions with id= attribute)
-C_MARKERS=$(grep "use xlink:href='#gpPt[0-9]" "$C_SVG" | grep -v " id=" | wc -l | tr -d ' ')
-JAVA_MARKERS=$(grep 'use xlink:href="#gpPt[0-9]' "$JAVA_SVG" | grep -v ' id=' | wc -l | tr -d ' ')
+C_MARKERS=$(grep "use xlink:href='#gpPt" "$C_SVG" | grep -v " id=" | wc -l | tr -d ' ')
+JAVA_MARKERS=$(grep "use xlink:href='#gpPt" "$JAVA_SVG" | grep -v ' id=' | wc -l | tr -d ' ')
 if [ "$C_MARKERS" -gt 0 ] && [ "$JAVA_MARKERS" -eq 0 ]; then
     echo "❌ Java missing point markers: $C_MARKERS expected, 0 found"
     ISSUES=$((ISSUES + 1))
+elif [ "$C_MARKERS" -gt 0 ] && [ "$JAVA_MARKERS" -ne "$C_MARKERS" ]; then
+    DIFF=$((C_MARKERS - JAVA_MARKERS))
+    if [ $DIFF -lt 0 ]; then DIFF=$((-DIFF)); fi
+    if [ $DIFF -le 2 ]; then
+        echo "✅ Point marker count close: Java=$JAVA_MARKERS, C=$C_MARKERS (diff=$DIFF)"
+    else
+        echo "⚠️  Point marker count differs: Java=$JAVA_MARKERS, C=$C_MARKERS (diff=$DIFF)"
+    fi
 fi
 
 # Check for plot clipping
