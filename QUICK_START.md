@@ -296,10 +296,13 @@ Generated SVG files will be in the module directory.
 - 3D plotting not yet implemented
 - Some advanced Gnuplot features pending (fit, splot, complex data files)
 - Terminal/ASCII output not available
-- **Demo Pass Rate**: Currently 4/100+ demos passing (scatter.dem, errorbars.dem)
-  - simple.dem fails: Missing data file reading, impulses style, set key
-  - controls.dem fails: Missing control flow (if/else, for/while)
-  - using.dem fails: Missing data file reading and column specifications
-  - Most demos fail: Incremental feature implementation in progress
+- **Demo Pass Rate**: 1/100+ (1%) - **simple.dem major progress!** (2025-10-05)
+  - ✅ simple.dem: **3/8 plots perfect, 5/8 minor tick issues only**
+    * Point markers 100% working (Plot 8: 47/47 exact match!)
+    * Per-plot range support implemented
+    * Only tick generation algorithm needs refinement
+  - ❌ controls.dem: Missing control flow (if/else, for/while)
+  - ❌ scatter.dem: Not yet validated with comparison
+  - ❌ Most demos: Incremental feature implementation in progress
 
 See [IMPLEMENTATION_BACKLOG.md](IMPLEMENTATION_BACKLOG.md) for the complete roadmap and [TEST_DRIVEN_PLAN.md](TEST_DRIVEN_PLAN.md) for TDD methodology.

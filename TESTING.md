@@ -35,8 +35,11 @@ mvn test -Dtest=DemoTestSuite
 
 ### Available Demo Tests
 
-- `testSimpleDem()` - Basic plotting with trig functions (8 plots)
-- `testScatterDem()` - Scatter plots
+- `testSimpleDem()` - Basic plotting with trig functions (8 plots) - ⚠️ **3/8 perfect, 5/8 minor issues**
+  * **Latest (2025-10-05)**: Point markers 100% working, only tick count differences remain
+  * Plots 1, 2, 3: ✅ Perfect match (no visual differences)
+  * Plots 4, 5, 6, 7, 8: ⚠️ Minor tick count differences only
+- `testScatterDem()` - Scatter plots (comparison not yet run)
 - `testControlsDem()` - Control flow (expected to fail until control flow implemented)
 
 ### Viewing Test Results
