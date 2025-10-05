@@ -628,7 +628,15 @@ public class TickGenerator {
             return "0";
         }
 
-        // Determine appropriate number of decimal places
+        // Check if value is effectively an integer (matches C gnuplot behavior)
+        // This avoids showing -1.0 when -1 would suffice
+        double rounded = Math.round(value);
+        if (Math.abs(value - rounded) < 1e-9) {
+            // Value is an integer, format without decimals
+            return String.format(Locale.US, "%d", (long) rounded);
+        }
+
+        // Determine appropriate number of decimal places for non-integers
         int decimalPlaces = 0;
         if (tickStep < 0.1) {
             decimalPlaces = (int) Math.ceil(-Math.log10(tickStep));
@@ -636,15 +644,15 @@ public class TickGenerator {
             decimalPlaces = 1;
         }
 
-        // Format the value
-        if (decimalPlaces == 0) {
-            // No decimal places needed
-            long rounded = Math.round(value);
-            return String.format(Locale.US, "%d", rounded);
-        } else {
-            // Use appropriate decimal places
-            String format = String.format(Locale.US, "%%.%df", decimalPlaces);
-            return String.format(Locale.US, format, value);
+        // Format with minimal decimal places, removing trailing zeros
+        String format = String.format(Locale.US, "%%.%df", decimalPlaces);
+        String formatted = String.format(Locale.US, format, value);
+
+        // Remove trailing zeros after decimal point (but keep at least one decimal if decimalPlaces > 0)
+        if (formatted.contains(".")) {
+            formatted = formatted.replaceAll("0+$", "").replaceAll("\\.$", "");
         }
+
+        return formatted;
     }
 }

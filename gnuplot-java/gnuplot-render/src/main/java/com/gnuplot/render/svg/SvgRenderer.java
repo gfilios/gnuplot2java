@@ -729,13 +729,22 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
     @Override
     public void visitLegend(Legend legend) {
         try {
-            // Calculate legend dimensions (matching gnuplot C defaults)
+            // Calculate legend dimensions dynamically based on text width
             int columns = legend.getColumns();
             int rows = (int) Math.ceil((double) legend.getEntries().size() / columns);
-            int columnWidth = 140; // Width per column (C gnuplot uses ~160 total for 1 column)
             int rowHeight = 18;    // Height per row (C gnuplot uses 18px)
             int padding = 10;
+            int symbolWidth = 45;  // Space for line/marker symbol after text
 
+            // Calculate column width based on longest label
+            // Use font size to estimate character width: ~0.6 * fontSize for Arial
+            int maxLabelWidth = 0;
+            for (Legend.LegendEntry entry : legend.getEntries()) {
+                int estimatedWidth = (int) (entry.getLabel().length() * legend.getFontSize() * 0.6);
+                maxLabelWidth = Math.max(maxLabelWidth, estimatedWidth);
+            }
+
+            int columnWidth = maxLabelWidth + symbolWidth;
             int legendWidth = columns * columnWidth + padding * 2;
             int legendHeight = rows * rowHeight + padding * 2;
 
@@ -762,13 +771,15 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
                 int entryY = y + padding + row * rowHeight + rowHeight / 2;
 
                 // Draw label FIRST (matching gnuplot C behavior: text before symbol)
+                // Text is right-aligned, ending where symbol begins
+                int textX = entryX + maxLabelWidth;
                 writer.write(String.format(Locale.US,
                         "  <text x=\"%d\" y=\"%d\" font-family=\"%s\" font-size=\"%d\" alignment-baseline=\"middle\" text-anchor=\"end\">%s</text>\n",
-                        entryX + 90, entryY + 3, legend.getFontFamily(), legend.getFontSize(),
+                        textX, entryY + 3, legend.getFontFamily(), legend.getFontSize(),
                         escapeXml(entry.getLabel())));
 
                 // Render symbol AFTER text (matching gnuplot C behavior)
-                int symbolX = entryX + 95; // Symbol starts after text
+                int symbolX = textX + 5; // Symbol starts 5px after text
                 switch (entry.getSymbolType()) {
                     case LINE:
                         renderLegendLine(entry, symbolX, entryY, legend.getFontSize());
