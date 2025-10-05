@@ -30,7 +30,7 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
     // Plot area margins (matching gnuplot C behavior)
     private static final int MARGIN_LEFT = 54;
     private static final int MARGIN_RIGHT = 25;
-    private static final int MARGIN_TOP = 25;
+    private static final int MARGIN_TOP = 66;  // C gnuplot uses 66.01
     private static final int MARGIN_BOTTOM = 36;
 
     private Writer writer;
@@ -637,12 +637,13 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
     }
 
     private void renderXAxis(Axis axis) throws IOException {
-        double y = mapY(0);
+        // X-axis is at the bottom of the plot area
+        double y = plotBottom;
 
-        // Render axis line
+        // Render axis line (from plotLeft to plotRight)
         writer.write(String.format(Locale.US,
-                "  <line x1=\"0\" y1=\"%.2f\" x2=\"%d\" y2=\"%.2f\" stroke=\"#000\" stroke-width=\"1\"/>\n",
-                y, scene.getWidth(), y));
+                "  <line x1=\"%d\" y1=\"%.2f\" x2=\"%d\" y2=\"%.2f\" stroke=\"#000\" stroke-width=\"1\"/>\n",
+                plotLeft, y, plotRight, y));
 
         // Render ticks and labels if enabled
         if (axis.isShowTicks()) {
@@ -681,12 +682,13 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
     }
 
     private void renderYAxis(Axis axis) throws IOException {
-        double x = mapX(0);
+        // Y-axis is at the left of the plot area
+        double x = plotLeft;
 
-        // Render axis line
+        // Render axis line (from plotTop to plotBottom)
         writer.write(String.format(Locale.US,
-                "  <line x1=\"%.2f\" y1=\"0\" x2=\"%.2f\" y2=\"%d\" stroke=\"#000\" stroke-width=\"1\"/>\n",
-                x, x, scene.getHeight()));
+                "  <line x1=\"%.2f\" y1=\"%d\" x2=\"%.2f\" y2=\"%d\" stroke=\"#000\" stroke-width=\"1\"/>\n",
+                x, plotTop, x, plotBottom));
 
         // Render ticks and labels if enabled
         if (axis.isShowTicks()) {
