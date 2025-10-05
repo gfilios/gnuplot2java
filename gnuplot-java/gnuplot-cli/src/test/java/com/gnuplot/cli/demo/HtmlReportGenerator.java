@@ -293,13 +293,17 @@ public class HtmlReportGenerator {
         // Java Gnuplot output for this plot
         html.append("            <div class=\"implementation\">\n");
         html.append("              <h4>Java Gnuplot</h4>\n");
-        Path javaSvgFile;
-        if (plotNumber == 1) {
-            javaSvgFile = record.getJavaSvgOutput();
-        } else {
-            String javaBaseName = record.getJavaSvgOutput().getFileName().toString().replace(".svg", "");
-            Path outputDir = record.getJavaSvgOutput().getParent();
-            javaSvgFile = outputDir.resolve(String.format("%s_%03d.svg", javaBaseName, plotNumber));
+        Path javaSvgFile = null;
+
+        // Check if Java output exists before accessing its properties
+        if (record.getJavaSvgOutput() != null) {
+            if (plotNumber == 1) {
+                javaSvgFile = record.getJavaSvgOutput();
+            } else {
+                String javaBaseName = record.getJavaSvgOutput().getFileName().toString().replace(".svg", "");
+                Path outputDir = record.getJavaSvgOutput().getParent();
+                javaSvgFile = outputDir.resolve(String.format("%s_%03d.svg", javaBaseName, plotNumber));
+            }
         }
 
         if (javaSvgFile != null && Files.exists(javaSvgFile)) {
