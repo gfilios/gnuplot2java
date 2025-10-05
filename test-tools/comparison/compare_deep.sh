@@ -55,8 +55,18 @@ if [ "$C_TITLE_POS" != "$JAVA_TITLE_POS" ] && [ -n "$C_TITLE_POS" ] && [ -n "$JA
     echo "  ❌ Position mismatch"
 fi
 
-if [ "$C_TITLE_FONT" != "$JAVA_TITLE_FONT" ] && [ -n "$C_TITLE_FONT" ] && [ -n "$JAVA_TITLE_FONT" ]; then
-    echo "  ❌ Font size mismatch"
+# Extract numeric values for font size comparison
+C_FONT_NUM=$(echo "$C_TITLE_FONT" | grep -o '[0-9.]*' | head -1)
+JAVA_FONT_NUM=$(echo "$JAVA_TITLE_FONT" | grep -o '[0-9.]*' | head -1)
+
+# Compare as numbers (with tolerance of 0.1)
+if [ -n "$C_FONT_NUM" ] && [ -n "$JAVA_FONT_NUM" ]; then
+    # Use bc for floating point comparison
+    DIFF=$(echo "$C_FONT_NUM - $JAVA_FONT_NUM" | bc -l | sed 's/-//')
+    IS_DIFFERENT=$(echo "$DIFF > 0.1" | bc -l)
+    if [ "$IS_DIFFERENT" -eq 1 ]; then
+        echo "  ❌ Font size mismatch (difference: $DIFF)"
+    fi
 fi
 
 # ============================================================================

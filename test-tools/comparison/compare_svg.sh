@@ -31,7 +31,8 @@ echo ""
 echo "=== 1. PLOT STYLE COMPARISON ==="
 C_LINES=$(grep -c "<path stroke='rgb" "$C_FILE" 2>/dev/null || echo "0")
 C_POINTS=$(grep -c "<use xlink:href='#gpPt" "$C_FILE" 2>/dev/null || echo "0")
-JAVA_LINES=$(grep -c "<path stroke='rgb" "$JAVA_FILE" 2>/dev/null || echo "0")
+# Java uses <polyline> elements for lines
+JAVA_LINES=$(grep -c "<polyline points=" "$JAVA_FILE" 2>/dev/null || echo "0")
 JAVA_POINTS=$(grep -c "<use xlink:href='#gpPt" "$JAVA_FILE" 2>/dev/null || echo "0")
 
 echo "C Gnuplot:"
@@ -44,9 +45,10 @@ echo "  - Line paths (<path>): $JAVA_LINES"
 echo "  - Point markers (<use>): $JAVA_POINTS"
 echo "  - Style: $([ "$JAVA_LINES" -gt 0 ] && echo "LINES" || echo "POINTS")"
 echo ""
-if [ "$C_LINES" -gt 0 ] && [ "$JAVA_POINTS" -gt 0 ]; then
+# Compare styles: both should have lines OR both should have points
+if [ "$C_LINES" -gt 0 ] && [ "$JAVA_LINES" -eq 0 ]; then
     echo "❌ MISMATCH: C uses LINES, Java uses POINTS"
-elif [ "$C_POINTS" -gt 0 ] && [ "$JAVA_LINES" -gt 0 ]; then
+elif [ "$C_POINTS" -gt 0 ] && [ "$C_LINES" -eq 0 ] && [ "$JAVA_LINES" -gt 0 ]; then
     echo "❌ MISMATCH: C uses POINTS, Java uses LINES"
 else
     echo "✅ MATCH: Both use same plot style"
@@ -91,7 +93,7 @@ done
 
 echo ""
 echo "Java Gnuplot colors:"
-grep -o "color='#[A-F0-9]*'" "$JAVA_FILE" | sed "s/color='//;s/'//" | sort -u | while read -r hex; do
+grep -o 'stroke="#[A-F0-9]*"' "$JAVA_FILE" | sed 's/stroke="//;s/"//' | sort -u | grep -v "^#000" | while read -r hex; do
     echo "  $hex"
 done
 
@@ -109,8 +111,14 @@ C_SIZE=$(wc -c < "$C_FILE")
 JAVA_SIZE=$(wc -c < "$JAVA_FILE")
 RATIO=$(echo "scale=1; $JAVA_SIZE * 100 / $C_SIZE" | bc)
 
-echo "C Gnuplot:    $(numfmt --to=iec-i --suffix=B $C_SIZE)"
-echo "Java Gnuplot: $(numfmt --to=iec-i --suffix=B $JAVA_SIZE)"
+# Use numfmt if available, otherwise show bytes
+if command -v numfmt &> /dev/null; then
+    echo "C Gnuplot:    $(numfmt --to=iec-i --suffix=B $C_SIZE)"
+    echo "Java Gnuplot: $(numfmt --to=iec-i --suffix=B $JAVA_SIZE)"
+else
+    echo "C Gnuplot:    ${C_SIZE} bytes"
+    echo "Java Gnuplot: ${JAVA_SIZE} bytes"
+fi
 echo "Java/C ratio: ${RATIO}%"
 
 echo ""
