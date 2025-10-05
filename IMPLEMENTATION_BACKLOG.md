@@ -255,17 +255,51 @@ See [TEST_DRIVEN_PLAN.md](TEST_DRIVEN_PLAN.md) for detailed methodology.
 **In Progress Stories**:
 - 🔄 **TDD-11**: Visual Quality Fixes (Story TDD-11) - 11 SP
   - **Status**: 🟡 PLANNING COMPLETE (2025-10-05)
-  - **Plan**: See [VISUAL_FIXES_PLAN.md](VISUAL_FIXES_PLAN.md) for detailed breakdown
-  - **Priority Issues** (6 total):
-    1. ⚠️  Axis label decimal formatting (e.g., -1.0 vs -1) - 1 SP
-    2. ⚠️  Top border tick marks missing - 2 SP
-    3. ❌ Plot 3: Missing point markers on second graph - 3 SP
-    4. ❌ Plot 5: Legend box too small (width) - 2 SP
-    5. ❌ Plots extend outside border box (no clipping) - 2 SP
-    6. ⚠️  Plot 7 & 8: Legend positions incorrect - 1 SP
-  - **Phase 1 (Critical)**: Issues #1, #3, #4 (6 SP)
-  - **Phase 2 (Visual Polish)**: Issues #5, #2 (4 SP)
-  - **Phase 3 (Layout)**: Issue #6 (1 SP)
+  - **Issues Identified** (6 total):
+
+    1. **Axis Label Decimal Formatting** (1 SP - HIGH)
+       - Problem: Java shows `-1.0` instead of `-1`
+       - Location: `TickGenerator.formatTickLabel()` (lines 625-648)
+       - C Reference: gnuplot-c/src/graphics.c:gprintf()
+       - Fix: Remove trailing .0 for integer values
+
+    2. **Top Border Tick Marks Missing** (2 SP - MEDIUM)
+       - Problem: Java only renders ticks on bottom/left borders
+       - Location: `SvgRenderer.renderAxis()` or `Axis.java`
+       - C Reference: gnuplot-c/src/graphics.c:axis_output_tics() with mirror ticks
+       - Fix: Add mirror ticks on top/right borders
+
+    3. **Plot 3: Missing Point Markers** (3 SP - HIGH)
+       - Problem: Second graph (acos) should have point markers but doesn't
+       - Location: `GnuplotScriptExecutor.visitPlotCommand()` (lines 192-213)
+       - C Reference: Plot style parsing for function plots
+       - Fix: Apply correct plot styles per graph
+
+    4. **Plot 5: Legend Box Too Small** (2 SP - HIGH)
+       - Problem: Width 160px (Java) vs 243px (C)
+       - Location: `Legend.java` constructor
+       - C Reference: gnuplot-c/src/graphics.c:do_key_layout()
+       - Fix: Measure text width with font metrics, add padding
+
+    5. **Plots Extend Outside Border** (2 SP - HIGH)
+       - Problem: No SVG clip-path applied to plot area
+       - Location: `SvgRenderer.java` plot rendering
+       - C Reference: SVG clip-path in terminal drivers
+       - Fix: Define and apply clip-path to plot elements
+
+    6. **Plot 7 & 8: Legend Positions** (1 SP - MEDIUM)
+       - Problem: Wrong default position used
+       - Location: `GnuplotScriptExecutor.visitSetCommand()` (lines 109-119)
+       - C Reference: `set key <position>` command parsing
+       - Fix: Parse plot-specific legend commands
+
+  - **Implementation Order**:
+    - Phase 1 (Critical): #1, #3, #4 (6 SP)
+    - Phase 2 (Visual Polish): #5, #2 (4 SP)
+    - Phase 3 (Layout): #6 (1 SP)
+
+  - **Comparison Script Updates**: Section 9 added to compare_deep.sh
+    - Detects unnecessary decimals, missing markers, missing top ticks, missing clip-path
 
 **Files Modified**:
 - gnuplot-java/gnuplot-cli/src/main/java/com/gnuplot/cli/executor/GnuplotScriptExecutor.java
