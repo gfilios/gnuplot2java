@@ -423,11 +423,13 @@ public class GnuplotScriptExecutor implements CommandVisitor {
 
     /**
      * Map key position string to Legend.Position enum.
+     * Note: In gnuplot, "left" means top-left, "right" means top-right (default)
+     * These are the most common positions in gnuplot.
      */
     private Legend.Position mapPosition(String position) {
         return switch (position) {
-            case "LEFT" -> Legend.Position.LEFT_CENTER;
-            case "RIGHT" -> Legend.Position.RIGHT_CENTER;
+            case "LEFT" -> Legend.Position.TOP_LEFT;      // "set key left" = top-left
+            case "RIGHT" -> Legend.Position.TOP_RIGHT;    // "set key right" = top-right (default)
             case "TOP" -> Legend.Position.TOP_CENTER;
             case "BOTTOM" -> Legend.Position.BOTTOM_CENTER;
             case "CENTER" -> Legend.Position.CENTER;
