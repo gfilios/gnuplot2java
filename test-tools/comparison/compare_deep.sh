@@ -377,6 +377,45 @@ if [ "$C_X_TICKS" != "$JAVA_X_TICKS" ]; then
     ISSUES=$((ISSUES + 1))
 fi
 
+# ============================================================================
+# 9. ADDITIONAL VISUAL QUALITY CHECKS
+# ============================================================================
+echo ""
+echo "═══════════════════════════════════════════════════════════════════"
+echo "9. ADDITIONAL VISUAL QUALITY CHECKS"
+echo "═══════════════════════════════════════════════════════════════════"
+
+# Check for unnecessary decimal places in axis labels (e.g., -1.0 vs -1)
+C_DECIMAL_LABELS=$(grep -o '>-\?[0-9]*\.0<' "$C_SVG" | wc -l | tr -d ' ')
+JAVA_DECIMAL_LABELS=$(grep -o '>-\?[0-9]*\.0<' "$JAVA_SVG" | wc -l | tr -d ' ')
+if [ "$JAVA_DECIMAL_LABELS" -gt "$C_DECIMAL_LABELS" ]; then
+    echo "⚠️  Java shows unnecessary decimal places: $JAVA_DECIMAL_LABELS labels with .0 (C has $C_DECIMAL_LABELS)"
+    ISSUES=$((ISSUES + 1))
+fi
+
+# Check for top border tick marks (mirror ticks)
+C_TOP_TICKS=$(grep -o "M[0-9.]*,66\.[0-9]* L[0-9.]*,75\.[0-9]*" "$C_SVG" | wc -l | tr -d ' ')
+JAVA_TOP_TICKS=$(grep -o '<line.*y1="66[^"]*".*y2="[67][0-9][^"]*"' "$JAVA_SVG" | wc -l | tr -d ' ')
+if [ "$C_TOP_TICKS" -gt 0 ] && [ "$JAVA_TOP_TICKS" -eq 0 ]; then
+    echo "⚠️  Java missing top border ticks: $C_TOP_TICKS expected, 0 found"
+    ISSUES=$((ISSUES + 1))
+fi
+
+# Check for point markers on plots
+C_MARKERS=$(grep -o "use xlink:href='#gpPt[0-9]" "$C_SVG" | wc -l | tr -d ' ')
+JAVA_MARKERS=$(grep -o 'use xlink:href="#gpPt[0-9]' "$JAVA_SVG" | wc -l | tr -d ' ')
+if [ "$C_MARKERS" -gt 0 ] && [ "$JAVA_MARKERS" -eq 0 ]; then
+    echo "❌ Java missing point markers: $C_MARKERS expected, 0 found"
+    ISSUES=$((ISSUES + 1))
+fi
+
+# Check for plot clipping
+JAVA_HAS_CLIP=$(grep -o 'clip-path="url(#plotClip)"' "$JAVA_SVG" | wc -l | tr -d ' ')
+if [ "$JAVA_HAS_CLIP" -eq 0 ]; then
+    echo "⚠️  Java may be missing clip-path for plot area"
+    # Don't count as issue since this needs visual verification
+fi
+
 echo ""
 if [ "$ISSUES" -eq 0 ]; then
     echo "✅ No critical issues found"

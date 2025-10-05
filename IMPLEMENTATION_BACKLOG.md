@@ -245,23 +245,27 @@ See [TEST_DRIVEN_PLAN.md](TEST_DRIVEN_PLAN.md) for detailed methodology.
 - Visual accuracy significantly improved
 - Remaining differences: Minor layout/positioning (not fundamental rendering)
 
-**In Progress Stories**:
-- 🔄 **TDD-10**: Auto-Range Calculation for Function Plots (Story TDD-10)
-  - **Problem**: Java calculates different Y-axis ranges than C gnuplot for function plots
-  - **Example**: Plot 3 `[-3:5] asin(x),acos(x)`
-    - C: Y-range ~[-1.5:3] → tick-step 0.5 → 10 ticks
-    - Java: Y-range ~[-1:3] → tick-step 1.0 → 5 ticks
-  - **Root Cause**: Missing auto-range algorithm for Y-axis when not explicitly set
-  - **C Reference**: gnuplot-c/src/axis.c (axis_checked_extend_empty_range, axis_revert_and_unlog_range)
-  - **Implementation Plan**:
-    1. Sample function at multiple X points across range
-    2. Find min/max Y values from samples
-    3. Add padding (typically 2-5% of range)
-    4. Round to "nice" values using quantize algorithm
-    5. Apply range to Y-axis before tick generation
-  - **Status**: 🟡 IN PROGRESS (2025-10-05)
+**Completed Stories**:
+- ✅ **TDD-10**: Auto-Range Calculation for Function Plots (Story TDD-10)
+  - **Status**: ✅ COMPLETE (2025-10-05)
+  - **Implementation**: Ported gnuplot-c/src/axis.c:axis_checked_extend_empty_range()
+  - **Results**: Plots 1-3 now perfect (7vs7, 5vs5, 10vs10 ticks)
   - **Story Points**: 13 SP
-  - **Affected Plots**: simple.dem plots 3, 5, 6, 7, 8 have tick count mismatches due to range differences
+
+**In Progress Stories**:
+- 🔄 **TDD-11**: Visual Quality Fixes (Story TDD-11) - 11 SP
+  - **Status**: 🟡 PLANNING COMPLETE (2025-10-05)
+  - **Plan**: See [VISUAL_FIXES_PLAN.md](VISUAL_FIXES_PLAN.md) for detailed breakdown
+  - **Priority Issues** (6 total):
+    1. ⚠️  Axis label decimal formatting (e.g., -1.0 vs -1) - 1 SP
+    2. ⚠️  Top border tick marks missing - 2 SP
+    3. ❌ Plot 3: Missing point markers on second graph - 3 SP
+    4. ❌ Plot 5: Legend box too small (width) - 2 SP
+    5. ❌ Plots extend outside border box (no clipping) - 2 SP
+    6. ⚠️  Plot 7 & 8: Legend positions incorrect - 1 SP
+  - **Phase 1 (Critical)**: Issues #1, #3, #4 (6 SP)
+  - **Phase 2 (Visual Polish)**: Issues #5, #2 (4 SP)
+  - **Phase 3 (Layout)**: Issue #6 (1 SP)
 
 **Files Modified**:
 - gnuplot-java/gnuplot-cli/src/main/java/com/gnuplot/cli/executor/GnuplotScriptExecutor.java
