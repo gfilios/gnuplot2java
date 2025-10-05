@@ -156,37 +156,70 @@ The `all.dem` file contains **100+ demo scripts** organized by complexity:
 - Column expressions and transformations
 - Header row handling
 
-**Story TDD-7: fillstyle.dem Compliance** (13 SP)
+**Story TDD-7: Point Markers and Styles** (8 SP) - ✅ COMPLETE
+- ✅ Gnuplot point type definitions (gpPt0-gpPt14)
+- ✅ SVG marker symbols (circle, cross, plus, diamond, etc.)
+- ✅ Point size scaling
+- ✅ Integration with LinePlot renderer
+
+**Completed**: 2025-10-04
+
+**Story TDD-8: Per-Plot Comparison Reports** (5 SP) - ✅ COMPLETE
+- ✅ Modified DemoTestSuite to run comparison for each SVG pair
+- ✅ Generate separate comparison files per plot (comparison_*.txt, comparison_*_plot2.txt, etc.)
+- ✅ Updated HtmlReportGenerator to display per-plot comparison sections
+- ✅ Each plot now has collapsible comparison analysis in HTML
+
+**Completed**: 2025-10-05
+**Result**: 8 separate comparison reports for simple.dem (one per plot)
+
+**Story TDD-9: Fix Critical Visual Differences** (13 SP) - ✅ COMPLETE
+- ✅ **Plot Style Fix**: Functions now default to LINES (not POINTS)
+  * Modified GnuplotScriptExecutor to distinguish functions from data files
+  * "set style data" only affects data files (gnuplot behavior)
+  * Explicit "with" clause takes precedence
+- ✅ **Font Size Fix**: Match gnuplot C defaults
+  * Title: 16px → 20px
+  * Axis labels: 10px → 12px
+  * Legend: 10px → 12px
+- ✅ **Comparison Infrastructure**: Per-plot analysis
+  * 8 comparison files generated for simple.dem
+  * HTML report shows separate sections per plot
+
+**Completed**: 2025-10-05
+**Result**: Visual output now closely matches C gnuplot (lines render correctly, fonts match)
+
+**Story TDD-10: fillstyle.dem Compliance** (13 SP)
 - Fill styles: solid, pattern, transparent
 - Fill color specifications
 - Border styles
 
 ### Phase 3: Tier 2 - Intermediate Demos (4-5 weeks)
 
-**Story TDD-8: polar.dem Compliance** (13 SP)
+**Story TDD-11: polar.dem Compliance** (13 SP)
 - Polar coordinate system
 - `set polar` command
 - Polar grid rendering
 
-**Story TDD-9: Histogram Demos Compliance** (21 SP)
+**Story TDD-12: Histogram Demos Compliance** (21 SP)
 - Clustered histograms
 - Stacked histograms (already have some)
 - Gap/overlap control
 - Row-stacked histograms
 
-**Story TDD-10: boxplot.dem Compliance** (13 SP)
+**Story TDD-13: boxplot.dem Compliance** (13 SP)
 - Box-and-whisker plots
 - Outlier detection
 - Median/quartile calculation
 - Notched boxes
 
-**Story TDD-11: smooth/spline Demos** (21 SP)
+**Story TDD-14: smooth/spline Demos** (21 SP)
 - Spline interpolation (have cubic spline)
 - Bezier curves
 - Frequency smoothing
 - Monotonic splines
 
-**Story TDD-12: contours.dem Compliance** (21 SP)
+**Story TDD-15: contours.dem Compliance** (21 SP)
 - Contour line calculation
 - Contour labels
 - Custom contour levels

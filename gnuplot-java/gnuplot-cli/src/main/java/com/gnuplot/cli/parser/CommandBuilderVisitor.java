@@ -81,8 +81,28 @@ public class CommandBuilderVisitor extends GnuplotCommandBaseVisitor<List<Comman
                 commands.add(new SetCommand("key", keySettings));
             } else if (optCtx instanceof GnuplotCommandParser.SetGridContext) {
                 commands.add(new SetCommand("grid", true));
+            } else if (optCtx instanceof GnuplotCommandParser.SetBorderContext) {
+                commands.add(new SetCommand("border", true));
             } else if (optCtx instanceof GnuplotCommandParser.SetAutoscaleContext) {
                 commands.add(new SetCommand("autoscale", true));
+            } else if (optCtx instanceof GnuplotCommandParser.SetStyleContext) {
+                GnuplotCommandParser.SetStyleContext styleCtx = (GnuplotCommandParser.SetStyleContext) optCtx;
+
+                // Parse style type (data, line, arrow, fill)
+                String styleType = styleCtx.styleType().getText();
+
+                // Parse style options (points, lines, linespoints, etc.)
+                String styleValue = null;
+                if (!styleCtx.styleOptions().isEmpty()) {
+                    styleValue = styleCtx.styleOptions(0).getText().toLowerCase();
+                }
+
+                // Create structured command for style settings
+                Map<String, Object> styleSettings = new HashMap<>();
+                styleSettings.put("type", styleType);
+                styleSettings.put("value", styleValue);
+
+                commands.add(new SetCommand("style", styleSettings));
             }
         }
 

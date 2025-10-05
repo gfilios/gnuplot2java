@@ -51,6 +51,7 @@ public class GnuplotScriptExecutor implements CommandVisitor {
     private String ylabel = "";
     private int samples = 100;
     private boolean grid = false;
+    private boolean drawBorder = true; // Default: true (matching C Gnuplot's draw_border = 31)
     private String outputFile = "output.svg";
     private final Map<String, Double> variables = new HashMap<>();
 
@@ -58,6 +59,9 @@ public class GnuplotScriptExecutor implements CommandVisitor {
     private String keyPosition = "TOP_RIGHT";
     private boolean keyShowBorder = true;
     private boolean keyHorizontal = false;
+
+    // Style state
+    private String styleDataValue = "lines"; // default: lines
 
     // Current scene elements
     private final List<LinePlot> plots = new ArrayList<>();
@@ -97,6 +101,9 @@ public class GnuplotScriptExecutor implements CommandVisitor {
             case "grid":
                 grid = (Boolean) value;
                 break;
+            case "border":
+                drawBorder = true; // "set border" enables border
+                break;
             case "output":
                 if (value instanceof String) {
                     outputFile = (String) value;
@@ -109,6 +116,19 @@ public class GnuplotScriptExecutor implements CommandVisitor {
                     keyPosition = (String) keySettings.getOrDefault("position", "TOP_RIGHT");
                     keyShowBorder = (Boolean) keySettings.getOrDefault("showBorder", true);
                     keyHorizontal = (Boolean) keySettings.getOrDefault("horizontal", false);
+                }
+                break;
+            case "style":
+                if (value instanceof Map) {
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> styleSettings = (Map<String, Object>) value;
+                    String styleType = (String) styleSettings.get("type");
+                    String styleValue = (String) styleSettings.get("value");
+
+                    // Handle "set style data {points|lines|linespoints}"
+                    if ("data".equalsIgnoreCase(styleType) && styleValue != null) {
+                        styleDataValue = styleValue.toLowerCase();
+                    }
                 }
                 break;
         }
@@ -165,6 +185,35 @@ public class GnuplotScriptExecutor implements CommandVisitor {
                 String label = (plotTitle != null && !plotTitle.isEmpty()) ? plotTitle : expression;
                 plotBuilder.label(label);
 
+                // Determine plot style:
+                // 1. If explicit "with <style>" is specified, use that
+                // 2. If data file, use "set style data" setting
+                // 3. If function (expression), default to "lines" (gnuplot behavior)
+                LinePlot.PlotStyle plotStyle;
+
+                if (style != null && !style.isEmpty()) {
+                    // Explicit "with" clause takes precedence
+                    plotStyle = switch (style.toLowerCase()) {
+                        case "points" -> LinePlot.PlotStyle.POINTS;
+                        case "lines" -> LinePlot.PlotStyle.LINES;
+                        case "linespoints" -> LinePlot.PlotStyle.LINESPOINTS;
+                        case "impulses" -> LinePlot.PlotStyle.LINES; // treat impulses as lines for now
+                        default -> LinePlot.PlotStyle.LINES;
+                    };
+                } else if (isDataFile(expression)) {
+                    // Data files use "set style data" setting
+                    plotStyle = switch (styleDataValue) {
+                        case "points" -> LinePlot.PlotStyle.POINTS;
+                        case "linespoints" -> LinePlot.PlotStyle.LINESPOINTS;
+                        default -> LinePlot.PlotStyle.LINES;
+                    };
+                } else {
+                    // Functions always default to LINES (gnuplot behavior)
+                    plotStyle = LinePlot.PlotStyle.LINES;
+                }
+
+                plotBuilder.plotStyle(plotStyle);
+
                 plots.add(plotBuilder.build());
                 colorIndex++;  // Next color for next plot
             }
@@ -181,6 +230,9 @@ public class GnuplotScriptExecutor implements CommandVisitor {
         switch (option) {
             case "grid":
                 grid = false;
+                break;
+            case "border":
+                drawBorder = false; // "unset border" disables border
                 break;
             case "title":
                 title = "";
@@ -311,7 +363,8 @@ public class GnuplotScriptExecutor implements CommandVisitor {
         // Build scene
         Scene.Builder sceneBuilder = Scene.builder()
                 .dimensions(800, 600)
-                .viewport(viewport);
+                .viewport(viewport)
+                .border(drawBorder); // Apply border setting
 
         if (!title.isEmpty()) {
             sceneBuilder.title(title);

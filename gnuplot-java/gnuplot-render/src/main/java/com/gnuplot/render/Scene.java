@@ -36,6 +36,7 @@ public final class Scene {
     private final Viewport viewport;
     private final List<SceneElement> elements;
     private final RenderingHints hints;
+    private final boolean showBorder;
 
     private Scene(Builder builder) {
         this.width = builder.width;
@@ -44,6 +45,7 @@ public final class Scene {
         this.viewport = builder.viewport;
         this.elements = Collections.unmodifiableList(new ArrayList<>(builder.elements));
         this.hints = builder.hints != null ? builder.hints : RenderingHints.empty();
+        this.showBorder = builder.showBorder;
     }
 
     public static Builder builder() {
@@ -74,6 +76,10 @@ public final class Scene {
         return hints;
     }
 
+    public boolean isShowBorder() {
+        return showBorder;
+    }
+
     /**
      * Returns the aspect ratio (width / height).
      *
@@ -90,6 +96,7 @@ public final class Scene {
         private Viewport viewport;
         private final List<SceneElement> elements = new ArrayList<>();
         private RenderingHints hints;
+        private boolean showBorder = true; // Default: true (matching C Gnuplot)
 
         public Builder dimensions(int width, int height) {
             if (width <= 0 || height <= 0) {
@@ -124,6 +131,11 @@ public final class Scene {
 
         public Builder hints(RenderingHints hints) {
             this.hints = Objects.requireNonNull(hints, "hints cannot be null");
+            return this;
+        }
+
+        public Builder border(boolean showBorder) {
+            this.showBorder = showBorder;
             return this;
         }
 

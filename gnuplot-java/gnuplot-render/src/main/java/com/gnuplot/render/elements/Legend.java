@@ -206,7 +206,7 @@ public final class Legend implements SceneElement {
         private boolean showBorder = true;
         private int columns = 1;
         private String fontFamily = "Arial";
-        private int fontSize = 10;
+        private int fontSize = 12; // gnuplot default: 12
         private String borderColor = "#000000";
         private String backgroundColor = "#FFFFFF";
 

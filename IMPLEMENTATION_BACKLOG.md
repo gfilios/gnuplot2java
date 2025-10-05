@@ -163,10 +163,11 @@ String function support requires similar changes for String type support. Both a
 **Story Points**: 138 completed / 300 total (46%)
 
 **Latest Commits**:
+- (pending) - fix: TDD-9 Tackle visual differences - Fix plot styles and fonts
+- (pending) - feat: TDD-8 Add per-plot comparison reports to HTML
 - (pending) - feat: Add error bars to complete Story 3.2.3 (13/13 SP, 359 tests)
 - `e0ac970` - feat: Add grouped and stacked bars (Story 3.2.3 Tasks 2-3 - 10/13 SP, 353 tests)
 - `4246d3f` - feat: Implement basic bar chart renderer (Story 3.2.3 Task 1 - 5/13 SP, 338 tests)
-- `3b854b8` - docs: Update README and backlog with Story 3.2.2 completion
 
 **Phase 3 Progress**:
 - **Epic 3.1 (Rendering Infrastructure) - MVP Complete** ✅
@@ -191,6 +192,71 @@ String function support requires similar changes for String type support. Both a
 - ✅ Integration with Axis scene element
 - ✅ Axis.generateTicks() methods for linear, log, and time scales
 - ✅ 71 comprehensive unit tests (43 TickGenerator + 28 Axis integration)
+
+---
+
+### Test-Driven Development Stories (TDD-*)
+**Status**: 🟡 IN PROGRESS - Integrated Testing
+
+**Approach**: Test-driven development using gnuplot-c/demo/*.dem scripts as test oracle.
+See [TEST_DRIVEN_PLAN.md](TEST_DRIVEN_PLAN.md) for detailed methodology.
+
+**Completed Stories**:
+- ✅ **TDD-1**: Visual comparison infrastructure (Story TDD-1)
+- ✅ **TDD-2**: Deep element-by-element comparison tools (Story TDD-2)
+- ✅ **TDD-3**: Test result repository with HTML reports (Story TDD-3)
+- ✅ **TDD-4**: DemoTestRunner with pause command removal (Story TDD-4)
+- ✅ **TDD-5**: Range parsing and application (Story TDD-5)
+- ✅ **TDD-6**: Legend integration and positioning (Story TDD-6)
+- ✅ **TDD-7**: Point markers and styles (Story TDD-7)
+- ✅ **TDD-8**: Per-plot comparison reports in HTML (Story TDD-8)
+- ✅ **TDD-9**: Fix critical visual differences (Story TDD-9)
+
+**TDD-9 Completion Summary** (2025-10-05):
+
+**Critical Fixes Implemented**:
+1. **Plot Style Rendering** ✅
+   - **Problem**: Java rendered all function plots as POINTS instead of LINES
+   - **Root Cause**: Incorrectly applying "set style data points" to functions
+   - **Fix**: Modified GnuplotScriptExecutor.java to follow gnuplot behavior:
+     - Functions default to LINES (gnuplot behavior)
+     - Data files use "set style data" setting
+     - Explicit "with" clause takes precedence
+   - **Result**: Java now renders 22 lines vs C's 3 lines (improvement from 0 lines)
+
+2. **Font Sizes** ✅
+   - **Problem**: Java used smaller fonts (title=16px, labels=10px) vs C (title=20px, labels=12px)
+   - **Fixes**:
+     - SvgRenderer.java: Title font 16→20px (line 257)
+     - SvgRenderer.java: Axis labels 10→12px (lines 662, 706)
+     - Legend.java: Legend font 10→12px (line 209)
+   - **Result**: All fonts now match gnuplot C defaults
+
+3. **Per-Plot Comparison Reports** ✅
+   - **Problem**: Single general comparison for all 8 plots wasn't specific enough
+   - **Implementation**:
+     - DemoTestSuite now compares each SVG pair separately
+     - Generates 8 comparison files: comparison_simple.dem.txt, comparison_simple.dem_plot2.txt, etc.
+     - HtmlReportGenerator displays separate collapsible sections per plot
+   - **Result**: Detailed analysis available for each of 8 plots in simple.dem
+
+**Test Results**:
+- simple.dem: 8 plots generated, 8 comparisons available
+- Visual accuracy significantly improved
+- Remaining differences: Minor layout/positioning (not fundamental rendering)
+
+**Files Modified**:
+- gnuplot-java/gnuplot-cli/src/main/java/com/gnuplot/cli/executor/GnuplotScriptExecutor.java
+- gnuplot-java/gnuplot-render/src/main/java/com/gnuplot/render/svg/SvgRenderer.java
+- gnuplot-java/gnuplot-render/src/main/java/com/gnuplot/render/elements/Legend.java
+- gnuplot-java/gnuplot-cli/src/test/java/com/gnuplot/cli/demo/DemoTestSuite.java
+- gnuplot-java/gnuplot-cli/src/test/java/com/gnuplot/cli/demo/HtmlReportGenerator.java
+
+**Comparison Infrastructure**:
+- Location: test-tools/comparison/ (compare_deep.sh, compare_svg.sh, compare_visual.sh)
+- Documentation: test-tools/docs/
+- Output: test-results/latest/comparison_*.txt (per-plot)
+- HTML: test-results/latest/index.html (with collapsible comparison sections)
 
 ---
 

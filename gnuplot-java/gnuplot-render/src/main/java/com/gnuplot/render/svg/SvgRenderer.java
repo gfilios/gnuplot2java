@@ -223,18 +223,25 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
         writer.write(String.format(Locale.US,
                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                 "<svg xmlns=\"http://www.w3.org/2000/svg\" " +
+                "xmlns:xlink=\"http://www.w3.org/1999/xlink\" " +
                 "width=\"%d\" height=\"%d\" viewBox=\"0 0 %d %d\">\n",
                 scene.getWidth(), scene.getHeight(),
                 scene.getWidth(), scene.getHeight()));
 
-        // Define clip path for plot area (if viewport is set)
+        // Define clip path and point markers (if viewport is set)
         if (viewport != null) {
             writer.write("  <defs>\n");
+
+            // Clip path for plot area
             writer.write(String.format(Locale.US,
                     "    <clipPath id=\"plotClip\">\n" +
                     "      <rect x=\"0\" y=\"0\" width=\"%d\" height=\"%d\"/>\n" +
                     "    </clipPath>\n",
                     scene.getWidth(), scene.getHeight()));
+
+            // Point marker definitions (matching C Gnuplot's gpPt0-gpPt14)
+            writePointMarkerDefinitions();
+
             writer.write("  </defs>\n");
         }
 
@@ -247,7 +254,7 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
 
         // Title if present
         if (scene.getTitle() != null && !scene.getTitle().isEmpty()) {
-            int fontSize = scene.getHints().get(RenderingHints.Keys.FONT_SIZE).orElse(16);
+            int fontSize = scene.getHints().get(RenderingHints.Keys.FONT_SIZE).orElse(20); // gnuplot default: 20
             writer.write(String.format(Locale.US,
                     "  <text x=\"%d\" y=\"%d\" font-size=\"%d\" text-anchor=\"middle\">%s</text>\n",
                     scene.getWidth() / 2, fontSize + 5, fontSize, escapeXml(scene.getTitle())));
@@ -258,10 +265,106 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
         for (SceneElement element : scene.getElements()) {
             element.accept(this);
         }
+
+        // Render plot border (after all other elements)
+        if (scene.isShowBorder()) {
+            renderPlotBorder();
+        }
+    }
+
+    /**
+     * Render the plot border rectangle around the plot area.
+     * This matches C Gnuplot's plot_border() function behavior.
+     */
+    private void renderPlotBorder() throws IOException {
+        // Draw a rectangle around the plot area (from upper-left, clockwise)
+        // Using plotLeft, plotRight, plotTop, plotBottom boundaries
+        writer.write(String.format(Locale.US,
+                "  <path d=\"M %.2f %.2f L %.2f %.2f L %.2f %.2f L %.2f %.2f Z\" " +
+                "stroke=\"#000000\" stroke-width=\"1.0\" fill=\"none\"/>\n",
+                (double) plotLeft, (double) plotTop,     // upper-left
+                (double) plotRight, (double) plotTop,    // upper-right
+                (double) plotRight, (double) plotBottom, // lower-right
+                (double) plotLeft, (double) plotBottom   // lower-left
+        ));
     }
 
     private void writeSvgFooter() throws IOException {
         writer.write("</svg>\n");
+    }
+
+    /**
+     * Write point marker definitions matching C Gnuplot's gpPt0-gpPt14.
+     * These are referenced when rendering plots with POINTS or LINESPOINTS style.
+     */
+    private void writePointMarkerDefinitions() throws IOException {
+        double strokeWidth = 0.222;
+
+        writer.write("\n    <!-- Point marker definitions (matching C Gnuplot) -->\n");
+
+        // gpDot - small filled circle
+        writer.write("    <circle id='gpDot' r='0.5' stroke-width='0.5' stroke='currentColor'/>\n");
+
+        // gpPt0 - plus (+)
+        writer.write(String.format(Locale.US,
+                "    <path id='gpPt0' stroke-width='%.3f' stroke='currentColor' d='M-1,0 h2 M0,-1 v2'/>\n",
+                strokeWidth));
+
+        // gpPt1 - X
+        writer.write(String.format(Locale.US,
+                "    <path id='gpPt1' stroke-width='%.3f' stroke='currentColor' d='M-1,-1 L1,1 M1,-1 L-1,1'/>\n",
+                strokeWidth));
+
+        // gpPt2 - star (*)
+        writer.write(String.format(Locale.US,
+                "    <path id='gpPt2' stroke-width='%.3f' stroke='currentColor' d='M-1,0 L1,0 M0,-1 L0,1 M-1,-1 L1,1 M-1,1 L1,-1'/>\n",
+                strokeWidth));
+
+        // gpPt3 - square (empty)
+        writer.write(String.format(Locale.US,
+                "    <rect id='gpPt3' stroke-width='%.3f' stroke='currentColor' x='-1' y='-1' width='2' height='2'/>\n",
+                strokeWidth));
+
+        // gpPt4 - square (filled)
+        writer.write(String.format(Locale.US,
+                "    <rect id='gpPt4' stroke-width='%.3f' stroke='currentColor' fill='currentColor' x='-1' y='-1' width='2' height='2'/>\n",
+                strokeWidth));
+
+        // gpPt5 - circle (empty)
+        writer.write(String.format(Locale.US,
+                "    <circle id='gpPt5' stroke-width='%.3f' stroke='currentColor' cx='0' cy='0' r='1'/>\n",
+                strokeWidth));
+
+        // gpPt6 - circle (filled)
+        writer.write("    <use xlink:href='#gpPt5' id='gpPt6' fill='currentColor' stroke='none'/>\n");
+
+        // gpPt7 - triangle (empty)
+        writer.write(String.format(Locale.US,
+                "    <path id='gpPt7' stroke-width='%.3f' stroke='currentColor' d='M0,-1.33 L-1.33,0.67 L1.33,0.67 z'/>\n",
+                strokeWidth));
+
+        // gpPt8 - triangle (filled)
+        writer.write("    <use xlink:href='#gpPt7' id='gpPt8' fill='currentColor' stroke='none'/>\n");
+
+        // gpPt9 - inverted triangle (empty)
+        writer.write("    <use xlink:href='#gpPt7' id='gpPt9' stroke='currentColor' transform='rotate(180)'/>\n");
+
+        // gpPt10 - inverted triangle (filled)
+        writer.write("    <use xlink:href='#gpPt9' id='gpPt10' fill='currentColor' stroke='none'/>\n");
+
+        // gpPt11 - diamond (empty)
+        writer.write("    <use xlink:href='#gpPt3' id='gpPt11' stroke='currentColor' transform='rotate(45)'/>\n");
+
+        // gpPt12 - diamond (filled)
+        writer.write("    <use xlink:href='#gpPt11' id='gpPt12' fill='currentColor' stroke='none'/>\n");
+
+        // gpPt13 - pentagon (empty)
+        writer.write(String.format(Locale.US,
+                "    <path id='gpPt13' stroke-width='%.3f' stroke='currentColor' d='M0,1.330 L1.265,0.411 L0.782,-1.067 L-0.782,-1.076 L-1.265,0.411 z'/>\n",
+                strokeWidth));
+
+        // gpPt14 - pentagon (filled)
+        writer.write("    <use xlink:href='#gpPt13' id='gpPt14' fill='currentColor' stroke='none'/>\n");
     }
 
     @Override
@@ -271,32 +374,71 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
                 return;
             }
 
-            // Build polyline points string, skipping NaN/Infinity values
-            StringBuilder points = new StringBuilder();
-            for (LinePlot.Point2D point : linePlot.getPoints()) {
-                // Skip invalid points (NaN or Infinity)
-                if (!Double.isFinite(point.getX()) || !Double.isFinite(point.getY())) {
-                    continue;
+            LinePlot.PlotStyle plotStyle = linePlot.getPlotStyle();
+            String clipAttr = (viewport != null) ? " clip-path=\"url(#plotClip)\"" : "";
+
+            // Render lines (for LINES or LINESPOINTS)
+            if (plotStyle == LinePlot.PlotStyle.LINES || plotStyle == LinePlot.PlotStyle.LINESPOINTS) {
+                // Build polyline points string, skipping NaN/Infinity values
+                StringBuilder points = new StringBuilder();
+                for (LinePlot.Point2D point : linePlot.getPoints()) {
+                    // Skip invalid points (NaN or Infinity)
+                    if (!Double.isFinite(point.getX()) || !Double.isFinite(point.getY())) {
+                        continue;
+                    }
+
+                    double x = mapX(point.getX());
+                    double y = mapY(point.getY());
+                    if (points.length() > 0) {
+                        points.append(" ");
+                    }
+                    points.append(String.format(Locale.US, "%.2f %.2f", x, y));
                 }
 
-                double x = mapX(point.getX());
-                double y = mapY(point.getY());
-                if (points.length() > 0) {
-                    points.append(" ");
-                }
-                points.append(String.format(Locale.US, "%.2f %.2f", x, y));
+                // Create stroke style from LinePlot properties
+                Color color = Color.fromHexString(linePlot.getColor());
+                com.gnuplot.render.style.LineStyle styleLineStyle = linePlot.getLineStyle().toStyleLineStyle();
+                StrokeStyle stroke = new StrokeStyle(linePlot.getLineWidth(), color, styleLineStyle);
+
+                // Write polyline with stroke attributes and clipping
+                writer.write(String.format(Locale.US,
+                        "  <polyline points=\"%s\" fill=\"none\" %s%s/>\n",
+                        points, stroke.toSvgAttributes(), clipAttr));
             }
 
-            // Create stroke style from LinePlot properties
-            Color color = Color.fromHexString(linePlot.getColor());
-            com.gnuplot.render.style.LineStyle styleLineStyle = linePlot.getLineStyle().toStyleLineStyle();
-            StrokeStyle stroke = new StrokeStyle(linePlot.getLineWidth(), color, styleLineStyle);
+            // Render point markers (for POINTS or LINESPOINTS)
+            if (plotStyle == LinePlot.PlotStyle.POINTS || plotStyle == LinePlot.PlotStyle.LINESPOINTS) {
+                // Use markerStyle if provided, otherwise create default
+                MarkerStyle markerStyle = linePlot.getMarkerStyle();
+                if (markerStyle == null) {
+                    // Create default marker style matching plot color
+                    Color color = Color.fromHexString(linePlot.getColor());
+                    markerStyle = MarkerStyle.filled(4.0, color, PointStyle.CIRCLE);
+                }
 
-            // Write polyline with stroke attributes and clipping
-            String clipAttr = (viewport != null) ? " clip-path=\"url(#plotClip)\"" : "";
-            writer.write(String.format(Locale.US,
-                    "  <polyline points=\"%s\" fill=\"none\" %s%s/>\n",
-                    points, stroke.toSvgAttributes(), clipAttr));
+                // Render each point as a marker using gpPt definitions
+                int markerIndex = 0;
+                for (LinePlot.Point2D point : linePlot.getPoints()) {
+                    // Skip invalid points (NaN or Infinity)
+                    if (!Double.isFinite(point.getX()) || !Double.isFinite(point.getY())) {
+                        continue;
+                    }
+
+                    double x = mapX(point.getX());
+                    double y = mapY(point.getY());
+
+                    // Use gpPt marker definitions (cycling through 0-14)
+                    int ptIndex = markerIndex % 15;
+                    double scale = markerStyle.size() / 4.0; // Normalize to gnuplot's default size
+
+                    // Write marker reference with transform and color
+                    writer.write(String.format(Locale.US,
+                            "  <use xlink:href='#gpPt%d' transform='translate(%.2f,%.2f) scale(%.2f)' color='%s'%s/>\n",
+                            ptIndex, x, y, scale, linePlot.getColor(), clipAttr));
+
+                    markerIndex++;
+                }
+            }
 
         } catch (IOException e) {
             throw new RuntimeException("Failed to render line plot", e);
@@ -517,7 +659,7 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
                 // Tick label (only for major ticks)
                 if (tick.getType() == TickGenerator.TickType.MAJOR && tick.getLabel() != null) {
                     writer.write(String.format(Locale.US,
-                            "  <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\" font-size=\"10\">%s</text>\n",
+                            "  <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"middle\" font-size=\"12\">%s</text>\n",
                             x, y + 18, escapeXml(tick.getLabel())));
                 }
 
@@ -561,7 +703,7 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
                 // Tick label (only for major ticks)
                 if (tick.getType() == TickGenerator.TickType.MAJOR && tick.getLabel() != null) {
                     writer.write(String.format(Locale.US,
-                            "  <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"end\" font-size=\"10\">%s</text>\n",
+                            "  <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"end\" font-size=\"12\">%s</text>\n",
                             x - 10, y + 4, escapeXml(tick.getLabel())));
                 }
 

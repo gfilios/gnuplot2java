@@ -306,8 +306,47 @@ public class HtmlReportGenerator {
         html.append("          </div>\n");
         html.append("        </div>\n");
 
+        // Comparison reports section - one for each plot
+        String baseName = record.getDemoName().replace(".dem", "");
+
+        // Check for plot 1 comparison
+        Path comparison1 = runDirectory.resolve("comparison_" + record.getDemoName() + ".txt");
+        if (Files.exists(comparison1)) {
+            appendComparisonSection(html, comparison1, baseName, 1);
+        }
+
+        // Check for additional plot comparisons (plot2, plot3, etc.)
+        for (int i = 2; i <= 100; i++) {
+            Path comparisonN = runDirectory.resolve(String.format("comparison_%s_plot%d.txt",
+                                                                  record.getDemoName(), i));
+            if (Files.exists(comparisonN)) {
+                appendComparisonSection(html, comparisonN, baseName, i);
+            } else {
+                break; // Stop when no more comparison files found
+            }
+        }
+
         html.append("      </div>\n");
         html.append("    </div>\n");
+    }
+
+    private static void appendComparisonSection(StringBuilder html, Path comparisonFile,
+                                                String baseName, int plotNumber) throws IOException {
+        String comparisonId = baseName + "_comparison_plot" + plotNumber;
+        String title = plotNumber == 1 ?
+                "🔍 Visual Comparison Analysis - Plot 1" :
+                "🔍 Visual Comparison Analysis - Plot " + plotNumber;
+
+        html.append("        <div class=\"script-section\" style=\"margin-top: 1.5rem;\">\n");
+        html.append("          <h4 onclick=\"toggleScript('").append(comparisonId).append("')\" ");
+        html.append("style=\"cursor: pointer; user-select: none;\">");
+        html.append("<span class=\"toggle-icon\" id=\"script-icon-").append(comparisonId).append("\">▶</span> ");
+        html.append(title).append("</h4>\n");
+        html.append("          <div class=\"script-content\" id=\"script-").append(comparisonId).append("\" ");
+        html.append("style=\"display: none;\">");
+        html.append("<pre>").append(escapeHtml(Files.readString(comparisonFile))).append("</pre>");
+        html.append("</div>\n");
+        html.append("        </div>\n");
     }
 
     private static void appendJavaScript(StringBuilder html) {

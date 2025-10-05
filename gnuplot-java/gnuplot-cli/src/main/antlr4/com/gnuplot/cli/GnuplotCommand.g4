@@ -48,6 +48,7 @@ setOption
     | YRANGE range                                  # SetYRange
     | ZRANGE range                                  # SetZRange
     | GRID                                          # SetGrid
+    | BORDER                                        # SetBorder
     | AUTOSCALE                                     # SetAutoscale
     | LOGSCALE axes                                 # SetLogscale
     | TERMINAL terminalType terminalOptions*        # SetTerminal
@@ -120,6 +121,7 @@ unsetCommand
 
 unsetOption
     : GRID
+    | BORDER
     | KEY
     | LOGSCALE
     | PARAMETRIC
@@ -288,6 +290,7 @@ XRANGE      : 'xrange' ;
 YRANGE      : 'yrange' ;
 ZRANGE      : 'zrange' ;
 GRID        : 'grid' ;
+BORDER      : 'border' ;
 AUTOSCALE   : 'autoscale' ;
 LOGSCALE    : 'logscale' ;
 TERMINAL    : 'terminal' | 'term' ;

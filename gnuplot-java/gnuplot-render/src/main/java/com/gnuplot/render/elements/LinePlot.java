@@ -2,6 +2,8 @@ package com.gnuplot.render.elements;
 
 import com.gnuplot.render.SceneElement;
 import com.gnuplot.render.SceneElementVisitor;
+import com.gnuplot.render.style.MarkerStyle;
+import com.gnuplot.render.style.PointStyle;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -10,7 +12,8 @@ import java.util.Objects;
 
 /**
  * Represents a line plot in the scene graph.
- * A line plot connects a series of points with lines.
+ * A line plot connects a series of points with lines, or renders points with markers,
+ * or both depending on the plot style.
  *
  * @since 1.0
  */
@@ -22,6 +25,8 @@ public final class LinePlot implements SceneElement {
     private final double lineWidth;
     private final String color;
     private final String label;
+    private final PlotStyle plotStyle;
+    private final MarkerStyle markerStyle;
 
     private LinePlot(Builder builder) {
         this.id = builder.id;
@@ -30,6 +35,8 @@ public final class LinePlot implements SceneElement {
         this.lineWidth = builder.lineWidth;
         this.color = builder.color;
         this.label = builder.label;
+        this.plotStyle = builder.plotStyle;
+        this.markerStyle = builder.markerStyle;
     }
 
     public static Builder builder() {
@@ -68,6 +75,26 @@ public final class LinePlot implements SceneElement {
 
     public String getLabel() {
         return label;
+    }
+
+    public PlotStyle getPlotStyle() {
+        return plotStyle;
+    }
+
+    public MarkerStyle getMarkerStyle() {
+        return markerStyle;
+    }
+
+    /**
+     * Plot style enumeration - determines how points are rendered.
+     */
+    public enum PlotStyle {
+        /** Render as connected lines only */
+        LINES,
+        /** Render as point markers only */
+        POINTS,
+        /** Render as both lines and point markers */
+        LINESPOINTS
     }
 
     /**
@@ -140,6 +167,8 @@ public final class LinePlot implements SceneElement {
         private double lineWidth = 1.0;
         private String color = "#000000";
         private String label;
+        private PlotStyle plotStyle = PlotStyle.LINES;
+        private MarkerStyle markerStyle = null;
 
         private Builder() {
         }
@@ -188,6 +217,16 @@ public final class LinePlot implements SceneElement {
             return this;
         }
 
+        public Builder plotStyle(PlotStyle plotStyle) {
+            this.plotStyle = Objects.requireNonNull(plotStyle, "plotStyle cannot be null");
+            return this;
+        }
+
+        public Builder markerStyle(MarkerStyle markerStyle) {
+            this.markerStyle = markerStyle;
+            return this;
+        }
+
         public LinePlot build() {
             if (id == null) {
                 throw new IllegalStateException("id is required");
@@ -201,7 +240,7 @@ public final class LinePlot implements SceneElement {
 
     @Override
     public String toString() {
-        return String.format("LinePlot{id='%s', points=%d, style=%s, width=%.1f, color='%s', label='%s'}",
-                id, points.size(), lineStyle, lineWidth, color, label);
+        return String.format("LinePlot{id='%s', points=%d, plotStyle=%s, lineStyle=%s, width=%.1f, color='%s', label='%s'}",
+                id, points.size(), plotStyle, lineStyle, lineWidth, color, label);
     }
 }

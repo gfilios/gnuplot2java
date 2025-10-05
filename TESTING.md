@@ -22,6 +22,107 @@ This will check:
 
 ---
 
+## Demo Test Suite (Test-Driven Development)
+
+The project uses a test-driven approach with the official Gnuplot demo scripts as test oracle.
+
+### Running Demo Tests
+
+```bash
+cd gnuplot-java/gnuplot-cli
+mvn test -Dtest=DemoTestSuite
+```
+
+### Available Demo Tests
+
+- `testSimpleDem()` - Basic plotting with trig functions (8 plots)
+- `testScatterDem()` - Scatter plots
+- `testControlsDem()` - Control flow (expected to fail until control flow implemented)
+
+### Viewing Test Results
+
+After running tests, open the HTML report:
+
+```bash
+open ../../test-results/latest/index.html
+```
+
+The HTML report includes:
+- ✅ Side-by-side comparison of C vs Java outputs
+- ✅ Per-plot visual comparison analysis
+- ✅ Collapsible comparison sections for each plot
+- ✅ Detailed element-by-element analysis (fonts, colors, positions, etc.)
+
+### Comparison Tools
+
+The test suite uses three comparison tools (located in `test-tools/comparison/`):
+
+1. **compare_deep.sh** - Element-by-element analysis
+   - Title, border, axes, legend, plot style, fonts, coordinates
+
+2. **compare_svg.sh** - SVG code structure analysis
+   - Plot style detection, color palette, file size
+
+3. **compare_visual.sh** - Pixel-level image comparison
+   - Uses ImageMagick to detect visual differences
+   - Edge detection for structural analysis
+   - Color analysis
+
+### Test Results Structure
+
+```
+test-results/
+├── latest -> run_2025-10-05_09-20-04/
+├── run_2025-10-05_09-20-04/
+│   ├── index.html              # Main HTML report
+│   ├── summary.txt             # Text summary
+│   ├── scripts/                # Test scripts
+│   │   ├── simple.dem          # Original script
+│   │   └── simple_modified.dem # Modified script
+│   ├── outputs/                # SVG outputs
+│   │   ├── simple_c.svg        # C output plot 1
+│   │   ├── simple_c_002.svg    # C output plot 2
+│   │   ├── simple_java.svg     # Java output plot 1
+│   │   └── simple_java_002.svg # Java output plot 2
+│   ├── logs/                   # Stdout/stderr logs
+│   │   ├── simple_c.stdout
+│   │   ├── simple_c.stderr
+│   │   ├── simple_java.stdout
+│   │   └── simple_java.stderr
+│   ├── comparison_simple.dem.txt       # Plot 1 comparison
+│   ├── comparison_simple.dem_plot2.txt # Plot 2 comparison
+│   └── ...                     # Additional plot comparisons
+```
+
+### Understanding Comparison Reports
+
+Each comparison file contains:
+
+1. **Deep Element Analysis**
+   - Title: text, position, font size
+   - Border: coordinates, dimensions
+   - Axes: tick marks, labels, positions
+   - Legend: position, entries, colors
+   - Plot style: LINES vs POINTS vs LINESPOINTS
+
+2. **SVG Code Analysis**
+   - Element counts (paths, markers)
+   - Color palette
+   - File size comparison
+
+3. **Visual Image Analysis**
+   - Pixel differences
+   - Edge detection (structural differences)
+   - Color palette differences
+
+### Documentation
+
+- **Test-Driven Plan**: [TEST_DRIVEN_PLAN.md](TEST_DRIVEN_PLAN.md)
+- **Comparison Tools**: [test-tools/README.md](test-tools/README.md)
+- **Implementation Backlog**: [IMPLEMENTATION_BACKLOG.md](IMPLEMENTATION_BACKLOG.md)
+
+---
+
 ## Manual Testing Steps
 
 ### 1. Verify Prerequisites

@@ -31,6 +31,7 @@ class DemoTestSuite {
 
     private static DemoTestRunner testRunner;
     private static TestResultRepository repository;
+    private static ComparisonRunner comparisonRunner;
 
     @BeforeAll
     static void setup() throws IOException {
@@ -46,6 +47,10 @@ class DemoTestSuite {
                 .build();
 
         repository = new TestResultRepository(REPOSITORY_ROOT);
+        comparisonRunner = new ComparisonRunner(REPOSITORY_ROOT);
+
+        // Print comparison tools status
+        System.out.println("\n" + comparisonRunner.getToolsStatus());
     }
 
     @org.junit.jupiter.api.AfterAll
@@ -63,6 +68,30 @@ class DemoTestSuite {
     }
 
     /**
+     * Helper method to run comparison and save results for a specific plot pair.
+     */
+    private static void runAndSaveComparison(Path cSvgOutput, Path javaSvgOutput,
+                                            Path runDir, String demoName, int plotNumber) throws IOException {
+        ComparisonRunner.ComparisonResult compResult =
+                comparisonRunner.runComparison(cSvgOutput, javaSvgOutput);
+
+        // Print summary for this plot
+        System.out.println("Plot " + plotNumber + ":");
+        if (compResult.hasIssues()) {
+            System.out.println("  ⚠️  " + compResult.getCriticalIssues().size() + " issues found");
+        } else {
+            System.out.println("  ✅ No critical issues");
+        }
+
+        // Save comparison output to file with plot number
+        String filename = plotNumber == 1 ?
+                "comparison_" + demoName + ".txt" :
+                String.format("comparison_%s_plot%d.txt", demoName, plotNumber);
+        Path comparisonLog = runDir.resolve(filename);
+        Files.writeString(comparisonLog, compResult.getOutput());
+    }
+
+    /**
      * Test simple.dem - Basic plotting with trig functions.
      * This is a Tier 1 demo that should eventually pass.
      */
@@ -72,11 +101,43 @@ class DemoTestSuite {
 
         // Store result in repository
         Path originalScript = DEMO_DIR.resolve("simple.dem");
-        repository.store("simple.dem", originalScript, result.getModifiedScript(), result);
+        TestResultRepository.DemoTestRecord record =
+                repository.store("simple.dem", originalScript, result.getModifiedScript(), result);
 
-        System.out.println("=== simple.dem Test Results ===");
-        System.out.println("C Gnuplot Success: " + result.isCExecutionSuccess());
+        System.out.println("\n╔═══════════════════════════════════════════════════════════╗");
+        System.out.println("║                  simple.dem Test Results                  ║");
+        System.out.println("╚═══════════════════════════════════════════════════════════╝");
+        System.out.println("C Gnuplot Success:    " + result.isCExecutionSuccess());
         System.out.println("Java Gnuplot Success: " + result.isJavaExecutionSuccess());
+
+        // Run comprehensive comparison if both outputs exist
+        if (comparisonRunner.areToolsAvailable() &&
+            result.isCExecutionSuccess() && result.isJavaExecutionSuccess()) {
+
+            System.out.println("\n🔍 Running comprehensive comparison analysis...\n");
+
+            // Compare main output (plot 1)
+            runAndSaveComparison(record.getCSvgOutput(), record.getJavaSvgOutput(),
+                               repository.getCurrentRunDir(), "simple.dem", 1);
+
+            // Compare additional numbered outputs (_002, _003, etc.)
+            String baseName = record.getDemoName().replace(".dem", "");
+            Path outputDir = record.getCSvgOutput().getParent();
+
+            for (int i = 2; i <= 100; i++) {
+                Path cNumberedFile = outputDir.resolve(String.format("%s_c_%03d.svg", baseName, i));
+                Path javaNumberedFile = outputDir.resolve(String.format("%s_java_%03d.svg", baseName, i));
+
+                if (Files.exists(cNumberedFile) && Files.exists(javaNumberedFile)) {
+                    runAndSaveComparison(cNumberedFile, javaNumberedFile,
+                                       repository.getCurrentRunDir(), "simple.dem", i);
+                } else {
+                    break; // Stop when we find a gap
+                }
+            }
+
+            System.out.println("\n🖼️  Visual diff images: /tmp/gnuplot_visual_comparison/");
+        }
 
         assertThat(result.isCExecutionSuccess())
                 .as("C Gnuplot should execute simple.dem successfully")

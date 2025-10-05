@@ -1,0 +1,4 @@
+set terminal svg
+set output 'test_border_with.svg'
+set title 'Border Test - With Border'
+plot [-10:10] sin(x) title 'sin(x)'
