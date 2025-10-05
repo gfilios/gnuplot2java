@@ -651,11 +651,17 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
             for (var tick : ticks) {
                 double x = mapX(tick.getPosition());
 
-                // Tick mark (small line perpendicular to axis)
+                // Tick mark on bottom border (small line perpendicular to axis)
                 int tickLength = tick.getType() == TickGenerator.TickType.MINOR ? 3 : 6;
                 writer.write(String.format(Locale.US,
                         "  <line x1=\"%.2f\" y1=\"%.2f\" x2=\"%.2f\" y2=\"%.2f\" stroke=\"#000\" stroke-width=\"1\"/>\n",
                         x, y, x, y + tickLength));
+
+                // Mirror tick on top border (pointing downward into the box)
+                double topY = plotTop;
+                writer.write(String.format(Locale.US,
+                        "  <line x1=\"%.2f\" y1=\"%.2f\" x2=\"%.2f\" y2=\"%.2f\" stroke=\"#000\" stroke-width=\"1\"/>\n",
+                        x, topY, x, topY + tickLength));
 
                 // Tick label (only for major ticks)
                 if (tick.getType() == TickGenerator.TickType.MAJOR && tick.getLabel() != null) {
@@ -696,11 +702,17 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
             for (var tick : ticks) {
                 double y = mapY(tick.getPosition());
 
-                // Tick mark (small line perpendicular to axis)
+                // Tick mark on left border (small line perpendicular to axis)
                 int tickLength = tick.getType() == TickGenerator.TickType.MINOR ? 3 : 6;
                 writer.write(String.format(Locale.US,
                         "  <line x1=\"%.2f\" y1=\"%.2f\" x2=\"%.2f\" y2=\"%.2f\" stroke=\"#000\" stroke-width=\"1\"/>\n",
                         x, y, x - tickLength, y));
+
+                // Mirror tick on right border (pointing leftward into the box)
+                double rightX = plotRight;
+                writer.write(String.format(Locale.US,
+                        "  <line x1=\"%.2f\" y1=\"%.2f\" x2=\"%.2f\" y2=\"%.2f\" stroke=\"#000\" stroke-width=\"1\"/>\n",
+                        rightX, y, rightX - tickLength, y));
 
                 // Tick label (only for major ticks)
                 if (tick.getType() == TickGenerator.TickType.MAJOR && tick.getLabel() != null) {
