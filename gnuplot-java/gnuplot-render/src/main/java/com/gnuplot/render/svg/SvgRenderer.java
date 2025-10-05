@@ -729,11 +729,11 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
     @Override
     public void visitLegend(Legend legend) {
         try {
-            // Calculate legend dimensions
+            // Calculate legend dimensions (matching gnuplot C defaults)
             int columns = legend.getColumns();
             int rows = (int) Math.ceil((double) legend.getEntries().size() / columns);
-            int columnWidth = 150; // Width per column
-            int rowHeight = 25;    // Height per row
+            int columnWidth = 140; // Width per column (C gnuplot uses ~160 total for 1 column)
+            int rowHeight = 18;    // Height per row (C gnuplot uses 18px)
             int padding = 10;
 
             int legendWidth = columns * columnWidth + padding * 2;
@@ -761,24 +761,25 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
                 int entryX = x + padding + col * columnWidth;
                 int entryY = y + padding + row * rowHeight + rowHeight / 2;
 
-                // Render symbol based on type
+                // Draw label FIRST (matching gnuplot C behavior: text before symbol)
+                writer.write(String.format(Locale.US,
+                        "  <text x=\"%d\" y=\"%d\" font-family=\"%s\" font-size=\"%d\" alignment-baseline=\"middle\" text-anchor=\"end\">%s</text>\n",
+                        entryX + 90, entryY + 3, legend.getFontFamily(), legend.getFontSize(),
+                        escapeXml(entry.getLabel())));
+
+                // Render symbol AFTER text (matching gnuplot C behavior)
+                int symbolX = entryX + 95; // Symbol starts after text
                 switch (entry.getSymbolType()) {
                     case LINE:
-                        renderLegendLine(entry, entryX, entryY, legend.getFontSize());
+                        renderLegendLine(entry, symbolX, entryY, legend.getFontSize());
                         break;
                     case MARKER:
-                        renderLegendMarker(entry, entryX, entryY, legend.getFontSize());
+                        renderLegendMarker(entry, symbolX, entryY, legend.getFontSize());
                         break;
                     case LINE_MARKER:
-                        renderLegendLineAndMarker(entry, entryX, entryY, legend.getFontSize());
+                        renderLegendLineAndMarker(entry, symbolX, entryY, legend.getFontSize());
                         break;
                 }
-
-                // Draw label
-                writer.write(String.format(Locale.US,
-                        "  <text x=\"%d\" y=\"%d\" font-family=\"%s\" font-size=\"%d\" alignment-baseline=\"middle\">%s</text>\n",
-                        entryX + 40, entryY + 3, legend.getFontFamily(), legend.getFontSize(),
-                        escapeXml(entry.getLabel())));
 
                 entryIndex++;
             }
