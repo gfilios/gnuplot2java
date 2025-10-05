@@ -97,6 +97,15 @@ public class HtmlReportGenerator {
         html.append("    .test-details.expanded { display: block; }\n");
         html.append("    .comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1rem; ");
         html.append("                  align-items: start; }\n");
+        html.append("    .comparison-grid { display: grid; grid-template-columns: 1fr 1fr 1.5fr; gap: 1.5rem; ");
+        html.append("                       align-items: start; }\n");
+        html.append("    .comparison-text { background: #f8f9fa; padding: 1rem; border-radius: 6px; ");
+        html.append("                       max-height: 600px; overflow-y: auto; }\n");
+        html.append("    .comparison-text h4 { margin-bottom: 0.75rem; color: #667eea; }\n");
+        html.append("    .comparison-content { background: #2d2d2d; color: #f8f8f2; padding: 1rem; ");
+        html.append("                          border-radius: 4px; font-family: 'Courier New', monospace; ");
+        html.append("                          font-size: 0.75rem; max-height: 500px; overflow-y: auto; }\n");
+        html.append("    .comparison-content pre { margin: 0; white-space: pre-wrap; word-wrap: break-word; }\n");
         html.append("    .implementation { background: white; padding: 1rem; border-radius: 6px; ");
         html.append("                      min-width: 0; }\n");
         html.append("    .implementation h4 { margin-bottom: 0.75rem; color: #667eea; }\n");
@@ -205,124 +214,27 @@ public class HtmlReportGenerator {
             html.append("        </div>\n");
         }
 
-        // SVG Comparison
+        // SVG Comparison with side-by-side layout
         html.append("        <h4 style=\"margin-top: 1.5rem;\">🖼️ Output Comparison</h4>\n");
-        html.append("        <div class=\"comparison\">\n");
 
-        // C Gnuplot output
-        html.append("          <div class=\"implementation\">\n");
-        html.append("            <h4>C Gnuplot</h4>\n");
-        if (record.getCSvgOutput() != null && Files.exists(record.getCSvgOutput())) {
-            // Show main output
-            Path relativePath = runDirectory.relativize(record.getCSvgOutput());
-            html.append("            <div class=\"svg-output\">\n");
-            html.append("              <img src=\"").append(relativePath).append("\" alt=\"C Gnuplot output 1\">\n");
-            html.append("            </div>\n");
-            html.append("            <p style=\"margin-top: 0.5rem; font-size: 0.85rem; color: #666;\">Plot 1 - Size: ")
-                .append(Files.size(record.getCSvgOutput())).append(" bytes</p>\n");
+        // Plot 1 comparison
+        String baseName = record.getDemoName().replace(".dem", "");
+        Path comparison1 = runDirectory.resolve("comparison_" + record.getDemoName() + ".txt");
+        appendPlotComparison(html, record, runDirectory, 1, comparison1);
 
-            // Look for numbered files (_002.svg, _003.svg, etc.)
-            String baseName = record.getCSvgOutput().getFileName().toString().replace(".svg", "");
+        // Additional plot comparisons (plot2, plot3, etc.)
+        if (record.getCSvgOutput() != null) {
+            String csvBaseName = record.getCSvgOutput().getFileName().toString().replace(".svg", "");
             Path outputDir = record.getCSvgOutput().getParent();
             for (int i = 2; i <= 100; i++) {
-                Path numberedFile = outputDir.resolve(String.format("%s_%03d.svg", baseName, i));
-                if (Files.exists(numberedFile)) {
-                    Path numberedRelativePath = runDirectory.relativize(numberedFile);
-                    html.append("            <div class=\"svg-output\" style=\"margin-top: 1rem;\">\n");
-                    html.append("              <img src=\"").append(numberedRelativePath)
-                        .append("\" alt=\"C Gnuplot output ").append(i).append("\">\n");
-                    html.append("            </div>\n");
-                    html.append("            <p style=\"margin-top: 0.5rem; font-size: 0.85rem; color: #666;\">Plot ")
-                        .append(i).append(" - Size: ").append(Files.size(numberedFile)).append(" bytes</p>\n");
+                Path cNumberedFile = outputDir.resolve(String.format("%s_%03d.svg", csvBaseName, i));
+                Path comparisonN = runDirectory.resolve(String.format("comparison_%s_plot%d.txt",
+                                                                      record.getDemoName(), i));
+                if (Files.exists(cNumberedFile)) {
+                    appendPlotComparison(html, record, runDirectory, i, comparisonN);
                 } else {
-                    break; // Stop when we find a gap
+                    break;
                 }
-            }
-        } else {
-            html.append("            <p style=\"color: #dc3545;\">No output generated</p>\n");
-        }
-
-        // C stderr
-        if (record.getCStderr() != null && Files.exists(record.getCStderr())) {
-            String stderr = Files.readString(record.getCStderr());
-            if (!stderr.trim().isEmpty()) {
-                html.append("            <div class=\"log-section\">\n");
-                html.append("              <h5>Errors/Warnings:</h5>\n");
-                html.append("              <div class=\"log-content\">");
-                html.append(formatLogContent(stderr));
-                html.append("</div>\n");
-                html.append("            </div>\n");
-            }
-        }
-
-        html.append("          </div>\n");
-
-        // Java Gnuplot output
-        html.append("          <div class=\"implementation\">\n");
-        html.append("            <h4>Java Gnuplot</h4>\n");
-        if (record.getJavaSvgOutput() != null && Files.exists(record.getJavaSvgOutput())) {
-            // Show main output
-            Path relativePath = runDirectory.relativize(record.getJavaSvgOutput());
-            html.append("            <div class=\"svg-output\">\n");
-            html.append("              <img src=\"").append(relativePath).append("\" alt=\"Java Gnuplot output 1\">\n");
-            html.append("            </div>\n");
-            html.append("            <p style=\"margin-top: 0.5rem; font-size: 0.85rem; color: #666;\">Plot 1 - Size: ")
-                .append(Files.size(record.getJavaSvgOutput())).append(" bytes</p>\n");
-
-            // Look for numbered files (_002.svg, _003.svg, etc.)
-            String baseName = record.getJavaSvgOutput().getFileName().toString().replace(".svg", "");
-            Path outputDir = record.getJavaSvgOutput().getParent();
-            for (int i = 2; i <= 100; i++) {
-                Path numberedFile = outputDir.resolve(String.format("%s_%03d.svg", baseName, i));
-                if (Files.exists(numberedFile)) {
-                    Path numberedRelativePath = runDirectory.relativize(numberedFile);
-                    html.append("            <div class=\"svg-output\" style=\"margin-top: 1rem;\">\n");
-                    html.append("              <img src=\"").append(numberedRelativePath)
-                        .append("\" alt=\"Java Gnuplot output ").append(i).append("\">\n");
-                    html.append("            </div>\n");
-                    html.append("            <p style=\"margin-top: 0.5rem; font-size: 0.85rem; color: #666;\">Plot ")
-                        .append(i).append(" - Size: ").append(Files.size(numberedFile)).append(" bytes</p>\n");
-                } else {
-                    break; // Stop when we find a gap
-                }
-            }
-        } else {
-            html.append("            <p style=\"color: #dc3545;\">No output generated</p>\n");
-        }
-
-        // Java stderr
-        if (record.getJavaStderr() != null && Files.exists(record.getJavaStderr())) {
-            String stderr = Files.readString(record.getJavaStderr());
-            if (!stderr.trim().isEmpty()) {
-                html.append("            <div class=\"log-section\">\n");
-                html.append("              <h5>Errors/Warnings:</h5>\n");
-                html.append("              <div class=\"log-content\">");
-                html.append(formatLogContent(stderr));
-                html.append("</div>\n");
-                html.append("            </div>\n");
-            }
-        }
-
-        html.append("          </div>\n");
-        html.append("        </div>\n");
-
-        // Comparison reports section - one for each plot
-        String baseName = record.getDemoName().replace(".dem", "");
-
-        // Check for plot 1 comparison
-        Path comparison1 = runDirectory.resolve("comparison_" + record.getDemoName() + ".txt");
-        if (Files.exists(comparison1)) {
-            appendComparisonSection(html, comparison1, baseName, 1);
-        }
-
-        // Check for additional plot comparisons (plot2, plot3, etc.)
-        for (int i = 2; i <= 100; i++) {
-            Path comparisonN = runDirectory.resolve(String.format("comparison_%s_plot%d.txt",
-                                                                  record.getDemoName(), i));
-            if (Files.exists(comparisonN)) {
-                appendComparisonSection(html, comparisonN, baseName, i);
-            } else {
-                break; // Stop when no more comparison files found
             }
         }
 
@@ -330,22 +242,73 @@ public class HtmlReportGenerator {
         html.append("    </div>\n");
     }
 
-    private static void appendComparisonSection(StringBuilder html, Path comparisonFile,
-                                                String baseName, int plotNumber) throws IOException {
-        String comparisonId = baseName + "_comparison_plot" + plotNumber;
-        String title = plotNumber == 1 ?
-                "🔍 Visual Comparison Analysis - Plot 1" :
-                "🔍 Visual Comparison Analysis - Plot " + plotNumber;
+    private static void appendPlotComparison(StringBuilder html, TestResultRepository.DemoTestRecord record,
+                                             Path runDirectory, int plotNumber, Path comparisonFile) throws IOException {
+        html.append("        <div class=\"plot-comparison-row\" style=\"margin-top: 1.5rem;\">\n");
+        html.append("          <h5 style=\"color: #667eea;\">Plot ").append(plotNumber).append("</h5>\n");
+        html.append("          <div class=\"comparison-grid\">\n");
 
-        html.append("        <div class=\"script-section\" style=\"margin-top: 1.5rem;\">\n");
-        html.append("          <h4 onclick=\"toggleScript('").append(comparisonId).append("')\" ");
-        html.append("style=\"cursor: pointer; user-select: none;\">");
-        html.append("<span class=\"toggle-icon\" id=\"script-icon-").append(comparisonId).append("\">▶</span> ");
-        html.append(title).append("</h4>\n");
-        html.append("          <div class=\"script-content\" id=\"script-").append(comparisonId).append("\" ");
-        html.append("style=\"display: none;\">");
-        html.append("<pre>").append(escapeHtml(Files.readString(comparisonFile))).append("</pre>");
-        html.append("</div>\n");
+        // C Gnuplot output for this plot
+        html.append("            <div class=\"implementation\">\n");
+        html.append("              <h4>C Gnuplot</h4>\n");
+        Path cSvgFile;
+        if (plotNumber == 1) {
+            cSvgFile = record.getCSvgOutput();
+        } else {
+            String csvBaseName = record.getCSvgOutput().getFileName().toString().replace(".svg", "");
+            Path outputDir = record.getCSvgOutput().getParent();
+            cSvgFile = outputDir.resolve(String.format("%s_%03d.svg", csvBaseName, plotNumber));
+        }
+
+        if (cSvgFile != null && Files.exists(cSvgFile)) {
+            Path relativePath = runDirectory.relativize(cSvgFile);
+            html.append("              <div class=\"svg-output\">\n");
+            html.append("                <img src=\"").append(relativePath).append("\" alt=\"C Gnuplot plot ").append(plotNumber).append("\">\n");
+            html.append("              </div>\n");
+            html.append("              <p style=\"margin-top: 0.5rem; font-size: 0.85rem; color: #666;\">Size: ")
+                .append(Files.size(cSvgFile)).append(" bytes</p>\n");
+        } else {
+            html.append("              <p style=\"color: #dc3545;\">No output generated</p>\n");
+        }
+        html.append("            </div>\n");
+
+        // Java Gnuplot output for this plot
+        html.append("            <div class=\"implementation\">\n");
+        html.append("              <h4>Java Gnuplot</h4>\n");
+        Path javaSvgFile;
+        if (plotNumber == 1) {
+            javaSvgFile = record.getJavaSvgOutput();
+        } else {
+            String javaBaseName = record.getJavaSvgOutput().getFileName().toString().replace(".svg", "");
+            Path outputDir = record.getJavaSvgOutput().getParent();
+            javaSvgFile = outputDir.resolve(String.format("%s_%03d.svg", javaBaseName, plotNumber));
+        }
+
+        if (javaSvgFile != null && Files.exists(javaSvgFile)) {
+            Path relativePath = runDirectory.relativize(javaSvgFile);
+            html.append("              <div class=\"svg-output\">\n");
+            html.append("                <img src=\"").append(relativePath).append("\" alt=\"Java Gnuplot plot ").append(plotNumber).append("\">\n");
+            html.append("              </div>\n");
+            html.append("              <p style=\"margin-top: 0.5rem; font-size: 0.85rem; color: #666;\">Size: ")
+                .append(Files.size(javaSvgFile)).append(" bytes</p>\n");
+        } else {
+            html.append("              <p style=\"color: #dc3545;\">No output generated</p>\n");
+        }
+        html.append("            </div>\n");
+
+        // Comparison text on the right
+        html.append("            <div class=\"comparison-text\">\n");
+        html.append("              <h4>🔍 Comparison Analysis</h4>\n");
+        if (Files.exists(comparisonFile)) {
+            html.append("              <div class=\"comparison-content\">");
+            html.append("<pre>").append(escapeHtml(Files.readString(comparisonFile))).append("</pre>");
+            html.append("</div>\n");
+        } else {
+            html.append("              <p style=\"color: #999;\">No comparison available</p>\n");
+        }
+        html.append("            </div>\n");
+
+        html.append("          </div>\n");
         html.append("        </div>\n");
     }
 
