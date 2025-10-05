@@ -244,9 +244,14 @@ public class HtmlReportGenerator {
 
     private static void appendPlotComparison(StringBuilder html, TestResultRepository.DemoTestRecord record,
                                              Path runDirectory, int plotNumber, Path comparisonFile) throws IOException {
+        String baseName = record.getDemoName().replace(".dem", "");
+        String comparisonId = baseName + "_comparison_plot" + plotNumber;
+
         html.append("        <div class=\"plot-comparison-row\" style=\"margin-top: 1.5rem;\">\n");
         html.append("          <h5 style=\"color: #667eea;\">Plot ").append(plotNumber).append("</h5>\n");
-        html.append("          <div class=\"comparison-grid\">\n");
+
+        // Images side-by-side (2 columns)
+        html.append("          <div class=\"comparison\">\n");
 
         // C Gnuplot output for this plot
         html.append("            <div class=\"implementation\">\n");
@@ -296,19 +301,22 @@ public class HtmlReportGenerator {
         }
         html.append("            </div>\n");
 
-        // Comparison text on the right
-        html.append("            <div class=\"comparison-text\">\n");
-        html.append("              <h4>🔍 Comparison Analysis</h4>\n");
+        html.append("          </div>\n");
+
+        // Comparison text below images (collapsible)
         if (Files.exists(comparisonFile)) {
-            html.append("              <div class=\"comparison-content\">");
+            html.append("          <div class=\"script-section\" style=\"margin-top: 1rem;\">\n");
+            html.append("            <h4 onclick=\"toggleScript('").append(comparisonId).append("')\" ");
+            html.append("style=\"cursor: pointer; user-select: none;\">");
+            html.append("<span class=\"toggle-icon\" id=\"script-icon-").append(comparisonId).append("\">▶</span> ");
+            html.append("🔍 Comparison Analysis</h4>\n");
+            html.append("            <div class=\"script-content\" id=\"script-").append(comparisonId).append("\" ");
+            html.append("style=\"display: none;\">");
             html.append("<pre>").append(escapeHtml(Files.readString(comparisonFile))).append("</pre>");
             html.append("</div>\n");
-        } else {
-            html.append("              <p style=\"color: #999;\">No comparison available</p>\n");
+            html.append("          </div>\n");
         }
-        html.append("            </div>\n");
 
-        html.append("          </div>\n");
         html.append("        </div>\n");
     }
 
