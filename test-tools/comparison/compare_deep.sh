@@ -2,7 +2,8 @@
 # Deep Element-by-Element Comparison for Gnuplot SVG outputs
 # Analyzes ALL visual elements: axes, ticks, labels, legend, title, borders, plot styles
 
-set -e
+# Removed set -e to allow script to continue on errors
+# set -e
 
 if [ "$#" -ne 2 ]; then
     echo "Usage: $0 <c_file.svg> <java_file.svg>"
@@ -78,8 +79,11 @@ echo "2. PLOT BORDER/FRAME COMPARISON"
 echo "═══════════════════════════════════════════════════════════════════"
 
 # Extract border path (should be a rectangle around plot area)
+# C: Uses <path d='M54.53,66.01 L54.53,564.00 L774.82,564.00 L774.82,66.01 L54.53,66.01 Z'/>
 C_BORDER=$(grep -o "M54[^Z]*Z" "$C_SVG" | tail -1)
-JAVA_BORDER=$(grep -o "M [0-9.]*.*Z" "$JAVA_SVG" | grep "stroke=\"#000000\"" | head -1 || echo "")
+# Java: Uses <path d="M 54.00 66.00 L 775.00 66.00 L 775.00 564.00 L 54.00 564.00 Z" stroke="#000000" ... fill="none"/>
+JAVA_BORDER=$(grep -o 'path d="M [0-9.]*.*Z"' "$JAVA_SVG" | grep -o 'M [0-9. L]*Z' || \
+              grep -o '<path d="M [0-9.]*.*Z".*fill="none"' "$JAVA_SVG" | grep -o 'd="[^"]*"' | sed 's/d="//;s/"//' || echo "")
 
 echo "C Border Path:"
 echo "  ${C_BORDER:-'NOT FOUND'}"
@@ -106,8 +110,11 @@ echo "════════════════════════�
 
 # Y-axis ticks and labels
 echo "Y-AXIS TICKS:"
+# C: Uses <path d='M54.53,564.00 L63.53,564.00'/> for ticks
 C_Y_TICKS=$(grep -o "M54\.53,[0-9.]* L63\.53,[0-9.]*" "$C_SVG" | wc -l | tr -d ' ')
-JAVA_Y_TICKS=$(grep -o 'x1="414[^"]*".*y1="[^"]*".*x2="[^"]*".*y2="[^"]*"' "$JAVA_SVG" | wc -l | tr -d ' ')
+# Java: Uses <line x1="54.00" y1="526.57" x2="48.00" y2="526.57"/> for ticks
+# Look for horizontal lines at x=54 going left (tick marks on Y-axis)
+JAVA_Y_TICKS=$(grep -o '<line x1="54\.[0-9]*" y1="[0-9.]*" x2="48\.[0-9]*" y2="[0-9.]*"' "$JAVA_SVG" | wc -l | tr -d ' ')
 
 echo "  C tick count:    $C_Y_TICKS"
 echo "  Java tick count: $JAVA_Y_TICKS"
@@ -127,8 +134,11 @@ echo "$JAVA_Y_LABELS" | head -3 | sed 's/^/  /'
 # X-axis ticks and labels
 echo ""
 echo "X-AXIS TICKS:"
+# C: Uses <path d='M54.53,564.00 L54.53,555.00'/> for ticks (vertical lines)
 C_X_TICKS=$(grep -o "M[0-9.]*,564\.00 L[0-9.]*,555\.00" "$C_SVG" | wc -l | tr -d ' ')
-JAVA_X_TICKS=$(grep -o 'y1="294[^"]*".*x1="[^"]*".*y2="[^"]*".*x2="[^"]*"' "$JAVA_SVG" | wc -l | tr -d ' ')
+# Java: Uses <line x1="54.00" y1="564.00" x2="54.00" y2="570.00"/> for ticks
+# Look for vertical lines at y=564 going down (tick marks on X-axis)
+JAVA_X_TICKS=$(grep -o '<line x1="[0-9.]*" y1="564\.00" x2="[0-9.]*" y2="570\.00"' "$JAVA_SVG" | wc -l | tr -d ' ')
 
 echo "  C tick count:    $C_X_TICKS"
 echo "  Java tick count: $JAVA_X_TICKS"
@@ -326,18 +336,23 @@ fi
 
 # Check legend position
 if [ -n "$C_LEG_X" ] && [ -n "$JAVA_LEG_X" ]; then
-    LEG_X_DIFF=$((C_LEG_X - JAVA_LEG_X))
-    LEG_X_DIFF=${LEG_X_DIFF#-}
-    if [ "$LEG_X_DIFF" -gt 10 ]; then
+    # Use bc for floating point arithmetic
+    LEG_X_DIFF=$(echo "$C_LEG_X - $JAVA_LEG_X" | bc -l | sed 's/-//')
+    # Convert to integer for comparison
+    LEG_X_DIFF_INT=$(echo "$LEG_X_DIFF" | awk '{print int($1)}')
+    if [ "$LEG_X_DIFF_INT" -gt 10 ]; then
         echo "❌ Legend position differs by ${LEG_X_DIFF}px horizontally"
         ISSUES=$((ISSUES + 1))
     fi
 fi
 
-# Check title font size
-if [ "$C_TITLE_FONT" != "$JAVA_TITLE_FONT" ] && [ -n "$C_TITLE_FONT" ] && [ -n "$JAVA_TITLE_FONT" ]; then
-    echo "❌ Title font size mismatch: $C_TITLE_FONT vs $JAVA_TITLE_FONT"
-    ISSUES=$((ISSUES + 1))
+# Check title font size (compare numeric values, not string format)
+if [ -n "$C_FONT_NUM" ] && [ -n "$JAVA_FONT_NUM" ]; then
+    # Already compared above, only report if significant difference (> 0.1)
+    if [ "$(echo "$DIFF > 0.1" | bc -l)" -eq 1 ] 2>/dev/null; then
+        echo "❌ Title font size mismatch: $C_TITLE_FONT vs $JAVA_TITLE_FONT (difference: $DIFF)"
+        ISSUES=$((ISSUES + 1))
+    fi
 fi
 
 # Check axis tick counts

@@ -141,7 +141,9 @@ make
 
 | Document | Description |
 |----------|-------------|
+| **[CLAUDE_DEVELOPMENT_GUIDE.md](CLAUDE_DEVELOPMENT_GUIDE.md)** | **🔴 MANDATORY: Read first! Test-driven development workflow** |
 | [SETUP.md](SETUP.md) | Development environment setup guide |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Contribution guidelines with test-first workflow |
 | [MODERNIZATION_STRATEGY.md](MODERNIZATION_STRATEGY.md) | Detailed modernization approach and rationale |
 | [IMPLEMENTATION_BACKLOG.md](IMPLEMENTATION_BACKLOG.md) | Complete backlog with 200+ user stories |
 | [MODERNIZATION_PROPOSAL.md](MODERNIZATION_PROPOSAL.md) | Original architecture proposal |

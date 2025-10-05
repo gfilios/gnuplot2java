@@ -107,6 +107,29 @@ git push origin feature/expression-parser
 
 ## Coding Standards
 
+### ⚠️ Algorithm Implementation Rules
+
+**CRITICAL**: When porting from C gnuplot:
+
+1. **NO HARDCODING**: Never hardcode values unless they are hardcoded in C
+2. **READ C CODE**: Always find and understand the C implementation first
+3. **PORT, DON'T GUESS**: Implement the same algorithm logic, not approximations
+4. **DOCUMENT SOURCE**: Add JavaDoc comments referencing C source files
+
+**Example - BAD (hardcoded)**:
+```java
+private static final int TICK_COUNT = 7;  // ❌ Don't do this!
+```
+
+**Example - GOOD (algorithm)**:
+```java
+/**
+ * Calculate optimal tick count using gnuplot's quantize algorithm.
+ * Ported from gnuplot-c/src/graphics.c:quantize_normal_tics()
+ */
+int tickCount = quantizeNormalTics(range, maxTics);  // ✅ Do this!
+```
+
 ### Java Style Guide
 
 We follow the **Google Java Style Guide** with minor modifications:
@@ -171,11 +194,33 @@ public double evaluate(String expression) throws ParseException {
 
 ## Testing Guidelines
 
+### ⚠️ MANDATORY: Test-First Development
+
+**READ THIS FIRST**: All development MUST follow the test-driven approach documented in [CLAUDE_DEVELOPMENT_GUIDE.md](CLAUDE_DEVELOPMENT_GUIDE.md).
+
+**Before writing ANY code:**
+1. Run test-tools comparison suite
+2. Identify differences from C implementation
+3. Locate corresponding C source code
+4. Port algorithm (don't hardcode!)
+5. Re-run tests to validate fix
+
+```bash
+# Start every session by running tests
+./test-tools/run_demo_tests.sh simple
+cat test-results/latest/comparison_*.txt
+
+# After making changes, validate
+mvn clean test
+./test-tools/run_demo_tests.sh simple
+```
+
 ### Test Coverage
 
 - **Minimum Coverage**: 70% line coverage (enforced by JaCoCo)
 - **Critical Paths**: 90%+ coverage for core mathematical functions
 - **Edge Cases**: Always test boundary conditions
+- **Test-Tools Validation**: Required for all rendering changes
 
 ### Test Structure
 

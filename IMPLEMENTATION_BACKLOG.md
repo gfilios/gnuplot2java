@@ -245,6 +245,24 @@ See [TEST_DRIVEN_PLAN.md](TEST_DRIVEN_PLAN.md) for detailed methodology.
 - Visual accuracy significantly improved
 - Remaining differences: Minor layout/positioning (not fundamental rendering)
 
+**In Progress Stories**:
+- 🔄 **TDD-10**: Auto-Range Calculation for Function Plots (Story TDD-10)
+  - **Problem**: Java calculates different Y-axis ranges than C gnuplot for function plots
+  - **Example**: Plot 3 `[-3:5] asin(x),acos(x)`
+    - C: Y-range ~[-1.5:3] → tick-step 0.5 → 10 ticks
+    - Java: Y-range ~[-1:3] → tick-step 1.0 → 5 ticks
+  - **Root Cause**: Missing auto-range algorithm for Y-axis when not explicitly set
+  - **C Reference**: gnuplot-c/src/axis.c (axis_checked_extend_empty_range, axis_revert_and_unlog_range)
+  - **Implementation Plan**:
+    1. Sample function at multiple X points across range
+    2. Find min/max Y values from samples
+    3. Add padding (typically 2-5% of range)
+    4. Round to "nice" values using quantize algorithm
+    5. Apply range to Y-axis before tick generation
+  - **Status**: 🟡 IN PROGRESS (2025-10-05)
+  - **Story Points**: 13 SP
+  - **Affected Plots**: simple.dem plots 3, 5, 6, 7, 8 have tick count mismatches due to range differences
+
 **Files Modified**:
 - gnuplot-java/gnuplot-cli/src/main/java/com/gnuplot/cli/executor/GnuplotScriptExecutor.java
 - gnuplot-java/gnuplot-render/src/main/java/com/gnuplot/render/svg/SvgRenderer.java
