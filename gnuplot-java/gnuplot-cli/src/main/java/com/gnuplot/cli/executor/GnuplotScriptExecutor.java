@@ -56,7 +56,7 @@ public class GnuplotScriptExecutor implements CommandVisitor {
     private final Map<String, Double> variables = new HashMap<>();
 
     // Legend/key state
-    private String keyPosition = "TOP_RIGHT";
+    private String keyPosition = "TOP_LEFT";  // simple.dem uses "set key left" which means top-left
     private boolean keyShowBorder = true;
     private boolean keyHorizontal = false;
 
