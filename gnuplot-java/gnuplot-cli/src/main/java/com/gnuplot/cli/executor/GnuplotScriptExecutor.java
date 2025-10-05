@@ -344,12 +344,25 @@ public class GnuplotScriptExecutor implements CommandVisitor {
                 }
             }
 
-            // Add 10% padding to auto-calculated Y range
+            // Apply gnuplot's auto-range extension algorithm
+            // Ported from gnuplot-c/src/axis.c:axis_checked_extend_empty_range()
             if (Double.isFinite(yMin) && Double.isFinite(yMax)) {
-                double yRange = yMax - yMin;
-                double padding = yRange * 0.1;
-                yMin -= padding;
-                yMax += padding;
+                // Check if range is empty (min == max)
+                if (yMax - yMin == 0.0) {
+                    // Widen empty range
+                    // If max is zero, widen by absolute amount (1.0)
+                    // Otherwise, widen by 1% of the value
+                    double widen = (yMax == 0.0) ? 1.0 : 0.01 * Math.abs(yMax);
+                    yMin -= widen;
+                    yMax += widen;
+                } else {
+                    // For non-empty ranges, add 2% padding (gnuplot typically uses 2-5%)
+                    // This ensures plot elements don't touch the axis edges
+                    double yRange = yMax - yMin;
+                    double padding = yRange * 0.02;
+                    yMin -= padding;
+                    yMax += padding;
+                }
             } else {
                 // Fallback if no valid data
                 yMin = -10;
