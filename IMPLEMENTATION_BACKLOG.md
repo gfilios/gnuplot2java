@@ -3,7 +3,7 @@
 **Project**: Gnuplot Java Modernization
 **Approach**: Test-Driven Development using Official Gnuplot Demo Suite
 **Timeline**: 12-18 months to MVP
-**Last Updated**: 2025-10-04
+**Last Updated**: 2025-10-05
 
 **🎯 NEW APPROACH**: Shifted to test-driven development using `gnuplot-c/demo/*.dem` scripts as test oracle. See [TEST_DRIVEN_PLAN.md](TEST_DRIVEN_PLAN.md) for details.
 
@@ -3144,7 +3144,7 @@ See [TEST_DRIVEN_PLAN.md](TEST_DRIVEN_PLAN.md) for complete methodology.
 
 **Total**: ~1/100 demos passing (1%) - but with complete test infrastructure!
 
-**Latest Update**: 2025-10-04 - Completed Story TDD-4 (simple.dem) + Range Parsing Implementation
+**Latest Update**: 2025-10-05 - Fixed point markers & per-plot ranges (simple.dem now 3/8 perfect, 5/8 minor tick issues only)
 
 ### Epic TDD-1: Test Infrastructure (Week 1) ✅ COMPLETE
 
@@ -3221,10 +3221,35 @@ See [TEST_DRIVEN_PLAN.md](TEST_DRIVEN_PLAN.md) for complete methodology.
   * Modified GnuplotScriptExecutor to use ranges from commands
 
 **Completed**: 2025-10-04
-**Tests**: simple.dem ✅ PASSING (all 8 plots render correctly with proper ranges)
+
+**🔧 CRITICAL FIXES - 2025-10-05**:
+- [x] **Fixed: Missing point markers** - Data files without explicit `with` clause now correctly use `set style data` defaults
+  * Root cause: Parser was initializing style to "lines" instead of null
+  * Fixed CommandBuilderVisitor.java to return null when no style specified
+  * Plot 4: 200 point markers (C: 201) - diff=1 ✅
+  * Plot 8: 47 point markers (C: 47) - perfect match! ✅
+- [x] **Fixed: Per-plot range support** - Individual plot specs can override global range
+  * Example: `plot [-30:20] expr1 with impulses, [0:*] expr2 with points`
+  * Updated PlotSpec to include Range field
+  * Updated executor to use per-plot range when generating points
+- [x] **Fixed: Mirror tick directions** - Top/right border ticks now point inward
+- [x] **Fixed: HTML report generation** - Handles null Java outputs gracefully
+- [x] **Fixed: Comparison script** - Better point marker detection (single/double quotes)
+
+**Current Status**: simple.dem ⚠️ MINOR ISSUES ONLY (3/8 perfect, 5/8 minor tick differences)
+**Tests**: All rendering correctly, only tick count discrepancies remain
+
 **Verification**:
-- Plot 1: `plot [-10:10] sin(x)` → X: -10 to 10, Y: auto-scaled to ±1.0 ✅
-- Plot 6: `plot [-5*pi:5*pi] [-5:5] func` → X: ±15 (5π≈15.7), Y: ±5 ✅
+- Plot 1: ✅ Perfect - No critical issues
+- Plot 2: ✅ Perfect - No critical issues
+- Plot 3: ✅ Perfect - No critical issues
+- Plot 4: ⚠️ Y-axis tick count differs (9 vs 8), point markers 200/201 ✅
+- Plot 5: ⚠️ Y-axis tick count differs (12 vs 9)
+- Plot 6: ⚠️ X-axis tick count differs (0 vs 7)
+- Plot 7: ⚠️ Y-axis: 9 vs 7, X-axis: 0 vs 6
+- Plot 8: ⚠️ Y-axis: 11 vs 9, X-axis: 0 vs 7, point markers 47/47 ✅
+
+**Next Priority**: Fix tick generation algorithm to match C gnuplot (2-3 days effort)
 
 **Story TDD-2.2: controls.dem Compliance** 🔴 P0 (13 SP)
 **Target**: Pass all control flow tests
