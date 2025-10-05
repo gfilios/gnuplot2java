@@ -128,7 +128,13 @@ public class CommandBuilderVisitor extends GnuplotCommandBaseVisitor<List<Comman
         for (GnuplotCommandParser.PlotSpecContext specCtx : ctx.plotSpec()) {
             String expression;
             String title = null;
-            String style = "lines";
+            String style = null;  // No default - let executor decide based on data type
+            PlotCommand.Range plotSpecRange = null;
+
+            // Extract per-plot range if specified (e.g., [0:*] in "plot [0:*] sin(x)")
+            if (specCtx.range() != null) {
+                plotSpecRange = parseRange(specCtx.range());
+            }
 
             // Extract expression or data source
             if (specCtx.expression() != null) {
@@ -152,7 +158,7 @@ public class CommandBuilderVisitor extends GnuplotCommandBaseVisitor<List<Comman
                 }
             }
 
-            plotSpecs.add(new PlotCommand.PlotSpec(expression, title, style));
+            plotSpecs.add(new PlotCommand.PlotSpec(expression, title, style, plotSpecRange));
         }
 
         commands.add(new PlotCommand(plotSpecs, xRange, yRange));

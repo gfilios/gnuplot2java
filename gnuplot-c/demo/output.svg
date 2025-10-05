@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="800" height="600" viewBox="0 0 800 600">
+  <defs>
+    <clipPath id="plotClip">
+      <rect x="0" y="0" width="800" height="600"/>
+    </clipPath>
+
+    <!-- Point marker definitions (matching C Gnuplot) -->
+    <circle id='gpDot' r='0.5' stroke-width='0.5' stroke='currentColor'/>
+    <path id='gpPt0' stroke-width='0.222' stroke='currentColor' d='M-1,0 h2 M0,-1 v2'/>
+    <path id='gpPt1' stroke-width='0.222' stroke='currentColor' d='M-1,-1 L1,1 M1,-1 L-1,1'/>
+    <path id='gpPt2' stroke-width='0.222' stroke='currentColor' d='M-1,0 L1,0 M0,-1 L0,1 M-1,-1 L1,1 M-1,1 L1,-1'/>
+    <rect id='gpPt3' stroke-width='0.222' stroke='currentColor' x='-1' y='-1' width='2' height='2'/>
+    <rect id='gpPt4' stroke-width='0.222' stroke='currentColor' fill='currentColor' x='-1' y='-1' width='2' height='2'/>
+    <circle id='gpPt5' stroke-width='0.222' stroke='currentColor' cx='0' cy='0' r='1'/>
+    <use xlink:href='#gpPt5' id='gpPt6' fill='currentColor' stroke='none'/>
+    <path id='gpPt7' stroke-width='0.222' stroke='currentColor' d='M0,-1.33 L-1.33,0.67 L1.33,0.67 z'/>
+    <use xlink:href='#gpPt7' id='gpPt8' fill='currentColor' stroke='none'/>
+    <use xlink:href='#gpPt7' id='gpPt9' stroke='currentColor' transform='rotate(180)'/>
+    <use xlink:href='#gpPt9' id='gpPt10' fill='currentColor' stroke='none'/>
+    <use xlink:href='#gpPt3' id='gpPt11' stroke='currentColor' transform='rotate(45)'/>
+    <use xlink:href='#gpPt11' id='gpPt12' fill='currentColor' stroke='none'/>
+    <path id='gpPt13' stroke-width='0.222' stroke='currentColor' d='M0,1.330 L1.265,0.411 L0.782,-1.067 L-0.782,-1.076 L-1.265,0.411 z'/>
+    <use xlink:href='#gpPt13' id='gpPt14' fill='currentColor' stroke='none'/>
+  </defs>
+  <rect width="800" height="600" fill="#FFFFFF"/>
+  <text x="400" y="25" font-size="20" text-anchor="middle">Simple Plots</text>
+  <line x1="54" y1="564.00" x2="775" y2="564.00" stroke="#000" stroke-width="1"/>
+  <line x1="54.00" y1="564.00" x2="54.00" y2="570.00" stroke="#000" stroke-width="1"/>
+  <line x1="54.00" y1="66.00" x2="54.00" y2="72.00" stroke="#000" stroke-width="1"/>
+  <text x="54.00" y="582.00" text-anchor="middle" font-size="12">-10</text>
+  <line x1="234.25" y1="564.00" x2="234.25" y2="570.00" stroke="#000" stroke-width="1"/>
+  <line x1="234.25" y1="66.00" x2="234.25" y2="72.00" stroke="#000" stroke-width="1"/>
+  <text x="234.25" y="582.00" text-anchor="middle" font-size="12">-5</text>
+  <line x1="414.50" y1="564.00" x2="414.50" y2="570.00" stroke="#000" stroke-width="1"/>
+  <line x1="414.50" y1="66.00" x2="414.50" y2="72.00" stroke="#000" stroke-width="1"/>
+  <text x="414.50" y="582.00" text-anchor="middle" font-size="12">0</text>
+  <line x1="594.75" y1="564.00" x2="594.75" y2="570.00" stroke="#000" stroke-width="1"/>
+  <line x1="594.75" y1="66.00" x2="594.75" y2="72.00" stroke="#000" stroke-width="1"/>
+  <text x="594.75" y="582.00" text-anchor="middle" font-size="12">5</text>
+  <line x1="775.00" y1="564.00" x2="775.00" y2="570.00" stroke="#000" stroke-width="1"/>
+  <line x1="775.00" y1="66.00" x2="775.00" y2="72.00" stroke="#000" stroke-width="1"/>
+  <text x="775.00" y="582.00" text-anchor="middle" font-size="12">10</text>
+  <line x1="54.00" y1="66" x2="54.00" y2="564" stroke="#000" stroke-width="1"/>
+  <line x1="54.00" y1="559.12" x2="48.00" y2="559.12" stroke="#000" stroke-width="1"/>
+  <line x1="775.00" y1="559.12" x2="769.00" y2="559.12" stroke="#000" stroke-width="1"/>
+  <text x="44.00" y="563.12" text-anchor="end" font-size="12">-1.5</text>
+  <line x1="54.00" y1="477.75" x2="48.00" y2="477.75" stroke="#000" stroke-width="1"/>
+  <line x1="775.00" y1="477.75" x2="769.00" y2="477.75" stroke="#000" stroke-width="1"/>
+  <text x="44.00" y="481.75" text-anchor="end" font-size="12">-1</text>
+  <line x1="54.00" y1="396.37" x2="48.00" y2="396.37" stroke="#000" stroke-width="1"/>
+  <line x1="775.00" y1="396.37" x2="769.00" y2="396.37" stroke="#000" stroke-width="1"/>
+  <text x="44.00" y="400.37" text-anchor="end" font-size="12">-0.5</text>
+  <line x1="54.00" y1="315.00" x2="48.00" y2="315.00" stroke="#000" stroke-width="1"/>
+  <line x1="775.00" y1="315.00" x2="769.00" y2="315.00" stroke="#000" stroke-width="1"/>
+  <text x="44.00" y="319.00" text-anchor="end" font-size="12">0</text>
+  <line x1="54.00" y1="233.63" x2="48.00" y2="233.63" stroke="#000" stroke-width="1"/>
+  <line x1="775.00" y1="233.63" x2="769.00" y2="233.63" stroke="#000" stroke-width="1"/>
+  <text x="44.00" y="237.63" text-anchor="end" font-size="12">0.5</text>
+  <line x1="54.00" y1="152.25" x2="48.00" y2="152.25" stroke="#000" stroke-width="1"/>
+  <line x1="775.00" y1="152.25" x2="769.00" y2="152.25" stroke="#000" stroke-width="1"/>
+  <text x="44.00" y="156.25" text-anchor="end" font-size="12">1</text>
+  <line x1="54.00" y1="70.88" x2="48.00" y2="70.88" stroke="#000" stroke-width="1"/>
+  <line x1="775.00" y1="70.88" x2="769.00" y2="70.88" stroke="#000" stroke-width="1"/>
+  <text x="44.00" y="74.88" text-anchor="end" font-size="12">1.5</text>
+  <polyline points="54.00 226.46 68.71 287.94 83.43 353.86 98.14 413.40 112.86 456.77 127.57 476.85 142.29 470.34 157.00 438.30 171.71 386.01 186.43 322.05 201.14 256.93 215.86 201.36 230.57 164.45 245.29 152.28 260.00 166.84 274.71 205.75 289.43 262.60 304.14 328.07 318.86 391.38 333.57 442.15 348.29 472.03 363.00 476.10 377.71 453.71 392.43 408.53 407.14 347.98 421.86 282.02 436.57 221.47 451.29 176.29 466.00 153.90 480.71 157.97 495.43 187.85 510.14 238.62 524.86 301.93 539.57 367.40 554.29 424.25 569.00 463.16 583.71 477.72 598.43 465.55 613.14 428.64 627.86 373.07 642.57 307.95 657.29 243.99 672.00 191.70 686.71 159.66 701.43 153.15 716.14 173.23 730.86 216.60 745.57 276.14 760.29 342.06 775.00 403.54" fill="none" stroke="#9400D3" stroke-width="1.0" stroke-linecap="round" stroke-linejoin="round" clip-path="url(#plotClip)"/>
+  <polyline points="54.00 554.42 68.71 553.74 83.43 552.99 98.14 552.18 112.86 551.29 127.57 550.30 142.29 549.22 157.00 548.01 171.71 546.65 186.43 545.13 201.14 543.40 215.86 541.43 230.57 539.14 245.29 536.48 260.00 533.34 274.71 529.57 289.43 524.97 304.14 519.26 318.86 511.98 333.57 502.44 348.29 489.50 363.00 471.25 377.71 444.47 392.43 404.41 407.14 347.76 421.86 282.24 436.57 225.59 451.29 185.53 466.00 158.75 480.71 140.50 495.43 127.56 510.14 118.02 524.86 110.74 539.57 105.03 554.29 100.43 569.00 96.66 583.71 93.52 598.43 90.86 613.14 88.57 627.86 86.60 642.57 84.87 657.29 83.35 672.00 81.99 686.71 80.78 701.43 79.70 716.14 78.71 730.86 77.82 745.57 77.01 760.29 76.26 775.00 75.58" fill="none" stroke="#009E73" stroke-width="1.0" stroke-linecap="round" stroke-linejoin="round" clip-path="url(#plotClip)"/>
+  <polyline points="54.00 298.81 68.71 298.12 83.43 297.38 98.14 296.57 112.86 295.69 127.57 294.71 142.29 293.63 157.00 292.44 171.71 291.10 186.43 289.59 201.14 287.89 215.86 285.94 230.57 283.70 245.29 281.09 260.00 278.02 274.71 274.36 289.43 269.93 304.14 264.46 318.86 257.60 333.57 248.78 348.29 237.18 363.00 221.67 377.71 201.09 392.43 176.20 407.14 155.54 421.86 155.54 436.57 176.20 451.29 201.09 466.00 221.67 480.71 237.18 495.43 248.78 510.14 257.60 524.86 264.46 539.57 269.93 554.29 274.36 569.00 278.02 583.71 281.09 598.43 283.70 613.14 285.94 627.86 287.89 642.57 289.59 657.29 291.10 672.00 292.44 686.71 293.63 701.43 294.71 716.14 295.69 730.86 296.57 745.57 297.38 760.29 298.12 775.00 298.81" fill="none" stroke="#56B4E9" stroke-width="1.0" stroke-linecap="round" stroke-linejoin="round" clip-path="url(#plotClip)"/>
+  <rect x="59" y="71" width="151" height="74" fill="#FFFFFF" stroke="#000000" stroke-width="1"/>
+  <text x="155" y="93" font-family="Arial" font-size="12" alignment-baseline="middle" text-anchor="end">sin(x)</text>
+  <line x1="165" y1="90" x2="190" y2="90" stroke="#9400D3" stroke-width="2"/>
+  <text x="155" y="111" font-family="Arial" font-size="12" alignment-baseline="middle" text-anchor="end">atan(x)</text>
+  <line x1="165" y1="108" x2="190" y2="108" stroke="#009E73" stroke-width="2"/>
+  <text x="155" y="129" font-family="Arial" font-size="12" alignment-baseline="middle" text-anchor="end">cos(atan(x))</text>
+  <line x1="165" y1="126" x2="190" y2="126" stroke="#56B4E9" stroke-width="2"/>
+  <path d="M 54.00 66.00 L 775.00 66.00 L 775.00 564.00 L 54.00 564.00 Z" stroke="#000000" stroke-width="1.0" fill="none"/>
+</svg>

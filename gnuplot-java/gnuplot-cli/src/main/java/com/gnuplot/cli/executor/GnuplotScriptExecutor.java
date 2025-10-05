@@ -166,13 +166,22 @@ public class GnuplotScriptExecutor implements CommandVisitor {
             String expression = spec.getExpression();
             String plotTitle = spec.getTitle();
             String style = spec.getStyle();
+            PlotCommand.Range plotSpecRange = spec.getRange();
+
+            // Use per-plot range if specified, otherwise use command-level range
+            double xMin = currentXMin;
+            double xMax = currentXMax;
+            if (plotSpecRange != null) {
+                xMin = plotSpecRange.getMin() != null ? plotSpecRange.getMin() : currentXMin;
+                xMax = plotSpecRange.getMax() != null ? plotSpecRange.getMax() : currentXMax;
+            }
 
             // Generate points from data file or expression
             LinePlot.Point2D[] points;
             if (isDataFile(expression)) {
                 points = readDataFile(expression);
             } else {
-                points = generatePoints(expression);
+                points = generatePoints(expression, xMin, xMax);
             }
 
             if (points.length > 0) {
@@ -273,12 +282,10 @@ public class GnuplotScriptExecutor implements CommandVisitor {
     /**
      * Generate points by evaluating the expression for x in a range.
      */
-    private LinePlot.Point2D[] generatePoints(String expression) {
+    private LinePlot.Point2D[] generatePoints(String expression, double xMin, double xMax) {
         LinePlot.Point2D[] points = new LinePlot.Point2D[samples];
 
-        // Use current X range
-        double xMin = currentXMin;
-        double xMax = currentXMax;
+        // Use provided X range (can be per-plot range or command-level range)
         double step = (xMax - xMin) / (samples - 1);
 
         // Parse expression once

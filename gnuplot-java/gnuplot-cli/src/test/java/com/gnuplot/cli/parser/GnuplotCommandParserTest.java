@@ -87,7 +87,7 @@ class GnuplotCommandParserTest {
 
         PlotCommand.PlotSpec spec = cmd.getPlotSpecs().get(0);
         assertThat(spec.getExpression()).isEqualTo("sin(x)");
-        assertThat(spec.getStyle()).isEqualTo("lines");
+        assertThat(spec.getStyle()).isNull();  // No explicit style - executor decides based on data type
     }
 
     @Test

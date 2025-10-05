@@ -50,10 +50,10 @@ class BorderRenderingTest {
                 .contains("stroke-width=\"1.0\"")
                 .contains("fill=\"none\"");
 
-        // Verify coordinates match plot boundaries (54, 775, 25, 564 based on margins)
+        // Verify coordinates match plot boundaries (54, 775, 66, 564 based on margins)
         assertThat(svg)
                 .as("Border should use plotLeft, plotRight, plotTop, plotBottom coordinates")
-                .contains("M 54.00 25.00");  // upper-left
+                .contains("M 54.00 66.00");  // upper-left
     }
 
     @Test
@@ -94,7 +94,7 @@ class BorderRenderingTest {
         // Border path should NOT exist when disabled
         // We can check by looking for the specific border path pattern
         // Since other elements may have paths, we check for absence of border-specific coordinates
-        assertThat(svg.contains("M 54.00 25.00 L 775.00 25.00 L 775.00 564.00"))
+        assertThat(svg.contains("M 54.00 66.00 L 775.00 66.00 L 775.00 564.00"))
                 .as("Border path should not exist when border is disabled")
                 .isFalse();
     }

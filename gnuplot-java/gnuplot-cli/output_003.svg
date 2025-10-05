@@ -24,141 +24,42 @@
     <use xlink:href='#gpPt13' id='gpPt14' fill='currentColor' stroke='none'/>
   </defs>
   <rect width="800" height="600" fill="#FFFFFF"/>
-  <text x="400" y="21" font-size="16" text-anchor="middle">Simple Plots</text>
-  <line x1="0" y1="374.16" x2="800" y2="374.16" stroke="#000" stroke-width="1"/>
-  <line x1="54.00" y1="374.16" x2="54.00" y2="380.16" stroke="#000" stroke-width="1"/>
-  <text x="54.00" y="392.16" text-anchor="middle" font-size="10">-3</text>
-  <line x1="144.13" y1="374.16" x2="144.13" y2="380.16" stroke="#000" stroke-width="1"/>
-  <text x="144.13" y="392.16" text-anchor="middle" font-size="10">-2</text>
-  <line x1="234.25" y1="374.16" x2="234.25" y2="380.16" stroke="#000" stroke-width="1"/>
-  <text x="234.25" y="392.16" text-anchor="middle" font-size="10">-1</text>
-  <line x1="324.38" y1="374.16" x2="324.38" y2="380.16" stroke="#000" stroke-width="1"/>
-  <text x="324.38" y="392.16" text-anchor="middle" font-size="10">0</text>
-  <line x1="414.50" y1="374.16" x2="414.50" y2="380.16" stroke="#000" stroke-width="1"/>
-  <text x="414.50" y="392.16" text-anchor="middle" font-size="10">1</text>
-  <line x1="504.63" y1="374.16" x2="504.63" y2="380.16" stroke="#000" stroke-width="1"/>
-  <text x="504.63" y="392.16" text-anchor="middle" font-size="10">2</text>
-  <line x1="594.75" y1="374.16" x2="594.75" y2="380.16" stroke="#000" stroke-width="1"/>
-  <text x="594.75" y="392.16" text-anchor="middle" font-size="10">3</text>
-  <line x1="684.88" y1="374.16" x2="684.88" y2="380.16" stroke="#000" stroke-width="1"/>
-  <text x="684.88" y="392.16" text-anchor="middle" font-size="10">4</text>
-  <line x1="775.00" y1="374.16" x2="775.00" y2="380.16" stroke="#000" stroke-width="1"/>
-  <text x="775.00" y="392.16" text-anchor="middle" font-size="10">5</text>
-  <line x1="324.38" y1="0" x2="324.38" y2="600" stroke="#000" stroke-width="1"/>
-  <line x1="324.38" y1="475.58" x2="318.38" y2="475.58" stroke="#000" stroke-width="1"/>
-  <text x="314.38" y="479.58" text-anchor="end" font-size="10">-1</text>
-  <line x1="324.38" y1="374.16" x2="318.38" y2="374.16" stroke="#000" stroke-width="1"/>
-  <text x="314.38" y="378.16" text-anchor="end" font-size="10">0</text>
-  <line x1="324.38" y1="272.73" x2="318.38" y2="272.73" stroke="#000" stroke-width="1"/>
-  <text x="314.38" y="276.73" text-anchor="end" font-size="10">1</text>
-  <line x1="324.38" y1="171.31" x2="318.38" y2="171.31" stroke="#000" stroke-width="1"/>
-  <text x="314.38" y="175.31" text-anchor="end" font-size="10">2</text>
-  <line x1="324.38" y1="69.89" x2="318.38" y2="69.89" stroke="#000" stroke-width="1"/>
-  <text x="314.38" y="73.89" text-anchor="end" font-size="10">3</text>
-  <use xlink:href='#gpPt0' transform='translate(235.16,519.08) scale(1.00)' color='#9400D3' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt1' transform='translate(238.78,501.19) scale(1.00)' color='#9400D3' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt2' transform='translate(242.40,490.00) scale(1.00)' color='#9400D3' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt3' transform='translate(246.03,481.05) scale(1.00)' color='#9400D3' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt4' transform='translate(249.65,473.31) scale(1.00)' color='#9400D3' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt5' transform='translate(253.27,466.36) scale(1.00)' color='#9400D3' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt6' transform='translate(256.89,459.98) scale(1.00)' color='#9400D3' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt7' transform='translate(260.52,454.02) scale(1.00)' color='#9400D3' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt8' transform='translate(264.14,448.40) scale(1.00)' color='#9400D3' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt9' transform='translate(267.76,443.04) scale(1.00)' color='#9400D3' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt10' transform='translate(271.39,437.90) scale(1.00)' color='#9400D3' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt11' transform='translate(275.01,432.95) scale(1.00)' color='#9400D3' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt12' transform='translate(278.63,428.15) scale(1.00)' color='#9400D3' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt13' transform='translate(282.26,423.48) scale(1.00)' color='#9400D3' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt14' transform='translate(285.88,418.92) scale(1.00)' color='#9400D3' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt0' transform='translate(289.50,414.45) scale(1.00)' color='#9400D3' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt1' transform='translate(293.13,410.07) scale(1.00)' color='#9400D3' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt2' transform='translate(296.75,405.76) scale(1.00)' color='#9400D3' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt3' transform='translate(300.37,401.50) scale(1.00)' color='#9400D3' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt4' transform='translate(303.99,397.29) scale(1.00)' color='#9400D3' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt5' transform='translate(307.62,393.13) scale(1.00)' color='#9400D3' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt6' transform='translate(311.24,388.99) scale(1.00)' color='#9400D3' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt7' transform='translate(314.86,384.88) scale(1.00)' color='#9400D3' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt8' transform='translate(318.49,380.79) scale(1.00)' color='#9400D3' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt9' transform='translate(322.11,376.71) scale(1.00)' color='#9400D3' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt10' transform='translate(325.73,372.63) scale(1.00)' color='#9400D3' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt11' transform='translate(329.36,368.55) scale(1.00)' color='#9400D3' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt12' transform='translate(332.98,364.46) scale(1.00)' color='#9400D3' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt13' transform='translate(336.60,360.35) scale(1.00)' color='#9400D3' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt14' transform='translate(340.23,356.23) scale(1.00)' color='#9400D3' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt0' transform='translate(343.85,352.07) scale(1.00)' color='#9400D3' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt1' transform='translate(347.47,347.87) scale(1.00)' color='#9400D3' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt2' transform='translate(351.10,343.63) scale(1.00)' color='#9400D3' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt3' transform='translate(354.72,339.33) scale(1.00)' color='#9400D3' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt4' transform='translate(358.34,334.96) scale(1.00)' color='#9400D3' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt5' transform='translate(361.96,330.52) scale(1.00)' color='#9400D3' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt6' transform='translate(365.59,325.99) scale(1.00)' color='#9400D3' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt7' transform='translate(369.21,321.35) scale(1.00)' color='#9400D3' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt8' transform='translate(372.83,316.58) scale(1.00)' color='#9400D3' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt9' transform='translate(376.46,311.67) scale(1.00)' color='#9400D3' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt10' transform='translate(380.08,306.58) scale(1.00)' color='#9400D3' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt11' transform='translate(383.70,301.28) scale(1.00)' color='#9400D3' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt12' transform='translate(387.33,295.73) scale(1.00)' color='#9400D3' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt13' transform='translate(390.95,289.86) scale(1.00)' color='#9400D3' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt14' transform='translate(394.57,283.60) scale(1.00)' color='#9400D3' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt0' transform='translate(398.20,276.81) scale(1.00)' color='#9400D3' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt1' transform='translate(401.82,269.30) scale(1.00)' color='#9400D3' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt2' transform='translate(405.44,260.70) scale(1.00)' color='#9400D3' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt3' transform='translate(409.07,250.24) scale(1.00)' color='#9400D3' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt4' transform='translate(412.69,235.21) scale(1.00)' color='#9400D3' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt0' transform='translate(235.16,69.92) scale(1.00)' color='#009E73' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt1' transform='translate(238.78,87.81) scale(1.00)' color='#009E73' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt2' transform='translate(242.40,99.00) scale(1.00)' color='#009E73' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt3' transform='translate(246.03,107.95) scale(1.00)' color='#009E73' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt4' transform='translate(249.65,115.69) scale(1.00)' color='#009E73' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt5' transform='translate(253.27,122.64) scale(1.00)' color='#009E73' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt6' transform='translate(256.89,129.02) scale(1.00)' color='#009E73' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt7' transform='translate(260.52,134.98) scale(1.00)' color='#009E73' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt8' transform='translate(264.14,140.60) scale(1.00)' color='#009E73' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt9' transform='translate(267.76,145.96) scale(1.00)' color='#009E73' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt10' transform='translate(271.39,151.10) scale(1.00)' color='#009E73' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt11' transform='translate(275.01,156.05) scale(1.00)' color='#009E73' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt12' transform='translate(278.63,160.85) scale(1.00)' color='#009E73' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt13' transform='translate(282.26,165.52) scale(1.00)' color='#009E73' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt14' transform='translate(285.88,170.08) scale(1.00)' color='#009E73' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt0' transform='translate(289.50,174.55) scale(1.00)' color='#009E73' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt1' transform='translate(293.13,178.93) scale(1.00)' color='#009E73' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt2' transform='translate(296.75,183.24) scale(1.00)' color='#009E73' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt3' transform='translate(300.37,187.50) scale(1.00)' color='#009E73' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt4' transform='translate(303.99,191.71) scale(1.00)' color='#009E73' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt5' transform='translate(307.62,195.87) scale(1.00)' color='#009E73' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt6' transform='translate(311.24,200.01) scale(1.00)' color='#009E73' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt7' transform='translate(314.86,204.12) scale(1.00)' color='#009E73' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt8' transform='translate(318.49,208.21) scale(1.00)' color='#009E73' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt9' transform='translate(322.11,212.29) scale(1.00)' color='#009E73' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt10' transform='translate(325.73,216.37) scale(1.00)' color='#009E73' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt11' transform='translate(329.36,220.45) scale(1.00)' color='#009E73' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt12' transform='translate(332.98,224.54) scale(1.00)' color='#009E73' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt13' transform='translate(336.60,228.65) scale(1.00)' color='#009E73' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt14' transform='translate(340.23,232.77) scale(1.00)' color='#009E73' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt0' transform='translate(343.85,236.93) scale(1.00)' color='#009E73' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt1' transform='translate(347.47,241.13) scale(1.00)' color='#009E73' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt2' transform='translate(351.10,245.37) scale(1.00)' color='#009E73' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt3' transform='translate(354.72,249.67) scale(1.00)' color='#009E73' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt4' transform='translate(358.34,254.04) scale(1.00)' color='#009E73' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt5' transform='translate(361.96,258.48) scale(1.00)' color='#009E73' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt6' transform='translate(365.59,263.01) scale(1.00)' color='#009E73' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt7' transform='translate(369.21,267.65) scale(1.00)' color='#009E73' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt8' transform='translate(372.83,272.42) scale(1.00)' color='#009E73' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt9' transform='translate(376.46,277.33) scale(1.00)' color='#009E73' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt10' transform='translate(380.08,282.42) scale(1.00)' color='#009E73' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt11' transform='translate(383.70,287.72) scale(1.00)' color='#009E73' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt12' transform='translate(387.33,293.27) scale(1.00)' color='#009E73' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt13' transform='translate(390.95,299.14) scale(1.00)' color='#009E73' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt14' transform='translate(394.57,305.40) scale(1.00)' color='#009E73' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt0' transform='translate(398.20,312.19) scale(1.00)' color='#009E73' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt1' transform='translate(401.82,319.70) scale(1.00)' color='#009E73' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt2' transform='translate(405.44,328.30) scale(1.00)' color='#009E73' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt3' transform='translate(409.07,338.76) scale(1.00)' color='#009E73' clip-path="url(#plotClip)"/>
-  <use xlink:href='#gpPt4' transform='translate(412.69,353.79) scale(1.00)' color='#009E73' clip-path="url(#plotClip)"/>
-  <rect x="59" y="259" width="170" height="70" fill="#FFFFFF" stroke="#000000" stroke-width="1"/>
-  <line x1="74" y1="281" x2="99" y2="281" stroke="#9400D3" stroke-width="2"/>
-  <text x="109" y="284" font-family="Arial" font-size="10" alignment-baseline="middle">asin(x)</text>
-  <line x1="74" y1="306" x2="99" y2="306" stroke="#009E73" stroke-width="2"/>
-  <text x="109" y="309" font-family="Arial" font-size="10" alignment-baseline="middle">acos(x)</text>
-  <path d="M 54.00 25.00 L 775.00 25.00 L 775.00 564.00 L 54.00 564.00 Z" stroke="#000000" stroke-width="1.0" fill="none"/>
+  <text x="400" y="25" font-size="20" text-anchor="middle">Plot 3</text>
+  <line x1="54" y1="564.00" x2="775" y2="564.00" stroke="#000" stroke-width="1"/>
+  <line x1="54.00" y1="564.00" x2="54.00" y2="570.00" stroke="#000" stroke-width="1"/>
+  <line x1="54.00" y1="66.00" x2="54.00" y2="72.00" stroke="#000" stroke-width="1"/>
+  <text x="54.00" y="582.00" text-anchor="middle" font-size="12">-10</text>
+  <line x1="234.25" y1="564.00" x2="234.25" y2="570.00" stroke="#000" stroke-width="1"/>
+  <line x1="234.25" y1="66.00" x2="234.25" y2="72.00" stroke="#000" stroke-width="1"/>
+  <text x="234.25" y="582.00" text-anchor="middle" font-size="12">-5</text>
+  <line x1="414.50" y1="564.00" x2="414.50" y2="570.00" stroke="#000" stroke-width="1"/>
+  <line x1="414.50" y1="66.00" x2="414.50" y2="72.00" stroke="#000" stroke-width="1"/>
+  <text x="414.50" y="582.00" text-anchor="middle" font-size="12">0</text>
+  <line x1="594.75" y1="564.00" x2="594.75" y2="570.00" stroke="#000" stroke-width="1"/>
+  <line x1="594.75" y1="66.00" x2="594.75" y2="72.00" stroke="#000" stroke-width="1"/>
+  <text x="594.75" y="582.00" text-anchor="middle" font-size="12">5</text>
+  <line x1="775.00" y1="564.00" x2="775.00" y2="570.00" stroke="#000" stroke-width="1"/>
+  <line x1="775.00" y1="66.00" x2="775.00" y2="72.00" stroke="#000" stroke-width="1"/>
+  <text x="775.00" y="582.00" text-anchor="middle" font-size="12">10</text>
+  <line x1="54.00" y1="66" x2="54.00" y2="564" stroke="#000" stroke-width="1"/>
+  <line x1="54.00" y1="483.08" x2="48.00" y2="483.08" stroke="#000" stroke-width="1"/>
+  <line x1="775.00" y1="483.08" x2="769.00" y2="483.08" stroke="#000" stroke-width="1"/>
+  <text x="44.00" y="487.08" text-anchor="end" font-size="12">-20</text>
+  <line x1="54.00" y1="399.04" x2="48.00" y2="399.04" stroke="#000" stroke-width="1"/>
+  <line x1="775.00" y1="399.04" x2="769.00" y2="399.04" stroke="#000" stroke-width="1"/>
+  <text x="44.00" y="403.04" text-anchor="end" font-size="12">-10</text>
+  <line x1="54.00" y1="315.00" x2="48.00" y2="315.00" stroke="#000" stroke-width="1"/>
+  <line x1="775.00" y1="315.00" x2="769.00" y2="315.00" stroke="#000" stroke-width="1"/>
+  <text x="44.00" y="319.00" text-anchor="end" font-size="12">0</text>
+  <line x1="54.00" y1="230.96" x2="48.00" y2="230.96" stroke="#000" stroke-width="1"/>
+  <line x1="775.00" y1="230.96" x2="769.00" y2="230.96" stroke="#000" stroke-width="1"/>
+  <text x="44.00" y="234.96" text-anchor="end" font-size="12">10</text>
+  <line x1="54.00" y1="146.92" x2="48.00" y2="146.92" stroke="#000" stroke-width="1"/>
+  <line x1="775.00" y1="146.92" x2="769.00" y2="146.92" stroke="#000" stroke-width="1"/>
+  <text x="44.00" y="150.92" text-anchor="end" font-size="12">20</text>
+  <polyline points="54.00 320.45 61.28 318.29 68.57 316.45 75.85 314.74 83.13 313.01 90.41 311.10 97.70 308.78 104.98 305.64 112.26 300.65 119.55 290.29 126.83 248.56 134.11 425.07 141.39 344.42 148.68 331.13 155.96 325.34 163.24 321.89 170.53 319.42 177.81 317.44 185.09 315.68 192.37 313.97 199.66 312.18 206.94 310.13 214.22 307.52 221.51 303.74 228.79 297.11 236.07 280.22 243.35 75.58 250.64 364.87 257.92 336.73 265.20 328.08 272.48 323.61 279.77 320.70 287.05 318.49 294.33 316.63 301.62 314.91 308.90 313.19 316.18 311.30 323.46 309.05 330.75 306.02 338.03 301.31 345.31 291.86 352.60 258.00 359.88 465.87 367.16 346.89 374.44 331.98 381.73 325.79 389.01 322.18 396.29 319.65 403.58 317.63 410.86 315.85 418.14 314.15 425.42 312.37 432.71 310.35 439.99 307.82 447.27 304.21 454.56 298.02 461.84 283.11 469.12 164.13 476.40 372.00 483.69 338.14 490.97 328.69 498.25 323.98 505.54 320.95 512.82 318.70 520.10 316.81 527.38 315.09 534.67 313.37 541.95 311.51 549.23 309.30 556.52 306.39 563.80 301.92 571.08 293.27 578.36 265.13 585.65 554.42 592.93 349.78 600.21 332.89 607.49 326.26 614.78 322.48 622.06 319.87 629.34 317.82 636.63 316.03 643.91 314.32 651.19 312.56 658.47 310.58 665.76 308.11 673.04 304.66 680.32 298.87 687.61 285.58 694.89 204.93 702.17 381.44 709.45 339.71 716.74 329.35 724.02 324.36 731.30 321.22 738.59 318.90 745.87 316.99 753.15 315.26 760.43 313.55 767.72 311.71 775.00 309.55" fill="none" stroke="#9400D3" stroke-width="1.0" stroke-linecap="round" stroke-linejoin="round" clip-path="url(#plotClip)"/>
+  <rect x="59" y="71" width="108" height="38" fill="#FFFFFF" stroke="#000000" stroke-width="1"/>
+  <text x="112" y="93" font-family="Arial" font-size="12" alignment-baseline="middle" text-anchor="end">tan(x)</text>
+  <line x1="122" y1="90" x2="147" y2="90" stroke="#9400D3" stroke-width="2"/>
+  <path d="M 54.00 66.00 L 775.00 66.00 L 775.00 564.00 L 54.00 564.00 Z" stroke="#000000" stroke-width="1.0" fill="none"/>
 </svg>

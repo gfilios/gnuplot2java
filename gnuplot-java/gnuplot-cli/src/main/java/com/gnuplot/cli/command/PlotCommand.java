@@ -82,11 +82,17 @@ public final class PlotCommand implements Command {
         private final String expression;
         private final String title;
         private final String style;
+        private final Range range;  // Per-plot range override (e.g., [0:*] in "plot [0:*] sin(x)")
 
         public PlotSpec(String expression, String title, String style) {
+            this(expression, title, style, null);
+        }
+
+        public PlotSpec(String expression, String title, String style, Range range) {
             this.expression = Objects.requireNonNull(expression, "expression cannot be null");
             this.title = title;
             this.style = style;
+            this.range = range;
         }
 
         public String getExpression() {
@@ -101,9 +107,14 @@ public final class PlotCommand implements Command {
             return style;
         }
 
+        public Range getRange() {
+            return range;
+        }
+
         @Override
         public String toString() {
-            return String.format("%s title '%s' with %s", expression, title, style);
+            String rangeStr = range != null ? range + " " : "";
+            return String.format("%s%s title '%s' with %s", rangeStr, expression, title, style);
         }
     }
 }
