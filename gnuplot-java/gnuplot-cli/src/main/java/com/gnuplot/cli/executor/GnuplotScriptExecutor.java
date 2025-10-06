@@ -382,17 +382,13 @@ public class GnuplotScriptExecutor implements CommandVisitor {
             }
         }
 
-        // Also extend X range to tick boundaries if autoscaled
-        // C gnuplot uses guide=20 for setup_tics()
+        // X range is always explicitly set from plot command, so don't extend it
+        // Only autoscaled ranges are extended to tick boundaries in C gnuplot
+        // (see axis.c:setup_tics() lines 908-913: autoextend only if autoscaled)
         double xMin = currentXMin;
         double xMax = currentXMax;
-        TickGenerator tickGenerator = new TickGenerator();
-        double xTickStep = tickGenerator.calculateTickStep(xMin, xMax, 20);
-        double[] extendedXRange = tickGenerator.extendRangeToTicks(xMin, xMax, xTickStep);
-        xMin = extendedXRange[0];
-        xMax = extendedXRange[1];
 
-        // Create viewport with extended X and Y ranges
+        // Create viewport: X range from plot command, Y range autoscaled and extended
         Viewport viewport = Viewport.of2D(xMin, xMax, yMin, yMax);
 
         // Build scene
