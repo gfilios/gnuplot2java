@@ -211,13 +211,18 @@ public class DemoTestRunner {
 
         List<String> command = new ArrayList<>();
 
-        // Use Maven exec:java to run with proper classpath
+        // Use the JAR-with-dependencies to avoid classpath issues with mvn exec:java
         Path cliDir = Paths.get(System.getProperty("user.dir"));
-        command.add("mvn");
-        command.add("exec:java");
-        command.add("-q");
-        command.add("-Dexec.mainClass=com.gnuplot.cli.GnuplotCli");
-        command.add("-Dexec.args=" + modifiedScript.toString());
+        Path jarPath = cliDir.resolve("target/gnuplot-cli-1.0.0-SNAPSHOT-jar-with-dependencies.jar");
+
+        if (!Files.exists(jarPath)) {
+            throw new RuntimeException("JAR not found: " + jarPath + ". Run 'mvn package' first.");
+        }
+
+        command.add("java");
+        command.add("-jar");
+        command.add(jarPath.toString());
+        command.add(modifiedScript.toString());
 
         ExecutionResult result = executeProcess(command, cliDir, outputFile);
         return new ExecutionResult(result.exitCode, result.stdout, result.stderr, result.outputFile, result.additionalOutputFiles, modifiedScript);
