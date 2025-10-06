@@ -7,6 +7,7 @@ import com.gnuplot.core.parser.ExpressionParser;
 import com.gnuplot.core.parser.ParseResult;
 import com.gnuplot.render.Scene;
 import com.gnuplot.render.Viewport;
+import com.gnuplot.render.axis.TickGenerator;
 import com.gnuplot.render.elements.Axis;
 import com.gnuplot.render.elements.Legend;
 import com.gnuplot.render.elements.LinePlot;
@@ -362,14 +363,18 @@ public class GnuplotScriptExecutor implements CommandVisitor {
                     double widen = (yMax == 0.0) ? 1.0 : 0.01 * Math.abs(yMax);
                     yMin -= widen;
                     yMax += widen;
-                } else {
-                    // For non-empty ranges, add 2% padding (gnuplot typically uses 2-5%)
-                    // This ensures plot elements don't touch the axis edges
-                    double yRange = yMax - yMin;
-                    double padding = yRange * 0.02;
-                    yMin -= padding;
-                    yMax += padding;
                 }
+                // For non-empty ranges, C gnuplot does NOT add padding here.
+                // Instead, it extends to tick boundaries in setup_tics().
+
+                // Extend range to next tick boundary (gnuplot's round_outward behavior)
+                // Ported from gnuplot-c/src/axis.c:round_outward() and setup_tics()
+                // C gnuplot uses guide=20 for setup_tics()
+                TickGenerator tickGenerator = new TickGenerator();
+                double yTickStep = tickGenerator.calculateTickStep(yMin, yMax, 20);
+                double[] extendedYRange = tickGenerator.extendRangeToTicks(yMin, yMax, yTickStep);
+                yMin = extendedYRange[0];
+                yMax = extendedYRange[1];
             } else {
                 // Fallback if no valid data
                 yMin = -10;
@@ -377,8 +382,18 @@ public class GnuplotScriptExecutor implements CommandVisitor {
             }
         }
 
-        // Create viewport with X range from plot command and calculated/specified Y range
-        Viewport viewport = Viewport.of2D(currentXMin, currentXMax, yMin, yMax);
+        // Also extend X range to tick boundaries if autoscaled
+        // C gnuplot uses guide=20 for setup_tics()
+        double xMin = currentXMin;
+        double xMax = currentXMax;
+        TickGenerator tickGenerator = new TickGenerator();
+        double xTickStep = tickGenerator.calculateTickStep(xMin, xMax, 20);
+        double[] extendedXRange = tickGenerator.extendRangeToTicks(xMin, xMax, xTickStep);
+        xMin = extendedXRange[0];
+        xMax = extendedXRange[1];
+
+        // Create viewport with extended X and Y ranges
+        Viewport viewport = Viewport.of2D(xMin, xMax, yMin, yMax);
 
         // Build scene
         Scene.Builder sceneBuilder = Scene.builder()
@@ -390,11 +405,11 @@ public class GnuplotScriptExecutor implements CommandVisitor {
             sceneBuilder.title(title);
         }
 
-        // Create and add X axis with range from plot command
+        // Create and add X axis with extended range
         Axis xAxis = Axis.builder()
                 .id("xaxis")
                 .axisType(Axis.AxisType.X_AXIS)
-                .range(currentXMin, currentXMax)
+                .range(xMin, xMax)
                 .showTicks(true)
                 .showGrid(grid)
                 .label(xlabel.isEmpty() ? null : xlabel)

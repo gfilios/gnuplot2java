@@ -567,6 +567,42 @@ public class TickGenerator {
     }
 
     /**
+     * Calculate the tick step for a given range and guide.
+     * This is useful for extending axis ranges to tick boundaries.
+     *
+     * @param min The minimum value
+     * @param max The maximum value
+     * @param guide The approximate maximum number of ticks
+     * @return The tick spacing
+     */
+    public double calculateTickStep(double min, double max, int guide) {
+        double range = Math.abs(max - min);
+        return quantizeNormalTics(range, guide);
+    }
+
+    /**
+     * Extend axis range to next tick boundary (gnuplot's round_outward behavior).
+     * Ported from gnuplot-c/src/axis.c:round_outward()
+     *
+     * <p>This extends the axis range so that the min is rounded down to the nearest
+     * tick boundary and max is rounded up to the nearest tick boundary.</p>
+     *
+     * @param min The current minimum value
+     * @param max The current maximum value
+     * @param tickStep The tick spacing
+     * @return A 2-element array: [extended_min, extended_max]
+     */
+    public double[] extendRangeToTicks(double min, double max, double tickStep) {
+        // Round min down to next tick boundary (floor)
+        double extendedMin = Math.floor(min / tickStep) * tickStep;
+
+        // Round max up to next tick boundary (ceil)
+        double extendedMax = Math.ceil(max / tickStep) * tickStep;
+
+        return new double[] { extendedMin, extendedMax };
+    }
+
+    /**
      * Implements gnuplot's quantize_normal_tics algorithm.
      *
      * <p>This algorithm determines the "nice" tick spacing for a given range.
