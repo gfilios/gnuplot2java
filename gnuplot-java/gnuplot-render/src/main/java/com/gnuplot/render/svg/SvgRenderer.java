@@ -651,11 +651,11 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
             for (var tick : ticks) {
                 double x = mapX(tick.getPosition());
 
-                // Tick mark on bottom border (small line perpendicular to axis)
+                // Tick mark on bottom border (pointing upward into the plot area, like C gnuplot)
                 int tickLength = tick.getType() == TickGenerator.TickType.MINOR ? 3 : 6;
                 writer.write(String.format(Locale.US,
                         "  <line x1=\"%.2f\" y1=\"%.2f\" x2=\"%.2f\" y2=\"%.2f\" stroke=\"#000\" stroke-width=\"1\"/>\n",
-                        x, y, x, y + tickLength));
+                        x, y, x, y - tickLength));
 
                 // Mirror tick on top border (pointing downward into the box)
                 double topY = plotTop;
@@ -702,11 +702,11 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
             for (var tick : ticks) {
                 double y = mapY(tick.getPosition());
 
-                // Tick mark on left border (small line perpendicular to axis)
+                // Tick mark on left border (pointing rightward into the plot area, like C gnuplot)
                 int tickLength = tick.getType() == TickGenerator.TickType.MINOR ? 3 : 6;
                 writer.write(String.format(Locale.US,
                         "  <line x1=\"%.2f\" y1=\"%.2f\" x2=\"%.2f\" y2=\"%.2f\" stroke=\"#000\" stroke-width=\"1\"/>\n",
-                        x, y, x - tickLength, y));
+                        x, y, x + tickLength, y));
 
                 // Mirror tick on right border (pointing leftward into the box)
                 double rightX = plotRight;
