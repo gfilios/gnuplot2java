@@ -145,11 +145,28 @@ echo "$JAVA_Y_LABELS" | head -3 | sed 's/^/  /'
 # X-axis ticks and labels
 echo ""
 echo "X-AXIS TICKS:"
+# Dynamically detect X-axis ticks by finding vertical lines in the bottom area
 # C: Uses <path d='M54.53,564.00 L54.53,555.00'/> for ticks (vertical lines)
-C_X_TICKS=$(grep -o "M[0-9.]*,564\.00 L[0-9.]*,555\.00" "$C_SVG" | wc -l | tr -d ' ')
+# Look for vertical lines (x1 == x2) in the bottom 100px of the plot area
+C_X_TICKS=$(grep -o 'M[0-9.]*,[0-9.]* L[0-9.]*,[0-9.]*' "$C_SVG" | \
+           awk -F'[M,L ]' '{
+             x1=$2; y1=$3; x2=$5; y2=$6;
+             ydelta = (y1>y2) ? y1-y2 : y2-y1;
+             # Vertical lines (x1 == x2) with small y-delta (5-20px) in bottom area (y > 400)
+             if (x1 == x2 && ydelta > 5 && ydelta < 20 && y1 > 400) print $0
+           }' | wc -l | tr -d ' ')
+
 # Java: Uses <line x1="54.00" y1="564.00" x2="54.00" y2="570.00"/> for ticks
-# Look for vertical lines at y=564 going down (tick marks on X-axis)
-JAVA_X_TICKS=$(grep -o '<line x1="[0-9.]*" y1="564\.00" x2="[0-9.]*" y2="570\.00"' "$JAVA_SVG" | wc -l | tr -d ' ')
+# Look for vertical lines (x1 == x2) in the bottom area
+JAVA_X_TICKS=$(grep -o '<line x1="[0-9.]*" y1="[0-9.]*" x2="[0-9.]*" y2="[0-9.]*"' "$JAVA_SVG" | \
+              sed 's/[<>"]//g' | \
+              awk '{
+                gsub("line x1=",""); gsub(" y1="," "); gsub(" x2="," "); gsub(" y2="," ");
+                x1=$1; y1=$2; x2=$3; y2=$4;
+                ydelta = (y1>y2) ? y1-y2 : y2-y1;
+                # Vertical lines (x1 == x2) with small y-delta (< 20px) in bottom area (y > 400)
+                if (x1 == x2 && ydelta > 0 && ydelta < 20 && y1 > 400) print $0
+              }' | wc -l | tr -d ' ')
 
 echo "  C tick count:    $C_X_TICKS"
 echo "  Java tick count: $JAVA_X_TICKS"
