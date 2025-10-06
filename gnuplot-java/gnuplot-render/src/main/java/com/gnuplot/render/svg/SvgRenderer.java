@@ -232,12 +232,14 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
         if (viewport != null) {
             writer.write("  <defs>\n");
 
-            // Clip path for plot area
+            // Clip path for plot area (should clip to actual plot bounds, not entire canvas)
+            int clipWidth = plotRight - plotLeft;
+            int clipHeight = plotBottom - plotTop;
             writer.write(String.format(Locale.US,
                     "    <clipPath id=\"plotClip\">\n" +
-                    "      <rect x=\"0\" y=\"0\" width=\"%d\" height=\"%d\"/>\n" +
+                    "      <rect x=\"%d\" y=\"%d\" width=\"%d\" height=\"%d\"/>\n" +
                     "    </clipPath>\n",
-                    scene.getWidth(), scene.getHeight()));
+                    plotLeft, plotTop, clipWidth, clipHeight));
 
             // Point marker definitions (matching C Gnuplot's gpPt0-gpPt14)
             writePointMarkerDefinitions();
@@ -843,7 +845,8 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
             case BOTTOM_LEFT -> new int[]{plotLeft + padding, plotBottom - legendHeight - padding};
             case BOTTOM_RIGHT -> new int[]{plotRight - legendWidth - padding, plotBottom - legendHeight - padding};
             case TOP_CENTER -> new int[]{(plotLeft + plotRight - legendWidth) / 2, plotTop + padding};
-            case BOTTOM_CENTER -> new int[]{(plotLeft + plotRight - legendWidth) / 2, plotBottom - legendHeight - padding};
+            // BOTTOM_CENTER (bmargin) should be BELOW the plot area, not inside it
+            case BOTTOM_CENTER -> new int[]{(plotLeft + plotRight - legendWidth) / 2, plotBottom + padding};
             case LEFT_CENTER -> new int[]{plotLeft + padding, (plotTop + plotBottom - legendHeight) / 2};
             case RIGHT_CENTER -> new int[]{plotRight - legendWidth - padding, (plotTop + plotBottom - legendHeight) / 2};
             case CENTER -> new int[]{(plotLeft + plotRight - legendWidth) / 2, (plotTop + plotBottom - legendHeight) / 2};
