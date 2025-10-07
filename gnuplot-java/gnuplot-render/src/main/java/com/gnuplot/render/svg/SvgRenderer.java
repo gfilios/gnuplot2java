@@ -747,7 +747,7 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
             int columns = legend.getColumns();
             int rows = (int) Math.ceil((double) legend.getEntries().size() / columns);
             int rowHeight = 18;    // Height per row (C gnuplot uses 18px)
-            int padding = 10;
+            int padding = 0;       // C gnuplot uses no padding (height = rows * 18)
             int symbolWidth = 45;  // Space for line/marker symbol after text
 
             // Calculate column width based on longest label
