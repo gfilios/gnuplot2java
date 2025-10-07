@@ -5,6 +5,7 @@ import com.gnuplot.render.elements.BarChart;
 import com.gnuplot.render.elements.Legend;
 import com.gnuplot.render.elements.LinePlot;
 import com.gnuplot.render.elements.ScatterPlot;
+import com.gnuplot.render.elements.SurfacePlot3D;
 
 /**
  * Visitor pattern interface for processing scene elements.
@@ -48,4 +49,11 @@ public interface SceneElementVisitor {
      * @param barChart the bar chart to visit
      */
     void visitBarChart(BarChart barChart);
+
+    /**
+     * Visit a 3D surface plot element.
+     *
+     * @param surfacePlot the 3D surface plot to visit
+     */
+    void visitSurfacePlot3D(SurfacePlot3D surfacePlot);
 }
