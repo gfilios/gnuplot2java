@@ -91,8 +91,11 @@ public final class Legend implements SceneElement {
 
     /**
      * Legend position enumeration.
+     * Margin positions (TMARGIN_*, BMARGIN_*) place legend outside the plot area.
+     * Non-margin positions place legend inside the plot area.
      */
     public enum Position {
+        // Inside plot area
         TOP_LEFT,
         TOP_RIGHT,
         BOTTOM_LEFT,
@@ -101,7 +104,14 @@ public final class Legend implements SceneElement {
         BOTTOM_CENTER,
         LEFT_CENTER,
         RIGHT_CENTER,
-        CENTER
+        CENTER,
+        // Outside plot area (margins)
+        TMARGIN_LEFT,
+        TMARGIN_CENTER,
+        TMARGIN_RIGHT,
+        BMARGIN_LEFT,
+        BMARGIN_CENTER,
+        BMARGIN_RIGHT
     }
 
     /**

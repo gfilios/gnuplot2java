@@ -838,18 +838,25 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
     }
 
     private int[] getLegendPosition(Legend.Position position, int legendWidth, int legendHeight) {
-        int padding = 5; // Small padding inside plot area
+        int padding = 5; // Small padding
         return switch (position) {
+            // Inside plot area
             case TOP_LEFT -> new int[]{plotLeft + padding, plotTop + padding};
             case TOP_RIGHT -> new int[]{plotRight - legendWidth - padding, plotTop + padding};
             case BOTTOM_LEFT -> new int[]{plotLeft + padding, plotBottom - legendHeight - padding};
             case BOTTOM_RIGHT -> new int[]{plotRight - legendWidth - padding, plotBottom - legendHeight - padding};
             case TOP_CENTER -> new int[]{(plotLeft + plotRight - legendWidth) / 2, plotTop + padding};
-            // BOTTOM_CENTER (bmargin) should be BELOW the plot area, not inside it
-            case BOTTOM_CENTER -> new int[]{(plotLeft + plotRight - legendWidth) / 2, plotBottom + padding};
+            case BOTTOM_CENTER -> new int[]{(plotLeft + plotRight - legendWidth) / 2, plotBottom - legendHeight - padding};
             case LEFT_CENTER -> new int[]{plotLeft + padding, (plotTop + plotBottom - legendHeight) / 2};
             case RIGHT_CENTER -> new int[]{plotRight - legendWidth - padding, (plotTop + plotBottom - legendHeight) / 2};
             case CENTER -> new int[]{(plotLeft + plotRight - legendWidth) / 2, (plotTop + plotBottom - legendHeight) / 2};
+            // Outside plot area (margins) - below/above the plot box
+            case BMARGIN_LEFT -> new int[]{plotLeft, plotBottom + padding};
+            case BMARGIN_CENTER -> new int[]{(plotLeft + plotRight - legendWidth) / 2, plotBottom + padding};
+            case BMARGIN_RIGHT -> new int[]{plotRight - legendWidth, plotBottom + padding};
+            case TMARGIN_LEFT -> new int[]{plotLeft, plotTop - legendHeight - padding};
+            case TMARGIN_CENTER -> new int[]{(plotLeft + plotRight - legendWidth) / 2, plotTop - legendHeight - padding};
+            case TMARGIN_RIGHT -> new int[]{plotRight - legendWidth, plotTop - legendHeight - padding};
         };
     }
 

@@ -56,8 +56,9 @@ public class GnuplotScriptExecutor implements CommandVisitor {
     private String outputFile = "output.svg";
     private final Map<String, Double> variables = new HashMap<>();
 
-    // Legend/key state
-    private String keyPosition = "TOP_LEFT";  // simple.dem uses "set key left" which means top-left
+    // Legend/key state - split into vertical and horizontal components to match gnuplot's incremental behavior
+    private String keyVerticalPosition = "top";  // top, bottom, center, tmargin, bmargin
+    private String keyHorizontalPosition = "left";  // left, right, center
     private boolean keyShowBorder = true;
     private boolean keyHorizontal = false;
 
@@ -114,9 +115,28 @@ public class GnuplotScriptExecutor implements CommandVisitor {
                 if (value instanceof Map) {
                     @SuppressWarnings("unchecked")
                     Map<String, Object> keySettings = (Map<String, Object>) value;
-                    keyPosition = (String) keySettings.getOrDefault("position", "TOP_RIGHT");
-                    keyShowBorder = (Boolean) keySettings.getOrDefault("showBorder", true);
-                    keyHorizontal = (Boolean) keySettings.getOrDefault("horizontal", false);
+
+                    // Extract vertical and horizontal components separately
+                    // This allows gnuplot's incremental behavior: "set key bmargin center" then "set key left"
+                    // should result in bottom-left, not top-left
+                    String vertical = (String) keySettings.get("vertical");
+                    String horizontal = (String) keySettings.get("horizontal");
+
+                    // Only update if present (null means not specified in this command)
+                    if (vertical != null) {
+                        keyVerticalPosition = vertical;
+                    }
+                    if (horizontal != null) {
+                        keyHorizontalPosition = horizontal;
+                    }
+
+                    // Update border and layout orientation if specified
+                    if (keySettings.containsKey("showBorder")) {
+                        keyShowBorder = (Boolean) keySettings.get("showBorder");
+                    }
+                    if (keySettings.containsKey("layout")) {
+                        keyHorizontal = (Boolean) keySettings.get("layout");
+                    }
                 }
                 break;
             case "style":
@@ -435,7 +455,7 @@ public class GnuplotScriptExecutor implements CommandVisitor {
         if (hasLabels) {
             Legend.Builder legendBuilder = Legend.builder()
                     .id("legend")
-                    .position(mapPosition(keyPosition))
+                    .position(combineKeyPosition(keyVerticalPosition, keyHorizontalPosition))
                     .showBorder(keyShowBorder)
                     .columns(keyHorizontal ? plots.size() : 1);
 
@@ -453,25 +473,56 @@ public class GnuplotScriptExecutor implements CommandVisitor {
     }
 
     /**
-     * Map key position string to Legend.Position enum.
-     * Note: In gnuplot, "left" means top-left, "right" means top-right (default)
-     * These are the most common positions in gnuplot.
+     * Combine vertical and horizontal key position components into a Legend.Position enum.
+     * This matches gnuplot's incremental behavior where "set key bmargin center" followed by
+     * "set key left" results in bottom-left position (preserving bmargin but updating horizontal).
      */
-    private Legend.Position mapPosition(String position) {
-        return switch (position) {
-            case "LEFT" -> Legend.Position.TOP_LEFT;      // "set key left" = top-left
-            case "RIGHT" -> Legend.Position.TOP_RIGHT;    // "set key right" = top-right (default)
-            case "TOP" -> Legend.Position.TOP_CENTER;
-            case "BOTTOM" -> Legend.Position.BOTTOM_CENTER;
-            case "CENTER" -> Legend.Position.CENTER;
-            case "TOP_LEFT" -> Legend.Position.TOP_LEFT;
-            case "TOP_RIGHT" -> Legend.Position.TOP_RIGHT;
-            case "BOTTOM_LEFT" -> Legend.Position.BOTTOM_LEFT;
-            case "BOTTOM_RIGHT" -> Legend.Position.BOTTOM_RIGHT;
-            case "TOP_CENTER" -> Legend.Position.TOP_CENTER;
-            case "BOTTOM_CENTER" -> Legend.Position.BOTTOM_CENTER;
-            default -> Legend.Position.TOP_RIGHT;
-        };
+    private Legend.Position combineKeyPosition(String vertical, String horizontal) {
+        // Normalize to lowercase for consistent matching
+        String v = vertical.toLowerCase();
+        String h = horizontal.toLowerCase();
+
+        // Handle margin-based vertical positions (bmargin/tmargin) - these place legend OUTSIDE plot
+        if ("bmargin".equals(v)) {
+            return switch (h) {
+                case "left" -> Legend.Position.BMARGIN_LEFT;
+                case "right" -> Legend.Position.BMARGIN_RIGHT;
+                default -> Legend.Position.BMARGIN_CENTER;  // center or unspecified
+            };
+        }
+        if ("tmargin".equals(v)) {
+            return switch (h) {
+                case "left" -> Legend.Position.TMARGIN_LEFT;
+                case "right" -> Legend.Position.TMARGIN_RIGHT;
+                default -> Legend.Position.TMARGIN_CENTER;
+            };
+        }
+
+        // Handle standard vertical positions
+        if ("top".equals(v)) {
+            return switch (h) {
+                case "left" -> Legend.Position.TOP_LEFT;
+                case "right" -> Legend.Position.TOP_RIGHT;
+                default -> Legend.Position.TOP_CENTER;
+            };
+        }
+        if ("bottom".equals(v)) {
+            return switch (h) {
+                case "left" -> Legend.Position.BOTTOM_LEFT;
+                case "right" -> Legend.Position.BOTTOM_RIGHT;
+                default -> Legend.Position.BOTTOM_CENTER;
+            };
+        }
+        if ("center".equals(v)) {
+            return switch (h) {
+                case "left" -> Legend.Position.LEFT_CENTER;
+                case "right" -> Legend.Position.RIGHT_CENTER;
+                default -> Legend.Position.CENTER;
+            };
+        }
+
+        // Default: top-left (gnuplot's default for "set key left")
+        return Legend.Position.TOP_LEFT;
     }
 
     /**

@@ -58,12 +58,14 @@ public class CommandBuilderVisitor extends GnuplotCommandBaseVisitor<List<Comman
             } else if (optCtx instanceof GnuplotCommandParser.SetKeyContext) {
                 GnuplotCommandParser.SetKeyContext keyCtx = (GnuplotCommandParser.SetKeyContext) optCtx;
 
-                // Extract position
-                String position = parseKeyPosition(keyCtx.keyPosition());
+                // Extract position components (vertical and horizontal separately)
+                // This allows incremental updates: "set key bmargin center" then "set key left"
+                // should preserve bmargin but change horizontal to left
+                Map<String, String> positionComponents = parseKeyPositionComponents(keyCtx.keyPosition());
 
                 // Extract options (BOX/NOBOX, HORIZONTAL/VERTICAL)
-                boolean showBorder = true; // default
-                boolean horizontal = false; // default
+                Boolean showBorder = null; // null means not specified
+                Boolean horizontal = null; // null means not specified
 
                 for (GnuplotCommandParser.KeyOptionsContext opt : keyCtx.keyOptions()) {
                     if (opt.BOX() != null) showBorder = true;
@@ -72,11 +74,21 @@ public class CommandBuilderVisitor extends GnuplotCommandBaseVisitor<List<Comman
                     if (opt.VERTICAL() != null) horizontal = false;
                 }
 
-                // Create structured command
+                // Create structured command with separate vertical/horizontal components
                 Map<String, Object> keySettings = new HashMap<>();
-                keySettings.put("position", position);
-                keySettings.put("showBorder", showBorder);
-                keySettings.put("horizontal", horizontal);
+                // Only include components that were actually specified
+                if (positionComponents.containsKey("vertical")) {
+                    keySettings.put("vertical", positionComponents.get("vertical"));
+                }
+                if (positionComponents.containsKey("horizontal")) {
+                    keySettings.put("horizontal", positionComponents.get("horizontal"));
+                }
+                if (showBorder != null) {
+                    keySettings.put("showBorder", showBorder);
+                }
+                if (horizontal != null) {
+                    keySettings.put("layout", horizontal);  // Renamed to avoid conflict with position component
+                }
 
                 commands.add(new SetCommand("key", keySettings));
             } else if (optCtx instanceof GnuplotCommandParser.SetGridContext) {
@@ -209,31 +221,48 @@ public class CommandBuilderVisitor extends GnuplotCommandBaseVisitor<List<Comman
         return "";
     }
 
-    private String parseKeyPosition(GnuplotCommandParser.KeyPositionContext ctx) {
-        // Check margin-based positions first (they can include LEFT/RIGHT/CENTER as modifiers)
+    /**
+     * Parse key position into separate vertical and horizontal components.
+     * Returns a map with "vertical" and/or "horizontal" keys, depending on what was specified.
+     * This allows incremental position updates: "set key bmargin center" followed by "set key left"
+     * should preserve vertical=bmargin but update horizontal=left.
+     */
+    private Map<String, String> parseKeyPositionComponents(GnuplotCommandParser.KeyPositionContext ctx) {
+        Map<String, String> components = new HashMap<>();
+
+        // Check margin-based positions first (they set vertical position)
         if (ctx.BMARGIN() != null) {
-            if (ctx.LEFT() != null) return "BOTTOM_LEFT";
-            if (ctx.RIGHT() != null) return "BOTTOM_RIGHT";
-            if (ctx.CENTER() != null) return "BOTTOM_CENTER";
-            return "BOTTOM_CENTER";
+            components.put("vertical", "bmargin");
+            // Margin positions can include horizontal modifiers
+            if (ctx.LEFT() != null) components.put("horizontal", "left");
+            if (ctx.RIGHT() != null) components.put("horizontal", "right");
+            if (ctx.CENTER() != null) components.put("horizontal", "center");
+        } else if (ctx.TMARGIN() != null) {
+            components.put("vertical", "tmargin");
+            if (ctx.LEFT() != null) components.put("horizontal", "left");
+            if (ctx.RIGHT() != null) components.put("horizontal", "right");
+            if (ctx.CENTER() != null) components.put("horizontal", "center");
+        } else if (ctx.LMARGIN() != null) {
+            components.put("horizontal", "left");
+            // lmargin doesn't specify vertical, defaults to center
+        } else if (ctx.RMARGIN() != null) {
+            components.put("horizontal", "right");
+            // rmargin doesn't specify vertical, defaults to center
+        } else {
+            // Simple positions
+            if (ctx.LEFT() != null) components.put("horizontal", "left");
+            if (ctx.RIGHT() != null) components.put("horizontal", "right");
+            if (ctx.TOP() != null) components.put("vertical", "top");
+            if (ctx.BOTTOM() != null) components.put("vertical", "bottom");
+            if (ctx.CENTER() != null) {
+                // CENTER can be both vertical and horizontal
+                // In gnuplot, just "center" typically means centered both ways
+                components.put("vertical", "center");
+                components.put("horizontal", "center");
+            }
         }
-        if (ctx.TMARGIN() != null) {
-            if (ctx.LEFT() != null) return "TOP_LEFT";
-            if (ctx.RIGHT() != null) return "TOP_RIGHT";
-            if (ctx.CENTER() != null) return "TOP_CENTER";
-            return "TOP_CENTER";
-        }
-        if (ctx.LMARGIN() != null) return "LEFT";
-        if (ctx.RMARGIN() != null) return "RIGHT";
 
-        // Then check simple positions
-        if (ctx.LEFT() != null) return "LEFT";
-        if (ctx.RIGHT() != null) return "RIGHT";
-        if (ctx.TOP() != null) return "TOP";
-        if (ctx.BOTTOM() != null) return "BOTTOM";
-        if (ctx.CENTER() != null) return "CENTER";
-
-        return "TOP_RIGHT"; // default
+        return components;
     }
 
     /**
