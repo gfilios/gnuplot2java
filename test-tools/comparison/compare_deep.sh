@@ -306,6 +306,58 @@ if [ "$C_PLOT_LINES" -gt 0 ] && [ "$JAVA_PLOT_POINTS" -gt "$C_PLOT_POINTS" ]; th
     echo "  ❌ CRITICAL: C uses lines, Java uses points"
 fi
 
+# Check for impulses (vertical lines from baseline)
+# Impulses have same x-coordinate at start and end of line
+# C gnuplot: single path with multiple "M x,y L x,y2" segments
+# Java: separate path elements for each impulse
+echo ""
+echo "Impulses Detection:"
+C_IMPULSES=$(grep -oE "M[0-9.]+,[0-9.]+ L[0-9.]+,[0-9.]+" "$C_SVG" | \
+    awk '{gsub(/[ML,]/, " "); if ($1 == $3) count++} END {print count+0}')
+JAVA_IMPULSES=$(grep -oE 'd="M [0-9.]+ [0-9.]+ L [0-9.]+ [0-9.]+"' "$JAVA_SVG" | \
+    awk '{gsub(/[dML"=]/, " "); if ($1 == $3) count++} END {print count+0}')
+
+echo "  C:    $C_IMPULSES impulse lines detected"
+echo "  Java: $JAVA_IMPULSES impulse lines detected"
+
+if [ "$C_IMPULSES" -gt 0 ] && [ "$JAVA_IMPULSES" -eq 0 ]; then
+    echo "  ❌ CRITICAL: C has impulses but Java doesn't"
+elif [ "$C_IMPULSES" -eq 0 ] && [ "$JAVA_IMPULSES" -gt 0 ]; then
+    echo "  ❌ CRITICAL: Java has impulses but C doesn't"
+elif [ "$C_IMPULSES" -gt 0 ] && [ "$JAVA_IMPULSES" -gt 0 ]; then
+    IMPULSE_DIFF=$((C_IMPULSES - JAVA_IMPULSES))
+    if [ "$IMPULSE_DIFF" -ne 0 ]; then
+        echo "  ⚠️  Warning: Impulse count differs by $IMPULSE_DIFF"
+    else
+        echo "  ✅ Impulse counts match"
+    fi
+fi
+
+# Check point marker scale
+echo ""
+echo "Point Marker Scale:"
+C_POINT_SCALE=$(grep -o "scale([0-9.]*)" "$C_SVG" | head -1 | sed 's/scale(//;s/)//')
+JAVA_POINT_SCALE=$(grep -o "scale([0-9.]*)" "$JAVA_SVG" | head -1 | sed 's/scale(//;s/)//')
+
+if [ -n "$C_POINT_SCALE" ] && [ -n "$JAVA_POINT_SCALE" ]; then
+    echo "  C:    scale($C_POINT_SCALE)"
+    echo "  Java: scale($JAVA_POINT_SCALE)"
+
+    # Compare scales (allowing 0.01 tolerance)
+    SCALE_MATCH=$(awk "BEGIN {diff=$C_POINT_SCALE-$JAVA_POINT_SCALE; if(diff<0) diff=-diff; print (diff<0.01)?1:0}")
+    if [ "$SCALE_MATCH" -eq 1 ]; then
+        echo "  ✅ Point marker scales match"
+    else
+        echo "  ❌ CRITICAL: Point marker scale mismatch"
+    fi
+elif [ -n "$C_POINT_SCALE" ]; then
+    echo "  C:    scale($C_POINT_SCALE)"
+    echo "  Java: No point markers found"
+elif [ -n "$JAVA_POINT_SCALE" ]; then
+    echo "  C:    No point markers found"
+    echo "  Java: scale($JAVA_POINT_SCALE)"
+fi
+
 # Extract stroke widths
 echo ""
 echo "Stroke Widths:"

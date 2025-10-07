@@ -227,7 +227,7 @@ public class GnuplotScriptExecutor implements CommandVisitor {
                         case "points" -> LinePlot.PlotStyle.POINTS;
                         case "lines" -> LinePlot.PlotStyle.LINES;
                         case "linespoints" -> LinePlot.PlotStyle.LINESPOINTS;
-                        case "impulses" -> LinePlot.PlotStyle.LINES; // treat impulses as lines for now
+                        case "impulses" -> LinePlot.PlotStyle.IMPULSES;
                         default -> LinePlot.PlotStyle.LINES;
                     };
                 } else if (isDataFile(expression)) {

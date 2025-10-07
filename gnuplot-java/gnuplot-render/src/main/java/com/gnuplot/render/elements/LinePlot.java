@@ -94,7 +94,9 @@ public final class LinePlot implements SceneElement {
         /** Render as point markers only */
         POINTS,
         /** Render as both lines and point markers */
-        LINESPOINTS
+        LINESPOINTS,
+        /** Render as vertical lines from baseline to each point */
+        IMPULSES
     }
 
     /**

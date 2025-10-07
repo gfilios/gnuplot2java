@@ -397,6 +397,34 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
             LinePlot.PlotStyle plotStyle = linePlot.getPlotStyle();
             String clipAttr = (viewport != null) ? " clip-path=\"url(#plotClip)\"" : "";
 
+            // Render impulses (vertical lines from baseline to each point)
+            if (plotStyle == LinePlot.PlotStyle.IMPULSES) {
+                // Find baseline y-coordinate (where y-axis crosses zero)
+                // In C gnuplot, this is called xaxis_y (the y-coordinate of the x-axis)
+                double baselineY = mapY(0.0);
+
+                // Create stroke style from LinePlot properties
+                Color color = Color.fromHexString(linePlot.getColor());
+                com.gnuplot.render.style.LineStyle styleLineStyle = linePlot.getLineStyle().toStyleLineStyle();
+                StrokeStyle stroke = new StrokeStyle(linePlot.getLineWidth(), color, styleLineStyle);
+
+                // Draw vertical line from baseline to each point
+                for (LinePlot.Point2D point : linePlot.getPoints()) {
+                    // Skip invalid points (NaN or Infinity)
+                    if (!Double.isFinite(point.getX()) || !Double.isFinite(point.getY())) {
+                        continue;
+                    }
+
+                    double x = mapX(point.getX());
+                    double y = mapY(point.getY());
+
+                    // Draw vertical line from (x, baselineY) to (x, y)
+                    writer.write(String.format(Locale.US,
+                            "  <path d=\"M %.2f %.2f L %.2f %.2f\" %s%s/>\n",
+                            x, baselineY, x, y, stroke.toSvgAttributes(), clipAttr));
+                }
+            }
+
             // Render lines (for LINES or LINESPOINTS)
             if (plotStyle == LinePlot.PlotStyle.LINES || plotStyle == LinePlot.PlotStyle.LINESPOINTS) {
                 // Build polyline points string, skipping NaN/Infinity values
@@ -432,8 +460,9 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
                 MarkerStyle markerStyle = linePlot.getMarkerStyle();
                 if (markerStyle == null) {
                     // Create default marker style matching plot color
+                    // C gnuplot uses scale(4.50) for point markers, so size = 4.50 * 4.0 = 18.0
                     Color color = Color.fromHexString(linePlot.getColor());
-                    markerStyle = MarkerStyle.filled(4.0, color, PointStyle.CIRCLE);
+                    markerStyle = MarkerStyle.filled(18.0, color, PointStyle.CIRCLE);
                 }
 
                 // Render each point as a marker using gpPt definitions
@@ -449,7 +478,8 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
 
                     // Use gpPt marker definitions (cycling through 0-14)
                     int ptIndex = markerIndex % 15;
-                    double scale = markerStyle.size() / 4.0; // Normalize to gnuplot's default size
+                    // C gnuplot uses scale(4.50) for default point markers
+                    double scale = markerStyle.size() / 4.0; // Normalize: 18.0/4.0 = 4.50
 
                     // Write marker reference with transform and color
                     writer.write(String.format(Locale.US,
