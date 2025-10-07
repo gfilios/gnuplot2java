@@ -192,8 +192,22 @@ echo "4. LEGEND (KEY) COMPARISON"
 echo "═══════════════════════════════════════════════════════════════════"
 
 # Legend box position and size
-C_LEGEND_BOX=$(grep -o 'M62\.92,129\.01 L62\.92,75\.01 L222\.94,75\.01 L222\.94,129\.01' "$C_SVG" || echo "")
-JAVA_LEGEND_BOX=$(grep -o '<rect x="[0-9]*" y="[0-9]*" width="[0-9]*" height="[0-9]*".*stroke="#000000"' "$JAVA_SVG" | head -1 || echo "")
+# C gnuplot draws legend as a closed path (rectangle with 5 points forming Z)
+# Find all rectangular paths and filter for the smaller one (legend, not plot border)
+# Plot border is typically larger (e.g., ~500px height), legend is smaller (e.g., 18-100px)
+C_LEGEND_BOX=$(grep -oE "M[0-9.]+,[0-9.]+ L[0-9.]+,[0-9.]+ L[0-9.]+,[0-9.]+ L[0-9.]+,[0-9.]+ L[0-9.]+,[0-9.]+ Z" "$C_SVG" | \
+    while read path; do
+        # Extract y coordinates to calculate height
+        y1=$(echo "$path" | grep -oE 'M[^,]+,([0-9.]+)' | sed 's/.*,//')
+        y2=$(echo "$path" | grep -oE 'L[^,]+,([0-9.]+)' | head -1 | sed 's/.*,//')
+        height=$(awk "BEGIN {h=$y1-$y2; if(h<0) h=-h; print h}")
+        # Legend typically has height < 200, plot border > 400
+        if awk "BEGIN {exit !($height > 10 && $height < 200)}"; then
+            echo "$path"
+            break
+        fi
+    done)
+JAVA_LEGEND_BOX=$(grep -oE '<rect x="[0-9]+" y="[0-9]+" width="[0-9]+" height="[0-9]+".*(fill="#FFFFFF"|stroke="#000000")' "$JAVA_SVG" | grep 'stroke="#000000"' | head -1 || echo "")
 
 echo "Legend Box:"
 echo "  C:    ${C_LEGEND_BOX:-'NOT FOUND'}"
@@ -239,6 +253,36 @@ echo ""
 echo "Legend border stroke:"
 echo "  C:    $C_LEG_STROKE"
 echo "  Java: $JAVA_LEG_STROKE"
+
+# Legend box height comparison
+echo ""
+echo "Legend Box Height:"
+if [ -n "$C_LEGEND_BOX" ]; then
+    # C gnuplot uses path coordinates: extract y values from path
+    # Path format: M62.92,129.01 L62.92,75.01 ... (top-left to bottom-left)
+    C_LEG_Y_TOP=$(echo "$C_LEGEND_BOX" | grep -oE 'L[0-9.]+,[0-9.]+' | head -1 | cut -d',' -f2)
+    C_LEG_Y_BOTTOM=$(echo "$C_LEGEND_BOX" | grep -oE 'M[0-9.]+,[0-9.]+' | head -1 | cut -d',' -f2)
+    C_LEG_HEIGHT=$(awk "BEGIN {print $C_LEG_Y_BOTTOM - $C_LEG_Y_TOP}")
+    echo "  C:    ${C_LEG_HEIGHT}px (from path coordinates)"
+fi
+
+if [ -n "$JAVA_LEGEND_BOX" ]; then
+    JAVA_LEG_HEIGHT=$(echo "$JAVA_LEGEND_BOX" | grep -oE 'height="[0-9]+"' | sed 's/height="//;s/"//')
+    echo "  Java: ${JAVA_LEG_HEIGHT}px (from rect height)"
+
+    # Compare heights if both available
+    if [ -n "$C_LEG_HEIGHT" ] && [ -n "$JAVA_LEG_HEIGHT" ]; then
+        HEIGHT_DIFF=$(awk "BEGIN {print $JAVA_LEG_HEIGHT - $C_LEG_HEIGHT}")
+        if [ "${HEIGHT_DIFF%.*}" != "0" ]; then
+            echo "  ⚠️  Height difference: ${HEIGHT_DIFF}px"
+            if awk "BEGIN {exit !($HEIGHT_DIFF > 5 || $HEIGHT_DIFF < -5)}"; then
+                echo "  ❌ CRITICAL: Legend box height mismatch (>5px difference)"
+            fi
+        else
+            echo "  ✅ Heights match"
+        fi
+    fi
+fi
 
 # ============================================================================
 # 5. PLOT LINE/POINT STYLE ANALYSIS
