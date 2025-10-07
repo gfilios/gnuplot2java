@@ -851,9 +851,11 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
             case RIGHT_CENTER -> new int[]{plotRight - legendWidth - padding, (plotTop + plotBottom - legendHeight) / 2};
             case CENTER -> new int[]{(plotLeft + plotRight - legendWidth) / 2, (plotTop + plotBottom - legendHeight) / 2};
             // Outside plot area (margins) - below/above the plot box
-            case BMARGIN_LEFT -> new int[]{plotLeft, plotBottom + padding};
-            case BMARGIN_CENTER -> new int[]{(plotLeft + plotRight - legendWidth) / 2, plotBottom + padding};
-            case BMARGIN_RIGHT -> new int[]{plotRight - legendWidth, plotBottom + padding};
+            // X-axis labels are at plotBottom + 18, need to position legend below them
+            // Label height ~4px + gap ~5px = 27px total offset from plotBottom
+            case BMARGIN_LEFT -> new int[]{plotLeft, plotBottom + 27};
+            case BMARGIN_CENTER -> new int[]{(plotLeft + plotRight - legendWidth) / 2, plotBottom + 27};
+            case BMARGIN_RIGHT -> new int[]{plotRight - legendWidth, plotBottom + 27};
             case TMARGIN_LEFT -> new int[]{plotLeft, plotTop - legendHeight - padding};
             case TMARGIN_CENTER -> new int[]{(plotLeft + plotRight - legendWidth) / 2, plotTop - legendHeight - padding};
             case TMARGIN_RIGHT -> new int[]{plotRight - legendWidth, plotTop - legendHeight - padding};
