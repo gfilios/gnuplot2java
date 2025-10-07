@@ -461,12 +461,29 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
                 if (markerStyle == null) {
                     // Create default marker style matching plot color
                     // C gnuplot uses scale(4.50) for point markers, so size = 4.50 * 4.0 = 18.0
+                    // Default point type is CROSS (gpPt1 - the X symbol)
                     Color color = Color.fromHexString(linePlot.getColor());
-                    markerStyle = MarkerStyle.filled(18.0, color, PointStyle.CIRCLE);
+                    markerStyle = MarkerStyle.unfilled(18.0, color, PointStyle.CROSS);
                 }
 
-                // Render each point as a marker using gpPt definitions
-                int markerIndex = 0;
+                // Map PointStyle to gpPt index (matching C gnuplot point types)
+                int ptIndex = mapPointStyleToGpPt(markerStyle.pointStyle());
+                // C gnuplot uses scale(4.50) for default point markers
+                double scale = markerStyle.size() / 4.0; // Normalize: 18.0/4.0 = 4.50
+
+                // Get the path geometry for this point type
+                String pathData = getGpPtPathData(ptIndex);
+
+                // Set stroke-width to be clearly visible
+                // In modern SVG, stroke-width is NOT scaled by transform
+                // So we use an absolute value (2.0 pixels)
+                double strokeWidth = 2.0;
+
+                // IMPORTANT: clip-path doesn't work on <path> elements with transform attribute
+                // We need to wrap the paths in a <g> element with the clip-path
+                writer.write(String.format("<%s>\n", clipAttr.isEmpty() ? "g" : "g" + clipAttr));
+
+                // Render each point directly
                 for (LinePlot.Point2D point : linePlot.getPoints()) {
                     // Skip invalid points (NaN or Infinity)
                     if (!Double.isFinite(point.getX()) || !Double.isFinite(point.getY())) {
@@ -476,18 +493,14 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
                     double x = mapX(point.getX());
                     double y = mapY(point.getY());
 
-                    // Use gpPt marker definitions (cycling through 0-14)
-                    int ptIndex = markerIndex % 15;
-                    // C gnuplot uses scale(4.50) for default point markers
-                    double scale = markerStyle.size() / 4.0; // Normalize: 18.0/4.0 = 4.50
-
-                    // Write marker reference with transform and color
+                    // Render path inside the <g> wrapper (clip-path is on the parent <g>)
                     writer.write(String.format(Locale.US,
-                            "  <use xlink:href='#gpPt%d' transform='translate(%.2f,%.2f) scale(%.2f)' color='%s'%s/>\n",
-                            ptIndex, x, y, scale, linePlot.getColor(), clipAttr));
-
-                    markerIndex++;
+                            "  <path d=\"%s\" transform=\"translate(%.2f,%.2f) scale(%.2f)\" " +
+                            "stroke=\"%s\" stroke-width=\"%.3f\" fill=\"none\"/>\n",
+                            pathData, x, y, scale, linePlot.getColor(), strokeWidth));
                 }
+
+                writer.write("</g>\n");
             }
 
         } catch (IOException e) {
@@ -1152,6 +1165,47 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
             case DASH_DOT -> " stroke-dasharray=\"10,5,2,5\"";
             case NONE -> " stroke-width=\"0\"";
             default -> "";
+        };
+    }
+
+    /**
+     * Maps PointStyle enum to gnuplot point type index (gpPt0-gpPt14).
+     * This matches C gnuplot's point type definitions in the SVG terminal.
+     *
+     * @param pointStyle The point style to map
+     * @return gpPt index (0-14)
+     */
+    private int mapPointStyleToGpPt(PointStyle pointStyle) {
+        return switch (pointStyle) {
+            case PLUS -> 0;           // gpPt0: plus (+)
+            case CROSS -> 1;          // gpPt1: cross (×) - DEFAULT
+            case CIRCLE -> 5;         // gpPt5: circle (unfilled)
+            case SQUARE -> 3;         // gpPt3: square (unfilled)
+            case DIAMOND -> 11;       // gpPt11: diamond (rotated square)
+            case TRIANGLE_UP -> 7;    // gpPt7: triangle up
+            case TRIANGLE_DOWN -> 9;  // gpPt9: triangle down
+            case STAR -> 2;           // gpPt2: asterisk (*)
+            case HEXAGON -> 13;       // gpPt13: pentagon (closest to hexagon)
+            case PENTAGON -> 13;      // gpPt13: pentagon
+        };
+    }
+
+    /**
+     * Get the SVG path data for a gnuplot point marker type.
+     * These match the gpPt definitions from C gnuplot.
+     */
+    private String getGpPtPathData(int ptIndex) {
+        return switch (ptIndex) {
+            case 0 -> "M-1,0 h2 M0,-1 v2";                                      // plus (+)
+            case 1 -> "M-1,-1 L1,1 M1,-1 L-1,1";                                // cross (×)
+            case 2 -> "M-1,0 L1,0 M0,-1 L0,1 M-1,-1 L1,1 M-1,1 L1,-1";         // asterisk (*)
+            case 3 -> "M-1,-1 L1,-1 L1,1 L-1,1 Z";                              // square
+            case 5 -> "M0,-1 A1,1 0 1,1 0,1 A1,1 0 1,1 0,-1";                   // circle
+            case 7 -> "M0,-1.33 L-1.33,0.67 L1.33,0.67 Z";                      // triangle up
+            case 9 -> "M0,1.33 L1.33,-0.67 L-1.33,-0.67 Z";                     // triangle down
+            case 11 -> "M0,-1.414 L1.414,0 L0,1.414 L-1.414,0 Z";               // diamond (rotated square)
+            case 13 -> "M0,1.330 L1.265,0.411 L0.782,-1.067 L-0.782,-1.076 L-1.265,0.411 Z"; // pentagon
+            default -> "M-1,-1 L1,1 M1,-1 L-1,1";                               // default to cross
         };
     }
 

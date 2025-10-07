@@ -273,13 +273,13 @@ mvn test -Dtest=ExpressionParserTest#shouldParseAddition
 
 **NEW APPROACH**: Shifted to test-driven development using official Gnuplot demo suite (`gnuplot-c/demo/*.dem`) as test oracle. See [TEST_DRIVEN_PLAN.md](TEST_DRIVEN_PLAN.md) for methodology.
 
-**Current Demo Pass Rate**: 1/100+ (1%) - **simple.dem: 3/8 plots perfect, 5/8 minor issues**
-- ✅ simple.dem - **MAJOR PROGRESS** (2025-10-05):
-  * **3/8 plots perfect** (no visual differences)
-  * **5/8 plots** with only minor tick count differences
-  * **Point markers 100% working** (Plot 8: 47/47 exact match!)
-  * Fixed: Default plot styles, per-plot ranges, mirror ticks
-  * Remaining: Tick generation algorithm needs refinement
+**Current Demo Pass Rate**: 1/100+ (1%) - **simple.dem: 8/8 plots working with visible output**
+- ✅ simple.dem - **COMPLETE WORKING** (2025-10-07):
+  * **8/8 plots render with visible output**
+  * **Point markers visible and working** - Fixed SVG rendering issue
+  * Fixed: Default plot styles, per-plot ranges, mirror ticks, impulses rendering
+  * **Breakthrough fix**: Point markers now visible (clip-path + transform interaction solved)
+  * Remaining: Minor tick count differences (non-critical)
 - ❌ scatter.dem - Not yet validated with comparison
 - ❌ controls.dem - Requires control flow (if/else, loops)
 - ❌ Most other demos - Requires incremental feature implementation
@@ -527,4 +527,4 @@ This project is based on the original [Gnuplot](http://gnuplot.sourceforge.net/)
 
 ---
 
-**Last Updated**: 2025-10-01
+**Last Updated**: 2025-10-07

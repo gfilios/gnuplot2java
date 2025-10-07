@@ -33,11 +33,14 @@ Modern, modular Java implementation of Gnuplot with complete script compatibilit
 - Color palette system (37 formulas, named palettes)
 - Text rendering with fonts and alignment
 - Plot types: Line, Scatter, Bar (vertical/horizontal/grouped/stacked)
+- **Point markers: Cross, Plus, Circle, Square, Diamond, Triangles, Star, Pentagon** ✅
+- **Impulses rendering** (vertical bars from baseline) ✅
 - Multi-plot layouts (grid and custom positioning)
 - Legend system (multi-column, 9 positions)
 
 **Tests**: 375 passing
 **Output**: SVG (PNG/PDF planned)
+**Recent Fix**: Point marker visibility solved (clip-path + transform interaction)
 
 ### gnuplot-cli ✅ Complete
 **Command-line interface with full Gnuplot script compatibility**
