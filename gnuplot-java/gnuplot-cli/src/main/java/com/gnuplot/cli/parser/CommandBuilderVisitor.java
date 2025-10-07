@@ -58,20 +58,23 @@ public class CommandBuilderVisitor extends GnuplotCommandBaseVisitor<List<Comman
             } else if (optCtx instanceof GnuplotCommandParser.SetKeyContext) {
                 GnuplotCommandParser.SetKeyContext keyCtx = (GnuplotCommandParser.SetKeyContext) optCtx;
 
-                // Extract position components (vertical and horizontal separately)
-                // This allows incremental updates: "set key bmargin center" then "set key left"
-                // should preserve bmargin but change horizontal to left
-                Map<String, String> positionComponents = parseKeyPositionComponents(keyCtx.keyPosition());
-
-                // Extract options (BOX/NOBOX, HORIZONTAL/VERTICAL)
+                // Extract position components and options from keySpec list
+                Map<String, String> positionComponents = new HashMap<>();
                 Boolean showBorder = null; // null means not specified
                 Boolean horizontal = null; // null means not specified
 
-                for (GnuplotCommandParser.KeyOptionsContext opt : keyCtx.keyOptions()) {
-                    if (opt.BOX() != null) showBorder = true;
-                    if (opt.NOBOX() != null) showBorder = false;
-                    if (opt.HORIZONTAL() != null) horizontal = true;
-                    if (opt.VERTICAL() != null) horizontal = false;
+                for (GnuplotCommandParser.KeySpecContext spec : keyCtx.keySpec()) {
+                    if (spec.keyPosition() != null) {
+                        // Extract position components
+                        positionComponents = parseKeyPositionComponents(spec.keyPosition());
+                    } else if (spec.keyOptions() != null) {
+                        // Extract options (BOX/NOBOX, HORIZONTAL/VERTICAL)
+                        GnuplotCommandParser.KeyOptionsContext opt = spec.keyOptions();
+                        if (opt.BOX() != null) showBorder = true;
+                        if (opt.NOBOX() != null) showBorder = false;
+                        if (opt.HORIZONTAL() != null) horizontal = true;
+                        if (opt.VERTICAL() != null) horizontal = false;
+                    }
                 }
 
                 // Create structured command with separate vertical/horizontal components

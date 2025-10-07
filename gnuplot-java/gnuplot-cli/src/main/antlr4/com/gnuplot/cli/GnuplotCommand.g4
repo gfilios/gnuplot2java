@@ -42,7 +42,7 @@ setOption
     | XLABEL string (FONT string)?                  # SetXLabel
     | YLABEL string (FONT string)?                  # SetYLabel
     | ZLABEL string (FONT string)?                  # SetZLabel
-    | KEY keyPosition keyOptions*                   # SetKey
+    | KEY keySpec*                                  # SetKey
     | SAMPLES NUMBER                                # SetSamples
     | XRANGE range                                  # SetXRange
     | YRANGE range                                  # SetYRange
@@ -59,6 +59,12 @@ setOption
     | TICSLEVEL NUMBER                              # SetTicsLevel
     | HIDDEN3D                                      # SetHidden3D
     | DGRID3D dgridOptions                          # SetDgrid3D
+    | CONTOUR                                       # SetContour
+    ;
+
+keySpec
+    : keyPosition
+    | keyOptions
     ;
 
 keyPosition
@@ -111,7 +117,7 @@ styleOptions
     ;
 
 dgridOptions
-    : NUMBER COMMA NUMBER (IDENTIFIER NUMBER?)?
+    : (NUMBER COMMA NUMBER)? (IDENTIFIER NUMBER?)?
     ;
 
 // UNSET commands
@@ -126,6 +132,8 @@ unsetOption
     | LOGSCALE
     | PARAMETRIC
     | HIDDEN3D
+    | DGRID3D
+    | CONTOUR
     | IDENTIFIER
     ;
 
@@ -302,6 +310,7 @@ VIEW        : 'view' ;
 TICSLEVEL   : 'ticslevel' ;
 HIDDEN3D    : 'hidden3d' ;
 DGRID3D     : 'dgrid3d' ;
+CONTOUR     : 'contour' ;
 
 // Position keywords
 LEFT        : 'left' ;
