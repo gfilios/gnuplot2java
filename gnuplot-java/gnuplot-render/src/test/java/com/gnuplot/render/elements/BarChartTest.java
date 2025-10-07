@@ -479,6 +479,9 @@ class BarChartTest {
         public void visitLegend(Legend legend) {}
 
         @Override
+        public void visitSurfacePlot3D(com.gnuplot.render.elements.SurfacePlot3D surfacePlot) {}
+
+        @Override
         public void visitBarChart(BarChart barChart) {
             visitedBarChart = true;
         }

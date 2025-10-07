@@ -181,6 +181,66 @@ public class CommandBuilderVisitor extends GnuplotCommandBaseVisitor<List<Comman
     }
 
     @Override
+    public List<Command> visitSplotCommand(GnuplotCommandParser.SplotCommandContext ctx) {
+        List<PlotCommand.PlotSpec> plotSpecs = new ArrayList<>();
+
+        // Extract X, Y, and Z ranges from splot command
+        PlotCommand.Range xRange = null;
+        PlotCommand.Range yRange = null;
+        PlotCommand.Range zRange = null;
+
+        List<GnuplotCommandParser.RangeContext> ranges = ctx.range();
+        if (!ranges.isEmpty()) {
+            xRange = parseRange(ranges.get(0));
+            if (ranges.size() > 1) {
+                yRange = parseRange(ranges.get(1));
+                if (ranges.size() > 2) {
+                    zRange = parseRange(ranges.get(2));
+                }
+            }
+        }
+
+        for (GnuplotCommandParser.PlotSpecContext specCtx : ctx.plotSpec()) {
+            String expression;
+            String title = null;
+            String style = null;  // No default - let executor decide based on data type
+            PlotCommand.Range plotSpecRange = null;
+
+            // Extract per-plot range if specified
+            if (specCtx.range() != null) {
+                plotSpecRange = parseRange(specCtx.range());
+            }
+
+            // Extract expression or data source
+            if (specCtx.expression() != null) {
+                expression = specCtx.expression().getText();
+            } else if (specCtx.dataSource() != null) {
+                expression = specCtx.dataSource().getText();
+            } else {
+                expression = "";
+            }
+
+            // Extract modifiers
+            for (GnuplotCommandParser.PlotModifiersContext modCtx : specCtx.plotModifiers()) {
+                if (modCtx.WITH() != null && modCtx.plotStyle() != null) {
+                    style = modCtx.plotStyle().getText();
+                }
+                if (modCtx.TITLE() != null && modCtx.string() != null) {
+                    title = extractString(modCtx.string());
+                }
+                if (modCtx.NOTITLE() != null) {
+                    title = "";
+                }
+            }
+
+            plotSpecs.add(new PlotCommand.PlotSpec(expression, title, style, plotSpecRange));
+        }
+
+        commands.add(new SplotCommand(plotSpecs, xRange, yRange, zRange));
+        return commands;
+    }
+
+    @Override
     public List<Command> visitUnsetCommand(GnuplotCommandParser.UnsetCommandContext ctx) {
         if (ctx.unsetOption() != null) {
             commands.add(new UnsetCommand(ctx.unsetOption().getText()));

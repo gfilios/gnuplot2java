@@ -7,7 +7,10 @@ import com.gnuplot.render.elements.Axis;
 import com.gnuplot.render.elements.BarChart;
 import com.gnuplot.render.elements.Legend;
 import com.gnuplot.render.elements.LinePlot;
+import com.gnuplot.render.elements.Point3D;
 import com.gnuplot.render.elements.ScatterPlot;
+import com.gnuplot.render.elements.SurfacePlot3D;
+import com.gnuplot.render.projection.ViewTransform3D;
 import com.gnuplot.render.style.MarkerStyle;
 import com.gnuplot.render.style.PointStyle;
 import com.gnuplot.render.style.StrokeStyle;
@@ -1207,6 +1210,106 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
             case 13 -> "M0,1.330 L1.265,0.411 L0.782,-1.067 L-0.782,-1.076 L-1.265,0.411 Z"; // pentagon
             default -> "M-1,-1 L1,1 M1,-1 L-1,1";                               // default to cross
         };
+    }
+
+    @Override
+    public void visitSurfacePlot3D(SurfacePlot3D surfacePlot) {
+        try {
+            // Get view transformation from scene (default to gnuplot standard view)
+            ViewTransform3D viewTransform = ViewTransform3D.gnuplotDefault();
+
+            // TODO: Extract view parameters from scene settings when implemented
+            // For now, use default view (60, 30 degrees)
+
+            String clipAttr = " clip-path=\"url(#plotClip)\"";
+
+            // Render based on plot style
+            if (surfacePlot.getPlotStyle() == SurfacePlot3D.PlotStyle3D.POINTS) {
+                renderPointCloud3D(surfacePlot, viewTransform, clipAttr);
+            } else if (surfacePlot.getPlotStyle() == SurfacePlot3D.PlotStyle3D.LINES) {
+                renderWireframe3D(surfacePlot, viewTransform, clipAttr);
+            } else {
+                // Default to points
+                renderPointCloud3D(surfacePlot, viewTransform, clipAttr);
+            }
+
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to render 3D surface plot", e);
+        }
+    }
+
+    private void renderPointCloud3D(SurfacePlot3D surfacePlot, ViewTransform3D viewTransform, String clipAttr) throws IOException {
+        // Get marker style or use default
+        MarkerStyle markerStyle = surfacePlot.getMarkerStyle();
+        if (markerStyle == null) {
+            Color color = Color.fromHexString(surfacePlot.getColor());
+            markerStyle = MarkerStyle.unfilled(18.0, color, PointStyle.CROSS);
+        }
+
+        int ptIndex = mapPointStyleToGpPt(markerStyle.pointStyle());
+        double scale = markerStyle.size() / 4.0;
+        String pathData = getGpPtPathData(ptIndex);
+        double strokeWidth = 2.0;
+
+        // Project all 3D points to 2D
+        writer.write(String.format("<%s>\n", clipAttr.isEmpty() ? "g" : "g" + clipAttr));
+
+        for (Point3D point3D : surfacePlot.getPoints()) {
+            if (!point3D.isFinite()) {
+                continue;
+            }
+
+            // Normalize to plot range (assume [-1,1] for now)
+            // TODO: Use actual data ranges from axes
+            Point3D normalized = normalizePoint3D(point3D);
+
+            // Project to 2D
+            ViewTransform3D.Point2D projected = viewTransform.project(normalized);
+
+            if (!projected.isFinite()) {
+                continue;
+            }
+
+            // Map to screen coordinates
+            double x = mapProjectedX(projected.x());
+            double y = mapProjectedY(projected.y());
+
+            // Render point marker
+            writer.write(String.format(Locale.US,
+                    "  <path d=\"%s\" transform=\"translate(%.2f,%.2f) scale(%.2f)\" " +
+                    "stroke=\"%s\" stroke-width=\"%.3f\" fill=\"none\"/>\n",
+                    pathData, x, y, scale, surfacePlot.getColor(), strokeWidth));
+        }
+
+        writer.write("</g>\n");
+    }
+
+    private void renderWireframe3D(SurfacePlot3D surfacePlot, ViewTransform3D viewTransform, String clipAttr) throws IOException {
+        // TODO: Implement wireframe rendering for mesh/grid data
+        // For now, fall back to point cloud
+        renderPointCloud3D(surfacePlot, viewTransform, clipAttr);
+    }
+
+    private Point3D normalizePoint3D(Point3D point) {
+        // TODO: Use actual axis ranges from scene
+        // For now, assume data is already in normalized range
+        return point;
+    }
+
+    private double mapProjectedX(double x) {
+        // Map normalized x [-1, 1] to screen coordinates
+        // Center the plot in the viewport
+        double center = (plotLeft + plotRight) / 2.0;
+        double width = (plotRight - plotLeft) / 2.0;
+        return center + x * width;
+    }
+
+    private double mapProjectedY(double y) {
+        // Map normalized y [-1, 1] to screen coordinates
+        // Note: SVG y-axis is inverted (top=0, bottom=height)
+        double center = (plotTop + plotBottom) / 2.0;
+        double height = (plotBottom - plotTop) / 2.0;
+        return center - y * height;  // Invert y-axis
     }
 
     /**

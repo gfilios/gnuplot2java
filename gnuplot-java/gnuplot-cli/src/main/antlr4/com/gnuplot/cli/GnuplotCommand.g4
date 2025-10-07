@@ -193,7 +193,7 @@ columnSpec
 
 // SPLOT command (3D plot)
 splotCommand
-    : SPLOT plotSpec (COMMA plotSpec)*
+    : SPLOT range? range? range? plotSpec (COMMA plotSpec)*
     ;
 
 // REPLOT command

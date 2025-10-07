@@ -254,6 +254,21 @@ public class GnuplotScriptExecutor implements CommandVisitor {
     }
 
     @Override
+    public void visitSplotCommand(SplotCommand command) {
+        // For now, just log that splot was called - full implementation coming next
+        System.out.println("SPLOT command received with " + command.getPlotSpecs().size() + " plot spec(s)");
+        System.out.println("  X range: " + command.getXRange());
+        System.out.println("  Y range: " + command.getYRange());
+        System.out.println("  Z range: " + command.getZRange());
+
+        for (PlotCommand.PlotSpec spec : command.getPlotSpecs()) {
+            System.out.println("  Plot: " + spec.getExpression() +
+                             " with " + spec.getStyle() +
+                             " title '" + spec.getTitle() + "'");
+        }
+    }
+
+    @Override
     public void visitUnsetCommand(UnsetCommand command) {
         String option = command.getOption();
 
