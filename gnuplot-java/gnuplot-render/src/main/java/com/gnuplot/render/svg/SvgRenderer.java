@@ -53,7 +53,25 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
         this.plotLeft = MARGIN_LEFT;
         this.plotRight = scene.getWidth() - MARGIN_RIGHT;
         this.plotTop = MARGIN_TOP;
-        this.plotBottom = scene.getHeight() - MARGIN_BOTTOM;
+
+        // Check if there's a bottom margin legend that needs extra space
+        // C gnuplot reduces plot area height when legend is in bottom margin
+        int bottomMarginAdjustment = 0;
+        for (var element : scene.getElements()) {
+            if (element instanceof com.gnuplot.render.elements.Legend) {
+                com.gnuplot.render.elements.Legend legend = (com.gnuplot.render.elements.Legend) element;
+                if (legend.getPosition().name().startsWith("BMARGIN")) {
+                    // Legend in bottom margin needs extra space
+                    // Legend height ~18px per row + x-axis label space ~22px = ~40px total
+                    int legendRows = (int) Math.ceil((double) legend.getEntries().size() / legend.getColumns());
+                    int legendHeight = legendRows * 18;
+                    bottomMarginAdjustment = legendHeight + 5; // legend height + small gap
+                    break;
+                }
+            }
+        }
+
+        this.plotBottom = scene.getHeight() - MARGIN_BOTTOM - bottomMarginAdjustment;
 
         try {
             writeSvgHeader();
