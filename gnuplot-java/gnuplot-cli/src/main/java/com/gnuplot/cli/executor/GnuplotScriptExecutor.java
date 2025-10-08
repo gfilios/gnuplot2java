@@ -310,6 +310,36 @@ public class GnuplotScriptExecutor implements CommandVisitor {
                 Point3D[] points = read3DDataFile(expression);
                 System.out.println("    Loaded " + points.length + " 3D points from " + expression);
 
+                // Apply dgrid3d interpolation if enabled
+                if (dgrid3dEnabled && points.length > 0) {
+                    System.out.println("    Applying dgrid3d interpolation: " + dgrid3dRows + "x" + dgrid3dCols + " " + dgrid3dMode + " " + dgrid3dNorm);
+
+                    // Convert to core Point3D for interpolation
+                    List<com.gnuplot.core.grid.Point3D> corePoints = new ArrayList<>();
+                    for (Point3D p : points) {
+                        corePoints.add(new com.gnuplot.core.grid.Point3D(p.x(), p.y(), p.z()));
+                    }
+
+                    // Create dgrid3d interpolator
+                    com.gnuplot.core.grid.Dgrid3D.InterpolationMode mode =
+                        com.gnuplot.core.grid.Dgrid3D.InterpolationMode.QNORM; // TODO: parse mode from dgrid3dMode
+                    com.gnuplot.core.grid.Dgrid3D dgrid = new com.gnuplot.core.grid.Dgrid3D(
+                        dgrid3dRows, dgrid3dCols, mode, dgrid3dNorm
+                    );
+
+                    // Interpolate to grid
+                    List<com.gnuplot.core.grid.Point3D> gridded = dgrid.interpolate(corePoints);
+
+                    // Convert back to render Point3D
+                    points = new Point3D[gridded.size()];
+                    for (int i = 0; i < gridded.size(); i++) {
+                        com.gnuplot.core.grid.Point3D gp = gridded.get(i);
+                        points[i] = new Point3D(gp.x(), gp.y(), gp.z());
+                    }
+
+                    System.out.println("    Interpolated to " + points.length + " grid points");
+                }
+
                 if (points.length > 0) {
                     // Determine plot style
                     SurfacePlot3D.PlotStyle3D plotStyle;
