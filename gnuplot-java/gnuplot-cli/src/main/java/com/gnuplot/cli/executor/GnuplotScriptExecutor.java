@@ -69,6 +69,7 @@ public class GnuplotScriptExecutor implements CommandVisitor {
 
     // Current scene elements
     private final List<LinePlot> plots = new ArrayList<>();
+    private final List<SurfacePlot3D> plots3D = new ArrayList<>();
 
     // Accumulated scenes (for multi-page rendering)
     private final List<Scene> scenes = new ArrayList<>();
@@ -257,6 +258,9 @@ public class GnuplotScriptExecutor implements CommandVisitor {
 
     @Override
     public void visitSplotCommand(SplotCommand command) {
+        // Clear 3D plots from previous splot command
+        plots3D.clear();
+
         System.out.println("Processing SPLOT command with " + command.getPlotSpecs().size() + " plot spec(s)");
 
         // Process each plot specification
@@ -313,8 +317,8 @@ public class GnuplotScriptExecutor implements CommandVisitor {
                     SurfacePlot3D surfacePlot = builder.build();
                     System.out.println("    Created SurfacePlot3D: " + surfacePlot);
 
-                    // TODO: Add to scene and render
-                    // For now, we've successfully parsed and created the 3D plot object
+                    // Add to 3D plots list
+                    plots3D.add(surfacePlot);
                 } else {
                     System.err.println("    No valid points loaded from " + expression);
                 }
@@ -322,6 +326,9 @@ public class GnuplotScriptExecutor implements CommandVisitor {
                 System.err.println("    3D function plotting not yet supported: " + expression);
             }
         }
+
+        // Create a 3D scene from current 3D plots and add to scenes list
+        createAndAddScene3D();
     }
 
     @Override
@@ -534,6 +541,85 @@ public class GnuplotScriptExecutor implements CommandVisitor {
             for (LinePlot plot : plots) {
                 if (plot.getLabel() != null && !plot.getLabel().isEmpty()) {
                     legendBuilder.addEntry(plot.getLabel(), plot.getColor(), plot.getLineStyle());
+                }
+            }
+
+            sceneBuilder.addElement(legendBuilder.build());
+        }
+
+        scenes.add(sceneBuilder.build());
+    }
+
+    /**
+     * Creates a 3D scene from the current 3D plots and adds it to the scenes list.
+     * Similar to createAndAddScene() but handles 3D data and rendering.
+     */
+    private void createAndAddScene3D() {
+        if (plots3D.isEmpty()) {
+            return;
+        }
+
+        // Calculate 3D bounding box from all points
+        double xMin = Double.POSITIVE_INFINITY;
+        double xMax = Double.NEGATIVE_INFINITY;
+        double yMin = Double.POSITIVE_INFINITY;
+        double yMax = Double.NEGATIVE_INFINITY;
+        double zMin = Double.POSITIVE_INFINITY;
+        double zMax = Double.NEGATIVE_INFINITY;
+
+        for (SurfacePlot3D plot : plots3D) {
+            for (Point3D point : plot.getPoints()) {
+                if (point.isFinite()) {
+                    xMin = Math.min(xMin, point.x());
+                    xMax = Math.max(xMax, point.x());
+                    yMin = Math.min(yMin, point.y());
+                    yMax = Math.max(yMax, point.y());
+                    zMin = Math.min(zMin, point.z());
+                    zMax = Math.max(zMax, point.z());
+                }
+            }
+        }
+
+        // Fallback if no valid data
+        if (!Double.isFinite(xMin)) {
+            xMin = -1; xMax = 1;
+            yMin = -1; yMax = 1;
+            zMin = 0; zMax = 1;
+        }
+
+        // For 3D, we use a simple viewport based on projected coordinates
+        // The actual 3D→2D projection is handled in SvgRenderer
+        Viewport viewport = Viewport.of2D(xMin, xMax, yMin, yMax);
+
+        // Build scene
+        Scene.Builder sceneBuilder = Scene.builder()
+                .dimensions(800, 600)
+                .viewport(viewport)
+                .border(drawBorder);
+
+        if (!title.isEmpty()) {
+            sceneBuilder.title(title);
+        }
+
+        // Add all 3D plots
+        for (SurfacePlot3D plot : plots3D) {
+            sceneBuilder.addElement(plot);
+        }
+
+        // Create and add legend if any plot has a label
+        boolean hasLabels = plots3D.stream().anyMatch(plot -> plot.getLabel() != null && !plot.getLabel().isEmpty());
+        if (hasLabels) {
+            Legend.Builder legendBuilder = Legend.builder()
+                    .id("legend")
+                    .position(combineKeyPosition(keyVerticalPosition, keyHorizontalPosition))
+                    .showBorder(keyShowBorder)
+                    .columns(keyHorizontal ? plots3D.size() : 1);
+
+            // Add entry for each plot with a label
+            for (SurfacePlot3D plot : plots3D) {
+                if (plot.getLabel() != null && !plot.getLabel().isEmpty()) {
+                    // Use default color and line style for legend
+                    legendBuilder.addEntry(plot.getLabel(), "#9400D3", LinePlot.LineStyle.SOLID);
                 }
             }
 
