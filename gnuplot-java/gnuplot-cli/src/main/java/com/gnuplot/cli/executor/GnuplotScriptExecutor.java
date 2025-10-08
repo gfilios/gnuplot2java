@@ -62,7 +62,7 @@ public class GnuplotScriptExecutor implements CommandVisitor {
 
     // Legend/key state - split into vertical and horizontal components to match gnuplot's incremental behavior
     private String keyVerticalPosition = "top";  // top, bottom, center, tmargin, bmargin
-    private String keyHorizontalPosition = "left";  // left, right, center
+    private String keyHorizontalPosition = "right";  // left, right, center (gnuplot default is right)
     private boolean keyShowBorder = true;
     private boolean keyHorizontal = false;
 
@@ -660,10 +660,11 @@ public class GnuplotScriptExecutor implements CommandVisitor {
         Viewport viewport = Viewport.of2D(xMin, xMax, yMin, yMax);
 
         // Build scene
+        // Note: 3D plots don't use 2D borders - axes are part of the 3D scene
         Scene.Builder sceneBuilder = Scene.builder()
                 .dimensions(800, 600)
                 .viewport(viewport)
-                .border(drawBorder);
+                .border(false);
 
         if (!title.isEmpty()) {
             sceneBuilder.title(title);
