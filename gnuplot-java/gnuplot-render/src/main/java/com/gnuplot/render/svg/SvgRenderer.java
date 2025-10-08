@@ -287,6 +287,14 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
     }
 
     private void writeElements() throws IOException {
+        // Check if scene contains 3D plots and render axes first
+        boolean has3DPlots = scene.getElements().stream()
+                .anyMatch(e -> e instanceof SurfacePlot3D);
+
+        if (has3DPlots) {
+            render3DAxes();
+        }
+
         for (SceneElement element : scene.getElements()) {
             element.accept(this);
         }
@@ -295,6 +303,77 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
         if (scene.isShowBorder()) {
             renderPlotBorder();
         }
+    }
+
+    /**
+     * Render 3D coordinate axes for 3D plots.
+     * Creates X, Y, Z axes with tick marks and labels.
+     */
+    private void render3DAxes() throws IOException {
+        ViewTransform3D viewTransform = ViewTransform3D.gnuplotDefault();
+
+        // Define 3D axis endpoints in normalized coordinates [-1, 1]
+        Point3D origin = new Point3D(-1, -1, -1);
+        Point3D xEnd = new Point3D(1, -1, -1);
+        Point3D yEnd = new Point3D(-1, 1, -1);
+        Point3D zEnd = new Point3D(-1, -1, 1);
+
+        // Project to 2D
+        ViewTransform3D.Point2D originProj = viewTransform.project(origin);
+        ViewTransform3D.Point2D xProj = viewTransform.project(xEnd);
+        ViewTransform3D.Point2D yProj = viewTransform.project(yEnd);
+        ViewTransform3D.Point2D zProj = viewTransform.project(zEnd);
+
+        // Map to screen coordinates
+        double ox = mapProjectedX(originProj.x());
+        double oy = mapProjectedY(originProj.y());
+        double xx = mapProjectedX(xProj.x());
+        double xy = mapProjectedY(xProj.y());
+        double yx = mapProjectedX(yProj.x());
+        double yy = mapProjectedY(yProj.y());
+        double zx = mapProjectedX(zProj.x());
+        double zy = mapProjectedY(zProj.y());
+
+        // Draw 3 axis lines
+        writer.write(String.format(Locale.US,
+                "  <g stroke=\"#000000\" stroke-width=\"1.0\" fill=\"none\">\n"));
+
+        // X-axis
+        writer.write(String.format(Locale.US,
+                "    <path d=\"M %.2f,%.2f L %.2f,%.2f\"/>\n",
+                ox, oy, xx, xy));
+
+        // Y-axis
+        writer.write(String.format(Locale.US,
+                "    <path d=\"M %.2f,%.2f L %.2f,%.2f\"/>\n",
+                ox, oy, yx, yy));
+
+        // Z-axis
+        writer.write(String.format(Locale.US,
+                "    <path d=\"M %.2f,%.2f L %.2f,%.2f\"/>\n",
+                ox, oy, zx, zy));
+
+        // Add tick marks (5 ticks per axis)
+        for (int i = 0; i < 5; i++) {
+            double t = i / 4.0; // Parameter along axis [0, 1]
+
+            // X-axis tick
+            Point3D xTick = new Point3D(
+                    origin.x() + t * (xEnd.x() - origin.x()),
+                    origin.y() + t * (xEnd.y() - origin.y()),
+                    origin.z() + t * (xEnd.z() - origin.z())
+            );
+            ViewTransform3D.Point2D xTickProj = viewTransform.project(xTick);
+            double xtx = mapProjectedX(xTickProj.x());
+            double xty = mapProjectedY(xTickProj.y());
+
+            // Small tick mark perpendicular to axis
+            writer.write(String.format(Locale.US,
+                    "    <path d=\"M %.2f,%.2f L %.2f,%.2f\"/>\n",
+                    xtx, xty, xtx + 3, xty + 3));
+        }
+
+        writer.write("  </g>\n");
     }
 
     /**
