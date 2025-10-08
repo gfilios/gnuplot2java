@@ -1250,8 +1250,6 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
 
         int ptIndex = mapPointStyleToGpPt(markerStyle.pointStyle());
         double scale = markerStyle.size() / 4.0;
-        String pathData = getGpPtPathData(ptIndex);
-        double strokeWidth = 2.0;
 
         // Calculate bounding box for normalization
         double xMin = Double.POSITIVE_INFINITY, xMax = Double.NEGATIVE_INFINITY;
@@ -1294,11 +1292,10 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
             double x = mapProjectedX(projected.x());
             double y = mapProjectedY(projected.y());
 
-            // Render point marker
+            // Render point marker using <use> reference (like C gnuplot)
             writer.write(String.format(Locale.US,
-                    "  <path d=\"%s\" transform=\"translate(%.2f,%.2f) scale(%.2f)\" " +
-                    "stroke=\"%s\" stroke-width=\"%.3f\" fill=\"none\"/>\n",
-                    pathData, x, y, scale, surfacePlot.getColor(), strokeWidth));
+                    "  <use xlink:href='#gpPt%d' transform='translate(%.2f,%.2f) scale(%.2f)' color='%s'/>\n",
+                    ptIndex, x, y, scale, surfacePlot.getColor()));
         }
 
         writer.write("</g>\n");
