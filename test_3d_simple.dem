@@ -1,0 +1,5 @@
+set terminal svg
+set output 'test_3d_output.svg'
+set title "First 3D Plot Test"
+set style data points
+splot "hemisphr.dat"

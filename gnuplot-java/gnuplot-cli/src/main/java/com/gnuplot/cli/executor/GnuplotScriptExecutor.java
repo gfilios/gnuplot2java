@@ -800,15 +800,26 @@ public class GnuplotScriptExecutor implements CommandVisitor {
         // Try multiple path resolution strategies
         Path dataFile = Paths.get(cleanPath);
 
-        // If not found, try relative to demos directory
+        // If not found, try relative to gnuplot-c/demo directory (matching 2D behavior)
+        if (!Files.exists(dataFile)) {
+            dataFile = Paths.get("gnuplot-c/demo").resolve(cleanPath);
+        }
+
+        // If not found, try from project root (go up from gnuplot-cli to gnuplot-java to gnuplot-master)
+        if (!Files.exists(dataFile)) {
+            Path currentDir = Paths.get(System.getProperty("user.dir"));
+            dataFile = currentDir.getParent().getParent().resolve("gnuplot-c/demo").resolve(cleanPath);
+        }
+
+        // If not found, try demos directory (for our new 3D demos)
         if (!Files.exists(dataFile)) {
             dataFile = Paths.get("demos").resolve(cleanPath);
         }
 
-        // If not found, try from project root
+        // If not found, try from project root demos directory
         if (!Files.exists(dataFile)) {
             Path currentDir = Paths.get(System.getProperty("user.dir"));
-            dataFile = currentDir.resolve("demos").resolve(cleanPath);
+            dataFile = currentDir.getParent().getParent().resolve("demos").resolve(cleanPath);
         }
 
         List<Point3D> pointsList = new ArrayList<>();
