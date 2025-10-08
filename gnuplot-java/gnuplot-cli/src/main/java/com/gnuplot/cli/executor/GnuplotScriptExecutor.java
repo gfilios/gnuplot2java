@@ -67,6 +67,13 @@ public class GnuplotScriptExecutor implements CommandVisitor {
     // Style state
     private String styleDataValue = "lines"; // default: lines
 
+    // 3D grid state (for dgrid3d)
+    private boolean dgrid3dEnabled = false;
+    private int dgrid3dRows = 10;
+    private int dgrid3dCols = 10;
+    private String dgrid3dMode = "qnorm";
+    private int dgrid3dNorm = 1;
+
     // Current scene elements
     private final List<LinePlot> plots = new ArrayList<>();
     private final List<SurfacePlot3D> plots3D = new ArrayList<>();
@@ -154,6 +161,26 @@ public class GnuplotScriptExecutor implements CommandVisitor {
                         styleDataValue = styleValue.toLowerCase();
                     }
                 }
+                break;
+            case "dgrid3d":
+                dgrid3dEnabled = true;
+                if (value instanceof Map) {
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> dgridSettings = (Map<String, Object>) value;
+                    if (dgridSettings.containsKey("rows")) {
+                        dgrid3dRows = (Integer) dgridSettings.get("rows");
+                    }
+                    if (dgridSettings.containsKey("cols")) {
+                        dgrid3dCols = (Integer) dgridSettings.get("cols");
+                    }
+                    if (dgridSettings.containsKey("mode")) {
+                        dgrid3dMode = (String) dgridSettings.get("mode");
+                    }
+                    if (dgridSettings.containsKey("norm")) {
+                        dgrid3dNorm = (Integer) dgridSettings.get("norm");
+                    }
+                }
+                System.out.println("dgrid3d enabled: " + dgrid3dRows + "x" + dgrid3dCols + " " + dgrid3dMode + " " + dgrid3dNorm);
                 break;
         }
     }
@@ -354,6 +381,10 @@ public class GnuplotScriptExecutor implements CommandVisitor {
                 break;
             case "ylabel":
                 ylabel = "";
+                break;
+            case "dgrid3d":
+                dgrid3dEnabled = false;
+                System.out.println("dgrid3d disabled");
                 break;
         }
     }

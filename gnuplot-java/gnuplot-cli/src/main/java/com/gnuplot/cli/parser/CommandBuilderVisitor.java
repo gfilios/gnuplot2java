@@ -100,6 +100,27 @@ public class CommandBuilderVisitor extends GnuplotCommandBaseVisitor<List<Comman
                 commands.add(new SetCommand("border", true));
             } else if (optCtx instanceof GnuplotCommandParser.SetAutoscaleContext) {
                 commands.add(new SetCommand("autoscale", true));
+            } else if (optCtx instanceof GnuplotCommandParser.SetDgrid3DContext) {
+                GnuplotCommandParser.SetDgrid3DContext dgridCtx = (GnuplotCommandParser.SetDgrid3DContext) optCtx;
+                Map<String, Object> dgridSettings = new HashMap<>();
+
+                // Parse dgrid3d options: [rows,cols] [qnorm N]
+                if (dgridCtx.dgridOptions() != null) {
+                    GnuplotCommandParser.DgridOptionsContext opts = dgridCtx.dgridOptions();
+                    List<org.antlr.v4.runtime.tree.TerminalNode> numbers = opts.NUMBER();
+                    if (numbers.size() >= 2) {
+                        dgridSettings.put("rows", Integer.parseInt(numbers.get(0).getText()));
+                        dgridSettings.put("cols", Integer.parseInt(numbers.get(1).getText()));
+                    }
+                    if (opts.IDENTIFIER() != null) {
+                        String mode = opts.IDENTIFIER().getText();
+                        dgridSettings.put("mode", mode); // e.g., "qnorm"
+                        if (numbers.size() >= 3) {
+                            dgridSettings.put("norm", Integer.parseInt(numbers.get(2).getText()));
+                        }
+                    }
+                }
+                commands.add(new SetCommand("dgrid3d", dgridSettings));
             } else if (optCtx instanceof GnuplotCommandParser.SetStyleContext) {
                 GnuplotCommandParser.SetStyleContext styleCtx = (GnuplotCommandParser.SetStyleContext) optCtx;
 
