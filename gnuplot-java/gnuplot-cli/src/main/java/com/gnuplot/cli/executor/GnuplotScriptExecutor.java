@@ -271,7 +271,8 @@ public class GnuplotScriptExecutor implements CommandVisitor {
             String style = spec.getStyle();
 
             System.out.println("  Plot: " + expression);
-            System.out.println("    Style: " + (style != null ? style : "points (default)"));
+            System.out.println("    Explicit style: " + (style != null ? style : "none"));
+            System.out.println("    Style data setting: " + styleDataValue);
             System.out.println("    Title: " + (plotTitle != null ? plotTitle : expression));
 
             // Read 3D data file
