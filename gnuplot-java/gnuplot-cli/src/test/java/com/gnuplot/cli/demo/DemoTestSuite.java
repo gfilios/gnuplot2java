@@ -157,10 +157,43 @@ class DemoTestSuite {
         }
 
         DemoTestRunner.DemoResult result = testRunner.runDemo("scatter.dem");
-        repository.store("scatter.dem", scatterDem, result.getModifiedScript(), result);
+        TestResultRepository.DemoTestRecord record =
+                repository.store("scatter.dem", scatterDem, result.getModifiedScript(), result);
 
-        System.out.println("=== scatter.dem Test Results ===");
-        System.out.println(result.isPassing() ? "✅ PASS" : "❌ FAIL");
+        System.out.println("\n╔═══════════════════════════════════════════════════════════╗");
+        System.out.println("║                 scatter.dem Test Results                  ║");
+        System.out.println("╚═══════════════════════════════════════════════════════════╝");
+        System.out.println("C Gnuplot Success:    " + result.isCExecutionSuccess());
+        System.out.println("Java Gnuplot Success: " + result.isJavaExecutionSuccess());
+
+        // Run comprehensive comparison if both outputs exist
+        if (comparisonRunner.areToolsAvailable() &&
+            result.isCExecutionSuccess() && result.isJavaExecutionSuccess()) {
+
+            System.out.println("\n🔍 Running comprehensive comparison analysis...\n");
+
+            // Compare main output (plot 1)
+            runAndSaveComparison(record.getCSvgOutput(), record.getJavaSvgOutput(),
+                               repository.getCurrentRunDir(), "scatter.dem", 1);
+
+            // Compare additional numbered outputs (_002, _003, etc.)
+            String baseName = record.getDemoName().replace(".dem", "");
+            Path outputDir = record.getCSvgOutput().getParent();
+
+            for (int i = 2; i <= 100; i++) {
+                Path cNumberedFile = outputDir.resolve(String.format("%s_c_%03d.svg", baseName, i));
+                Path javaNumberedFile = outputDir.resolve(String.format("%s_java_%03d.svg", baseName, i));
+
+                if (Files.exists(cNumberedFile) && Files.exists(javaNumberedFile)) {
+                    runAndSaveComparison(cNumberedFile, javaNumberedFile,
+                                       repository.getCurrentRunDir(), "scatter.dem", i);
+                } else {
+                    break; // Stop when we find a gap
+                }
+            }
+
+            System.out.println("\n🖼️  Visual diff images: /tmp/gnuplot_visual_comparison/");
+        }
 
         assertThat(result.isCExecutionSuccess())
                 .as("C Gnuplot should execute scatter.dem successfully")

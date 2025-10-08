@@ -141,6 +141,9 @@ public class ComparisonRunner {
 
                 // Extract metrics from visual comparison
                 extractVisualMetrics(visualOutput, metrics);
+
+                // Extract visual issues
+                extractVisualIssues(visualOutput, criticalIssues);
             }
 
             return new ComparisonResult(true, fullOutput.toString(),
@@ -276,6 +279,25 @@ public class ComparisonRunner {
                                           .replaceAll("%.*", "").trim();
                     metrics.setPixelDifferencePercent(Double.parseDouble(percentStr));
                 } catch (NumberFormatException ignored) {}
+            }
+        }
+    }
+
+    /**
+     * Extract issues from visual comparison output.
+     */
+    private void extractVisualIssues(String output, List<String> issues) {
+        String[] lines = output.split("\n");
+        for (String line : lines) {
+            // Check for significant visual differences
+            if (line.contains("❌ IMAGES ARE SIGNIFICANTLY DIFFERENT")) {
+                String issue = line.replaceAll("❌\\s*", "").trim();
+                issues.add("Visual: " + issue);
+            }
+            // Check for structural differences
+            if (line.contains("⚠️") && line.contains("Structural difference")) {
+                String issue = line.replaceAll("⚠️\\s*", "").trim();
+                issues.add("Visual: " + issue);
             }
         }
     }

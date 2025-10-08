@@ -20,6 +20,8 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -1303,9 +1305,87 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
     }
 
     private void renderWireframe3D(SurfacePlot3D surfacePlot, ViewTransform3D viewTransform, String clipAttr) throws IOException {
-        // TODO: Implement wireframe rendering for mesh/grid data
-        // For now, fall back to point cloud
-        renderPointCloud3D(surfacePlot, viewTransform, clipAttr);
+        List<Point3D> points = surfacePlot.getPoints();
+        if (points.isEmpty()) {
+            return;
+        }
+
+        // Calculate bounding box for normalization
+        double xMin = Double.POSITIVE_INFINITY, xMax = Double.NEGATIVE_INFINITY;
+        double yMin = Double.POSITIVE_INFINITY, yMax = Double.NEGATIVE_INFINITY;
+        double zMin = Double.POSITIVE_INFINITY, zMax = Double.NEGATIVE_INFINITY;
+
+        for (Point3D p : points) {
+            if (p.isFinite()) {
+                xMin = Math.min(xMin, p.x());
+                xMax = Math.max(xMax, p.x());
+                yMin = Math.min(yMin, p.y());
+                yMax = Math.max(yMax, p.y());
+                zMin = Math.min(zMin, p.z());
+                zMax = Math.max(zMax, p.z());
+            }
+        }
+
+        // Project all points to 2D first
+        List<ViewTransform3D.Point2D> projectedPoints = new ArrayList<>();
+        for (Point3D point3D : points) {
+            if (!point3D.isFinite()) {
+                projectedPoints.add(null);
+                continue;
+            }
+
+            // Normalize to [-1, 1] range for projection
+            double nx = 2.0 * (point3D.x() - xMin) / (xMax - xMin) - 1.0;
+            double ny = 2.0 * (point3D.y() - yMin) / (yMax - yMin) - 1.0;
+            double nz = 2.0 * (point3D.z() - zMin) / (zMax - zMin) - 1.0;
+            Point3D normalized = new Point3D(nx, ny, nz);
+
+            // Project to 2D
+            ViewTransform3D.Point2D projected = viewTransform.project(normalized);
+            projectedPoints.add(projected.isFinite() ? projected : null);
+        }
+
+        // Render as connected polyline through all points
+        writer.write(String.format("<%s>\n", clipAttr.isEmpty() ? "g" : "g" + clipAttr));
+
+        // Build path by connecting consecutive valid points
+        StringBuilder pathData = new StringBuilder();
+        boolean firstPoint = true;
+
+        for (int i = 0; i < projectedPoints.size(); i++) {
+            ViewTransform3D.Point2D projected = projectedPoints.get(i);
+            if (projected == null) {
+                // Break in data - start new path segment
+                firstPoint = true;
+                continue;
+            }
+
+            double x = mapProjectedX(projected.x());
+            double y = mapProjectedY(projected.y());
+
+            if (firstPoint) {
+                if (pathData.length() > 0) {
+                    // Write previous path segment
+                    writer.write(String.format(Locale.US,
+                            "  <path d=\"%s\" stroke=\"%s\" stroke-width=\"1.0\" fill=\"none\"/>\n",
+                            pathData.toString(), surfacePlot.getColor()));
+                    pathData = new StringBuilder();
+                }
+                pathData.append(String.format(Locale.US, "M %.2f,%.2f", x, y));
+                firstPoint = false;
+            } else {
+                pathData.append(String.format(Locale.US, " L %.2f,%.2f", x, y));
+            }
+        }
+
+        // Write final path segment if any
+        if (pathData.length() > 0) {
+            writer.write(String.format(Locale.US,
+                    "  <path d=\"%s\" stroke=\"%s\" stroke-width=\"1.0\" fill=\"none\"/>\n",
+                    pathData.toString(), surfacePlot.getColor()));
+        }
+
+        writer.write("</g>\n");
     }
 
     private double mapProjectedX(double x) {
