@@ -11,6 +11,8 @@ import com.gnuplot.render.axis.TickGenerator;
 import com.gnuplot.render.elements.Axis;
 import com.gnuplot.render.elements.Legend;
 import com.gnuplot.render.elements.LinePlot;
+import com.gnuplot.render.elements.Point3D;
+import com.gnuplot.render.elements.SurfacePlot3D;
 import com.gnuplot.render.svg.SvgRenderer;
 
 import java.io.BufferedReader;
@@ -255,16 +257,70 @@ public class GnuplotScriptExecutor implements CommandVisitor {
 
     @Override
     public void visitSplotCommand(SplotCommand command) {
-        // For now, just log that splot was called - full implementation coming next
-        System.out.println("SPLOT command received with " + command.getPlotSpecs().size() + " plot spec(s)");
-        System.out.println("  X range: " + command.getXRange());
-        System.out.println("  Y range: " + command.getYRange());
-        System.out.println("  Z range: " + command.getZRange());
+        System.out.println("Processing SPLOT command with " + command.getPlotSpecs().size() + " plot spec(s)");
 
+        // Process each plot specification
         for (PlotCommand.PlotSpec spec : command.getPlotSpecs()) {
-            System.out.println("  Plot: " + spec.getExpression() +
-                             " with " + spec.getStyle() +
-                             " title '" + spec.getTitle() + "'");
+            String expression = spec.getExpression();
+            String plotTitle = spec.getTitle();
+            String style = spec.getStyle();
+
+            System.out.println("  Plot: " + expression);
+            System.out.println("    Style: " + (style != null ? style : "points (default)"));
+            System.out.println("    Title: " + (plotTitle != null ? plotTitle : expression));
+
+            // Read 3D data file
+            if (isDataFile(expression)) {
+                Point3D[] points = read3DDataFile(expression);
+                System.out.println("    Loaded " + points.length + " 3D points from " + expression);
+
+                if (points.length > 0) {
+                    // Determine plot style
+                    SurfacePlot3D.PlotStyle3D plotStyle;
+                    if (style != null && !style.isEmpty()) {
+                        plotStyle = switch (style.toLowerCase()) {
+                            case "points" -> SurfacePlot3D.PlotStyle3D.POINTS;
+                            case "lines" -> SurfacePlot3D.PlotStyle3D.LINES;
+                            case "surface" -> SurfacePlot3D.PlotStyle3D.SURFACE;
+                            case "dots" -> SurfacePlot3D.PlotStyle3D.DOTS;
+                            default -> SurfacePlot3D.PlotStyle3D.POINTS;
+                        };
+                    } else if (!styleDataValue.isEmpty()) {
+                        // Use "set style data" value
+                        plotStyle = switch (styleDataValue) {
+                            case "points" -> SurfacePlot3D.PlotStyle3D.POINTS;
+                            case "lines" -> SurfacePlot3D.PlotStyle3D.LINES;
+                            default -> SurfacePlot3D.PlotStyle3D.POINTS;
+                        };
+                    } else {
+                        plotStyle = SurfacePlot3D.PlotStyle3D.POINTS;
+                    }
+
+                    // Create 3D surface plot
+                    SurfacePlot3D.Builder builder = SurfacePlot3D.builder()
+                        .id("splot_" + expression)
+                        .plotStyle(plotStyle);
+
+                    // Add all points
+                    for (Point3D point : points) {
+                        builder.addPoint(point.x(), point.y(), point.z());
+                    }
+
+                    // Set label
+                    String label = (plotTitle != null && !plotTitle.isEmpty()) ? plotTitle : expression;
+                    builder.label(label);
+
+                    SurfacePlot3D surfacePlot = builder.build();
+                    System.out.println("    Created SurfacePlot3D: " + surfacePlot);
+
+                    // TODO: Add to scene and render
+                    // For now, we've successfully parsed and created the 3D plot object
+                } else {
+                    System.err.println("    No valid points loaded from " + expression);
+                }
+            } else {
+                System.err.println("    3D function plotting not yet supported: " + expression);
+            }
         }
     }
 
@@ -643,6 +699,59 @@ public class GnuplotScriptExecutor implements CommandVisitor {
         }
 
         return pointsList.toArray(new LinePlot.Point2D[0]);
+    }
+
+    /**
+     * Reads a 3D data file in x y z format (one point per line).
+     */
+    private Point3D[] read3DDataFile(String filePath) {
+        // Remove quotes from file path
+        String cleanPath = filePath.substring(1, filePath.length() - 1);
+
+        // Try multiple path resolution strategies
+        Path dataFile = Paths.get(cleanPath);
+
+        // If not found, try relative to demos directory
+        if (!Files.exists(dataFile)) {
+            dataFile = Paths.get("demos").resolve(cleanPath);
+        }
+
+        // If not found, try from project root
+        if (!Files.exists(dataFile)) {
+            Path currentDir = Paths.get(System.getProperty("user.dir"));
+            dataFile = currentDir.resolve("demos").resolve(cleanPath);
+        }
+
+        List<Point3D> pointsList = new ArrayList<>();
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(dataFile.toFile()))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                line = line.trim();
+                if (line.isEmpty() || line.startsWith("#")) {
+                    continue; // Skip empty lines and comments
+                }
+
+                // Split by whitespace
+                String[] parts = line.split("\\s+");
+                if (parts.length >= 3) {
+                    try {
+                        double x = Double.parseDouble(parts[0]);
+                        double y = Double.parseDouble(parts[1]);
+                        double z = Double.parseDouble(parts[2]);
+                        pointsList.add(new Point3D(x, y, z));
+                    } catch (NumberFormatException e) {
+                        // Skip malformed lines
+                        System.err.println("Skipping malformed 3D line: " + line);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to read 3D data file " + cleanPath + ": " + e.getMessage());
+            return new Point3D[0];
+        }
+
+        return pointsList.toArray(new Point3D[0]);
     }
 
     /**
