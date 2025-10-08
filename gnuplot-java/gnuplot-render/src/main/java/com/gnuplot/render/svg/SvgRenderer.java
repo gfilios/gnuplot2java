@@ -1251,6 +1251,22 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
         String pathData = getGpPtPathData(ptIndex);
         double strokeWidth = 2.0;
 
+        // Calculate bounding box for normalization
+        double xMin = Double.POSITIVE_INFINITY, xMax = Double.NEGATIVE_INFINITY;
+        double yMin = Double.POSITIVE_INFINITY, yMax = Double.NEGATIVE_INFINITY;
+        double zMin = Double.POSITIVE_INFINITY, zMax = Double.NEGATIVE_INFINITY;
+
+        for (Point3D p : surfacePlot.getPoints()) {
+            if (p.isFinite()) {
+                xMin = Math.min(xMin, p.x());
+                xMax = Math.max(xMax, p.x());
+                yMin = Math.min(yMin, p.y());
+                yMax = Math.max(yMax, p.y());
+                zMin = Math.min(zMin, p.z());
+                zMax = Math.max(zMax, p.z());
+            }
+        }
+
         // Project all 3D points to 2D
         writer.write(String.format("<%s>\n", clipAttr.isEmpty() ? "g" : "g" + clipAttr));
 
@@ -1259,9 +1275,11 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
                 continue;
             }
 
-            // Normalize to plot range (assume [-1,1] for now)
-            // TODO: Use actual data ranges from axes
-            Point3D normalized = normalizePoint3D(point3D);
+            // Normalize to [-1, 1] range for projection
+            double nx = 2.0 * (point3D.x() - xMin) / (xMax - xMin) - 1.0;
+            double ny = 2.0 * (point3D.y() - yMin) / (yMax - yMin) - 1.0;
+            double nz = 2.0 * (point3D.z() - zMin) / (zMax - zMin) - 1.0;
+            Point3D normalized = new Point3D(nx, ny, nz);
 
             // Project to 2D
             ViewTransform3D.Point2D projected = viewTransform.project(normalized);
@@ -1288,12 +1306,6 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
         // TODO: Implement wireframe rendering for mesh/grid data
         // For now, fall back to point cloud
         renderPointCloud3D(surfacePlot, viewTransform, clipAttr);
-    }
-
-    private Point3D normalizePoint3D(Point3D point) {
-        // TODO: Use actual axis ranges from scene
-        // For now, assume data is already in normalized range
-        return point;
     }
 
     private double mapProjectedX(double x) {

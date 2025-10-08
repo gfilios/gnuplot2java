@@ -263,6 +263,7 @@ public class GnuplotScriptExecutor implements CommandVisitor {
 
         System.out.println("Processing SPLOT command with " + command.getPlotSpecs().size() + " plot spec(s)");
 
+        int colorIndex = 0;  // Track color cycling for multi-plot commands
         // Process each plot specification
         for (PlotCommand.PlotSpec spec : command.getPlotSpecs()) {
             String expression = spec.getExpression();
@@ -303,7 +304,8 @@ public class GnuplotScriptExecutor implements CommandVisitor {
                     // Create 3D surface plot
                     SurfacePlot3D.Builder builder = SurfacePlot3D.builder()
                         .id("splot_" + expression)
-                        .plotStyle(plotStyle);
+                        .plotStyle(plotStyle)
+                        .color(DEFAULT_COLORS[colorIndex % DEFAULT_COLORS.length]);
 
                     // Add all points
                     for (Point3D point : points) {
@@ -319,6 +321,7 @@ public class GnuplotScriptExecutor implements CommandVisitor {
 
                     // Add to 3D plots list
                     plots3D.add(surfacePlot);
+                    colorIndex++;  // Next color for next plot
                 } else {
                     System.err.println("    No valid points loaded from " + expression);
                 }
