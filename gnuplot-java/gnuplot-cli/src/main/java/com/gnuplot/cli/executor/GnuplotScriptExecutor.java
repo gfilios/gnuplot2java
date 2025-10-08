@@ -56,6 +56,8 @@ public class GnuplotScriptExecutor implements CommandVisitor {
     private boolean grid = false;
     private boolean drawBorder = true; // Default: true (matching C Gnuplot's draw_border = 31)
     private String outputFile = "output.svg";
+    private String scriptName = null; // Source script name for default output naming
+    private boolean outputFileExplicitlySet = false; // Track if user set output file
     private final Map<String, Double> variables = new HashMap<>();
 
     // Legend/key state - split into vertical and horizontal components to match gnuplot's incremental behavior
@@ -119,6 +121,7 @@ public class GnuplotScriptExecutor implements CommandVisitor {
             case "output":
                 if (value instanceof String) {
                     outputFile = (String) value;
+                    outputFileExplicitlySet = true;
                 }
                 break;
             case "key":
@@ -715,6 +718,28 @@ public class GnuplotScriptExecutor implements CommandVisitor {
 
         // Default: top-left (gnuplot's default for "set key left")
         return Legend.Position.TOP_LEFT;
+    }
+
+    /**
+     * Set the source script name for default output file naming.
+     * Should be called before execute() when running a script file.
+     */
+    public void setScriptName(String scriptName) {
+        this.scriptName = scriptName;
+        // If output file was not explicitly set via "set output", derive from script name
+        if (!outputFileExplicitlySet && scriptName != null) {
+            // Extract base name without path and extension
+            String baseName = scriptName;
+            int lastSlash = baseName.lastIndexOf('/');
+            if (lastSlash >= 0) {
+                baseName = baseName.substring(lastSlash + 1);
+            }
+            int lastDot = baseName.lastIndexOf('.');
+            if (lastDot > 0) {
+                baseName = baseName.substring(0, lastDot);
+            }
+            this.outputFile = baseName + ".svg";
+        }
     }
 
     /**

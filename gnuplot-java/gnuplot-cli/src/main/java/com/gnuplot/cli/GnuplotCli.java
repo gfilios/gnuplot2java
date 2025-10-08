@@ -122,6 +122,10 @@ public class GnuplotCli implements Callable<Integer> {
 
         try {
             String scriptContent = Files.readString(scriptPath);
+
+            // Set script name for default output file naming
+            executor.setScriptName(scriptPath.toString());
+
             GnuplotScript script = parser.parse(scriptContent);
             executor.execute(script);
             System.out.println("Script executed successfully.");
