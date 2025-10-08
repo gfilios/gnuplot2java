@@ -58,8 +58,9 @@ public class ViewTransform3D {
         double z1 = z;
 
         // Apply rotation around X-axis (vertical rotation)
-        double cosX = Math.cos(rotX);
-        double sinX = Math.sin(rotX);
+        // Note: Negate rotation to match gnuplot's coordinate system
+        double cosX = Math.cos(-rotX);
+        double sinX = Math.sin(-rotX);
         double x2 = x1;
         double y2 = y1 * cosX - z1 * sinX;
         double z2 = y1 * sinX + z1 * cosX;
