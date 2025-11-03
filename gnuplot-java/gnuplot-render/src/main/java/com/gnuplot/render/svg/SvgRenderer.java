@@ -432,13 +432,33 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
         double labelOffset = 15.0; // Distance from tick end to label position
         int numTicks = 11;
 
+        // ticslevel determines where Z=0 plane sits relative to XY base
+        // With ticslevel=0.5, the visual Z range is [zMin - 0.5*(zMax-zMin), zMax]
+        // Note: zMin from viewport is already the visual minimum (includes ticslevel offset)
+        double ticslevel = 0.5;  // TODO: get from command parser
+
+        // Calculate actual data Z range (before ticslevel adjustment)
+        // If zMin is negative (due to ticslevel), the data range starts at 0
+        double zDataMin = (zMin < 0) ? 0 : zMin;
+        double zDataMax = zMax;
+        double zDataRange = zDataMax - zDataMin;
+
         for (int i = 0; i < numTicks; i++) {
             double t = i / (numTicks - 1.0); // Parameter along axis [0, 1]
 
             // Calculate actual data values
             double xValue = xMin + t * (xMax - xMin);
             double yValue = yMin + t * (yMax - yMin);
-            double zValue = zMin + t * (zMax - zMin);
+
+            // For Z-axis: ticks should be at data values [0, 0.1, 0.2, ..., 1.0]
+            // positioned at their corresponding visual locations
+            double zDataValue = zDataMin + t * zDataRange;
+
+            // Visual Z position is same as data value (since data values are absolute)
+            double zValueVisual = zDataValue;
+
+            // For Z-axis: all ticks in data range should have labels
+            boolean zTickBelowZero = false;
 
             // X-axis tick and label
             Point3D xTick = new Point3D(
@@ -497,10 +517,12 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
             writer.write("  </g>\n");
 
             // Z-axis tick and label
+            // Map data Z value to parameter along visual Z-axis geometry
+            double tZ = (zDataValue - zMin) / (zMax - zMin);
             Point3D zTick = new Point3D(
-                    origin.x() + t * (zEnd.x() - origin.x()),
-                    origin.y() + t * (zEnd.y() - origin.y()),
-                    origin.z() + t * (zEnd.z() - origin.z())
+                    origin.x() + tZ * (zEnd.x() - origin.x()),
+                    origin.y() + tZ * (zEnd.y() - origin.y()),
+                    origin.z() + tZ * (zEnd.z() - origin.z())
             );
             ViewTransform3D.Point2D zTickProj = viewTransform.project(zTick);
             double ztx = mapProjectedX(zTickProj.x());
@@ -514,15 +536,18 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
             writer.write("  </g>\n");
 
             // Z-axis label (use text-anchor="end" to align right and prevent clipping)
-            double zLabelX = ztx + zPerpX * (tickLength + labelOffset);
-            double zLabelY = zty + zPerpY * (tickLength + labelOffset);
-            writer.write(String.format(Locale.US,
-                    "  <g transform=\"translate(%.2f,%.2f)\" stroke=\"none\" fill=\"black\" font-family=\"Arial\" font-size=\"12.00\" text-anchor=\"end\">\n",
-                    zLabelX, zLabelY));
-            writer.write(String.format(Locale.US,
-                    "    <text><tspan font-family=\"Arial\">%.2g</tspan></text>\n",
-                    zValue));
-            writer.write("  </g>\n");
+            // Only render labels for ticks at or above Z=0 data plane (controlled by ticslevel)
+            if (!zTickBelowZero) {
+                double zLabelX = ztx + zPerpX * (tickLength + labelOffset);
+                double zLabelY = zty + zPerpY * (tickLength + labelOffset);
+                writer.write(String.format(Locale.US,
+                        "  <g transform=\"translate(%.2f,%.2f)\" stroke=\"none\" fill=\"black\" font-family=\"Arial\" font-size=\"12.00\" text-anchor=\"end\">\n",
+                        zLabelX, zLabelY));
+                writer.write(String.format(Locale.US,
+                        "    <text><tspan font-family=\"Arial\">%.2g</tspan></text>\n",
+                        zValueVisual));
+                writer.write("  </g>\n");
+            }
         }
     }
 

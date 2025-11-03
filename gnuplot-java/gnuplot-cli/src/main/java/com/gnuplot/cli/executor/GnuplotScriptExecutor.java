@@ -664,9 +664,17 @@ public class GnuplotScriptExecutor implements CommandVisitor {
         zMin = roundAxisMin(zMin);
         zMax = roundAxisMax(zMax);
 
+        // Apply ticslevel to Z-axis range
+        // ticslevel determines where the XY base plane sits relative to Z=0 data plane
+        // With ticslevel=0.5, the visual Z range extends from -(zMax-zMin)*0.5 to zMax
+        // This creates empty space below Z=0 for the base axes
+        double ticslevel = 0.5;  // TODO: get from command parser
+        double zRange = zMax - zMin;
+        double zMinVisual = zMin - (zRange * ticslevel);
+
         // Use rounded data ranges for viewport
         // The 3D→2D projection will normalize to [-1, 1] internally, but axis labels should show rounded ranges
-        Viewport viewport = Viewport.of3D(xMin, xMax, yMin, yMax, zMin, zMax);
+        Viewport viewport = Viewport.of3D(xMin, xMax, yMin, yMax, zMinVisual, zMax);
 
         // Build scene
         // Note: 3D plots don't use 2D borders - axes are part of the 3D scene
