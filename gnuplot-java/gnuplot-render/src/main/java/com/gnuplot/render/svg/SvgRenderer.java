@@ -55,7 +55,9 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
         this.writer = new OutputStreamWriter(output, StandardCharsets.UTF_8);
 
         // Calculate plot bounds (scene dimensions minus margins)
-        this.plotLeft = MARGIN_LEFT;
+        // For 3D plots, use larger left margin to accommodate Z-axis labels
+        boolean is3D = viewport.is3D();
+        this.plotLeft = is3D ? 100 : MARGIN_LEFT;  // 100px for 3D (matching C gnuplot ~107px)
         this.plotRight = scene.getWidth() - MARGIN_RIGHT;
         this.plotTop = MARGIN_TOP;
 
@@ -311,6 +313,15 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
      */
     private void render3DAxes() throws IOException {
         ViewTransform3D viewTransform = ViewTransform3D.gnuplotDefault();
+        Viewport viewport = scene.getViewport();
+
+        // Get axis ranges from viewport
+        double xMin = viewport.getXMin();
+        double xMax = viewport.getXMax();
+        double yMin = viewport.getYMin();
+        double yMax = viewport.getYMax();
+        double zMin = viewport.getZMin();
+        double zMax = viewport.getZMax();
 
         // Define 3D axis endpoints in normalized coordinates [-1, 1]
         Point3D origin = new Point3D(-1, -1, -1);
@@ -334,30 +345,102 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
         double zx = mapProjectedX(zProj.x());
         double zy = mapProjectedY(zProj.y());
 
-        // Draw 3 axis lines
+        // Calculate axis directions for perpendicular tick marks
+        double xDirX = xx - ox;
+        double xDirY = xy - oy;
+        double xLen = Math.sqrt(xDirX * xDirX + xDirY * xDirY);
+        double xNormX = xDirX / xLen;
+        double xNormY = xDirY / xLen;
+
+        double yDirX = yx - ox;
+        double yDirY = yy - oy;
+        double yLen = Math.sqrt(yDirX * yDirX + yDirY * yDirY);
+        double yNormX = yDirX / yLen;
+        double yNormY = yDirY / yLen;
+
+        double zDirX = zx - ox;
+        double zDirY = zy - oy;
+        double zLen = Math.sqrt(zDirX * zDirX + zDirY * zDirY);
+        double zNormX = zDirX / zLen;
+        double zNormY = zDirY / zLen;
+
+        // Perpendicular directions (rotate 90° clockwise: (x,y) -> (y,-x))
+        double xPerpX = xNormY;
+        double xPerpY = -xNormX;
+        double yPerpX = yNormY;
+        double yPerpY = -yNormX;
+        double zPerpX = zNormY;
+        double zPerpY = -zNormX;
+
+        // Draw complete 3D box edges (12 edges total)
+        // A 3D box has 8 corners and 12 edges
+        // We need to project all 8 corners and draw the edges
+
+        // Define all 8 corners of the 3D box
+        Point3D[] corners = new Point3D[8];
+        corners[0] = new Point3D(-1, -1, -1);  // origin
+        corners[1] = new Point3D(1, -1, -1);   // x-end
+        corners[2] = new Point3D(-1, 1, -1);   // y-end
+        corners[3] = new Point3D(1, 1, -1);    // x+y corner (bottom)
+        corners[4] = new Point3D(-1, -1, 1);   // z-end (from origin)
+        corners[5] = new Point3D(1, -1, 1);    // x+z corner
+        corners[6] = new Point3D(-1, 1, 1);    // y+z corner
+        corners[7] = new Point3D(1, 1, 1);     // top corner
+
+        // Project all corners to 2D
+        double[][] screenCorners = new double[8][2];
+        for (int i = 0; i < 8; i++) {
+            ViewTransform3D.Point2D proj = viewTransform.project(corners[i]);
+            screenCorners[i][0] = mapProjectedX(proj.x());
+            screenCorners[i][1] = mapProjectedY(proj.y());
+        }
+
         writer.write(String.format(Locale.US,
                 "  <g stroke=\"#000000\" stroke-width=\"1.0\" fill=\"none\">\n"));
 
-        // X-axis
+        // Draw 5 edges: 3 base axes + 2 edges to close the bottom face
+        // X-axis: from origin (corner 0) to x-end (corner 1)
         writer.write(String.format(Locale.US,
                 "    <path d=\"M %.2f,%.2f L %.2f,%.2f\"/>\n",
-                ox, oy, xx, xy));
+                screenCorners[0][0], screenCorners[0][1], screenCorners[1][0], screenCorners[1][1]));
 
-        // Y-axis
+        // Y-axis: from origin (corner 0) to y-end (corner 2)
         writer.write(String.format(Locale.US,
                 "    <path d=\"M %.2f,%.2f L %.2f,%.2f\"/>\n",
-                ox, oy, yx, yy));
+                screenCorners[0][0], screenCorners[0][1], screenCorners[2][0], screenCorners[2][1]));
 
-        // Z-axis
+        // Z-axis: from origin (corner 0) to z-end (corner 4)
         writer.write(String.format(Locale.US,
                 "    <path d=\"M %.2f,%.2f L %.2f,%.2f\"/>\n",
-                ox, oy, zx, zy));
+                screenCorners[0][0], screenCorners[0][1], screenCorners[4][0], screenCorners[4][1]));
 
-        // Add tick marks (5 ticks per axis)
-        for (int i = 0; i < 5; i++) {
-            double t = i / 4.0; // Parameter along axis [0, 1]
+        // Additional edge 1: from x-end (corner 1) to x+y corner (corner 3) - closes right side
+        writer.write(String.format(Locale.US,
+                "    <path d=\"M %.2f,%.2f L %.2f,%.2f\"/>\n",
+                screenCorners[1][0], screenCorners[1][1], screenCorners[3][0], screenCorners[3][1]));
 
-            // X-axis tick
+        // Additional edge 2: from y-end (corner 2) to x+y corner (corner 3) - closes back side
+        writer.write(String.format(Locale.US,
+                "    <path d=\"M %.2f,%.2f L %.2f,%.2f\"/>\n",
+                screenCorners[2][0], screenCorners[2][1], screenCorners[3][0], screenCorners[3][1]));
+
+        writer.write("  </g>\n");
+
+        // Add tick marks and labels (11 ticks per axis) perpendicular to each axis
+        // C gnuplot uses 11 ticks from -1 to 1 in steps of 0.2
+        double tickLength = 5.0;
+        double labelOffset = 15.0; // Distance from tick end to label position
+        int numTicks = 11;
+
+        for (int i = 0; i < numTicks; i++) {
+            double t = i / (numTicks - 1.0); // Parameter along axis [0, 1]
+
+            // Calculate actual data values
+            double xValue = xMin + t * (xMax - xMin);
+            double yValue = yMin + t * (yMax - yMin);
+            double zValue = zMin + t * (zMax - zMin);
+
+            // X-axis tick and label
             Point3D xTick = new Point3D(
                     origin.x() + t * (xEnd.x() - origin.x()),
                     origin.y() + t * (xEnd.y() - origin.y()),
@@ -367,13 +450,80 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
             double xtx = mapProjectedX(xTickProj.x());
             double xty = mapProjectedY(xTickProj.y());
 
-            // Small tick mark perpendicular to axis
+            writer.write(String.format(Locale.US,
+                    "  <g stroke=\"#000000\" stroke-width=\"1.0\" fill=\"none\">\n"));
             writer.write(String.format(Locale.US,
                     "    <path d=\"M %.2f,%.2f L %.2f,%.2f\"/>\n",
-                    xtx, xty, xtx + 3, xty + 3));
-        }
+                    xtx, xty, xtx + xPerpX * tickLength, xty + xPerpY * tickLength));
+            writer.write("  </g>\n");
 
-        writer.write("  </g>\n");
+            // X-axis label
+            double xLabelX = xtx + xPerpX * (tickLength + labelOffset);
+            double xLabelY = xty + xPerpY * (tickLength + labelOffset);
+            writer.write(String.format(Locale.US,
+                    "  <g transform=\"translate(%.2f,%.2f)\" stroke=\"none\" fill=\"black\" font-family=\"Arial\" font-size=\"12.00\" text-anchor=\"middle\">\n",
+                    xLabelX, xLabelY));
+            writer.write(String.format(Locale.US,
+                    "    <text><tspan font-family=\"Arial\">%.2g</tspan></text>\n",
+                    xValue));
+            writer.write("  </g>\n");
+
+            // Y-axis tick and label
+            Point3D yTick = new Point3D(
+                    origin.x() + t * (yEnd.x() - origin.x()),
+                    origin.y() + t * (yEnd.y() - origin.y()),
+                    origin.z() + t * (yEnd.z() - origin.z())
+            );
+            ViewTransform3D.Point2D yTickProj = viewTransform.project(yTick);
+            double ytx = mapProjectedX(yTickProj.x());
+            double yty = mapProjectedY(yTickProj.y());
+
+            writer.write(String.format(Locale.US,
+                    "  <g stroke=\"#000000\" stroke-width=\"1.0\" fill=\"none\">\n"));
+            writer.write(String.format(Locale.US,
+                    "    <path d=\"M %.2f,%.2f L %.2f,%.2f\"/>\n",
+                    ytx, yty, ytx + yPerpX * tickLength, yty + yPerpY * tickLength));
+            writer.write("  </g>\n");
+
+            // Y-axis label
+            double yLabelX = ytx + yPerpX * (tickLength + labelOffset);
+            double yLabelY = yty + yPerpY * (tickLength + labelOffset);
+            writer.write(String.format(Locale.US,
+                    "  <g transform=\"translate(%.2f,%.2f)\" stroke=\"none\" fill=\"black\" font-family=\"Arial\" font-size=\"12.00\" text-anchor=\"middle\">\n",
+                    yLabelX, yLabelY));
+            writer.write(String.format(Locale.US,
+                    "    <text><tspan font-family=\"Arial\">%.2g</tspan></text>\n",
+                    yValue));
+            writer.write("  </g>\n");
+
+            // Z-axis tick and label
+            Point3D zTick = new Point3D(
+                    origin.x() + t * (zEnd.x() - origin.x()),
+                    origin.y() + t * (zEnd.y() - origin.y()),
+                    origin.z() + t * (zEnd.z() - origin.z())
+            );
+            ViewTransform3D.Point2D zTickProj = viewTransform.project(zTick);
+            double ztx = mapProjectedX(zTickProj.x());
+            double zty = mapProjectedY(zTickProj.y());
+
+            writer.write(String.format(Locale.US,
+                    "  <g stroke=\"#000000\" stroke-width=\"1.0\" fill=\"none\">\n"));
+            writer.write(String.format(Locale.US,
+                    "    <path d=\"M %.2f,%.2f L %.2f,%.2f\"/>\n",
+                    ztx, zty, ztx + zPerpX * tickLength, zty + zPerpY * tickLength));
+            writer.write("  </g>\n");
+
+            // Z-axis label (use text-anchor="end" to align right and prevent clipping)
+            double zLabelX = ztx + zPerpX * (tickLength + labelOffset);
+            double zLabelY = zty + zPerpY * (tickLength + labelOffset);
+            writer.write(String.format(Locale.US,
+                    "  <g transform=\"translate(%.2f,%.2f)\" stroke=\"none\" fill=\"black\" font-family=\"Arial\" font-size=\"12.00\" text-anchor=\"end\">\n",
+                    zLabelX, zLabelY));
+            writer.write(String.format(Locale.US,
+                    "    <text><tspan font-family=\"Arial\">%.2g</tspan></text>\n",
+                    zValue));
+            writer.write("  </g>\n");
+        }
     }
 
     /**
@@ -1330,21 +1480,14 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
         int ptIndex = mapPointStyleToGpPt(markerStyle.pointStyle());
         double scale = markerStyle.size() / 4.0;
 
-        // Calculate bounding box for normalization
-        double xMin = Double.POSITIVE_INFINITY, xMax = Double.NEGATIVE_INFINITY;
-        double yMin = Double.POSITIVE_INFINITY, yMax = Double.NEGATIVE_INFINITY;
-        double zMin = Double.POSITIVE_INFINITY, zMax = Double.NEGATIVE_INFINITY;
-
-        for (Point3D p : surfacePlot.getPoints()) {
-            if (p.isFinite()) {
-                xMin = Math.min(xMin, p.x());
-                xMax = Math.max(xMax, p.x());
-                yMin = Math.min(yMin, p.y());
-                yMax = Math.max(yMax, p.y());
-                zMin = Math.min(zMin, p.z());
-                zMax = Math.max(zMax, p.z());
-            }
-        }
+        // Get data ranges from viewport
+        Viewport viewport = scene.getViewport();
+        double xMin = viewport.getXMin();
+        double xMax = viewport.getXMax();
+        double yMin = viewport.getYMin();
+        double yMax = viewport.getYMax();
+        double zMin = viewport.getZMin();
+        double zMax = viewport.getZMax();
 
         // Project all 3D points to 2D
         writer.write(String.format("<%s>\n", clipAttr.isEmpty() ? "g" : "g" + clipAttr));
@@ -1354,7 +1497,7 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
                 continue;
             }
 
-            // Normalize to [-1, 1] range for projection
+            // Normalize to [-1, 1] range for projection using viewport ranges
             double nx = 2.0 * (point3D.x() - xMin) / (xMax - xMin) - 1.0;
             double ny = 2.0 * (point3D.y() - yMin) / (yMax - yMin) - 1.0;
             double nz = 2.0 * (point3D.z() - zMin) / (zMax - zMin) - 1.0;
@@ -1386,21 +1529,14 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
             return;
         }
 
-        // Calculate bounding box for normalization
-        double xMin = Double.POSITIVE_INFINITY, xMax = Double.NEGATIVE_INFINITY;
-        double yMin = Double.POSITIVE_INFINITY, yMax = Double.NEGATIVE_INFINITY;
-        double zMin = Double.POSITIVE_INFINITY, zMax = Double.NEGATIVE_INFINITY;
-
-        for (Point3D p : points) {
-            if (p.isFinite()) {
-                xMin = Math.min(xMin, p.x());
-                xMax = Math.max(xMax, p.x());
-                yMin = Math.min(yMin, p.y());
-                yMax = Math.max(yMax, p.y());
-                zMin = Math.min(zMin, p.z());
-                zMax = Math.max(zMax, p.z());
-            }
-        }
+        // Get data ranges from viewport
+        Viewport viewport = scene.getViewport();
+        double xMin = viewport.getXMin();
+        double xMax = viewport.getXMax();
+        double yMin = viewport.getYMin();
+        double yMax = viewport.getYMax();
+        double zMin = viewport.getZMin();
+        double zMax = viewport.getZMax();
 
         // Project all points to 2D first
         List<ViewTransform3D.Point2D> projectedPoints = new ArrayList<>();
@@ -1410,7 +1546,7 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
                 continue;
             }
 
-            // Normalize to [-1, 1] range for projection
+            // Normalize to [-1, 1] range for projection using viewport ranges
             double nx = 2.0 * (point3D.x() - xMin) / (xMax - xMin) - 1.0;
             double ny = 2.0 * (point3D.y() - yMin) / (yMax - yMin) - 1.0;
             double nz = 2.0 * (point3D.z() - zMin) / (zMax - zMin) - 1.0;
@@ -1467,16 +1603,18 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
     private double mapProjectedX(double x) {
         // Map normalized x [-1, 1] to screen coordinates
         // Center the plot in the viewport
+        // Use 4/7 scaling ratio matching C gnuplot (graph3d.c:538)
         double center = (plotLeft + plotRight) / 2.0;
-        double width = (plotRight - plotLeft) / 2.0;
+        double width = ((plotRight - plotLeft) * 4.0) / 7.0;  // C gnuplot uses 4/7
         return center + x * width;
     }
 
     private double mapProjectedY(double y) {
         // Map normalized y [-1, 1] to screen coordinates
         // Note: SVG y-axis is inverted (top=0, bottom=height)
+        // Use 4/7 scaling ratio matching C gnuplot (graph3d.c:539)
         double center = (plotTop + plotBottom) / 2.0;
-        double height = (plotBottom - plotTop) / 2.0;
+        double height = ((plotBottom - plotTop) * 4.0) / 7.0;  // C gnuplot uses 4/7
         return center - y * height;  // Invert y-axis
     }
 

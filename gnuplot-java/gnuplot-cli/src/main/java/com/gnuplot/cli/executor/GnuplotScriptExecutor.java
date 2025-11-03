@@ -655,9 +655,18 @@ public class GnuplotScriptExecutor implements CommandVisitor {
             zMin = 0; zMax = 1;
         }
 
-        // For 3D, we use a simple viewport based on projected coordinates
-        // The actual 3D→2D projection is handled in SvgRenderer
-        Viewport viewport = Viewport.of2D(xMin, xMax, yMin, yMax);
+        // Round axis ranges to "nice" values like C gnuplot does
+        // C gnuplot rounds to clean decimal values (e.g., [0.0084, 0.99] becomes [0, 1])
+        xMin = roundAxisMin(xMin);
+        xMax = roundAxisMax(xMax);
+        yMin = roundAxisMin(yMin);
+        yMax = roundAxisMax(yMax);
+        zMin = roundAxisMin(zMin);
+        zMax = roundAxisMax(zMax);
+
+        // Use rounded data ranges for viewport
+        // The 3D→2D projection will normalize to [-1, 1] internally, but axis labels should show rounded ranges
+        Viewport viewport = Viewport.of3D(xMin, xMax, yMin, yMax, zMin, zMax);
 
         // Build scene
         // Note: 3D plots don't use 2D borders - axes are part of the 3D scene
@@ -696,6 +705,35 @@ public class GnuplotScriptExecutor implements CommandVisitor {
         }
 
         scenes.add(sceneBuilder.build());
+    }
+
+    /**
+     * Rounds axis minimum to a "nice" value (floor to nice increment).
+     * Mimics C gnuplot's axis range rounding behavior.
+     */
+    private double roundAxisMin(double value) {
+        if (value >= 0) {
+            return 0.0;  // Non-negative values round down to 0
+        }
+        // For negative values, round down to next integer or 0.5 increment
+        double absValue = Math.abs(value);
+        if (absValue <= 0.5) return -0.5;
+        if (absValue <= 1.0) return -1.0;
+        return Math.floor(value);
+    }
+
+    /**
+     * Rounds axis maximum to a "nice" value (ceiling to nice increment).
+     * Mimics C gnuplot's axis range rounding behavior.
+     */
+    private double roundAxisMax(double value) {
+        if (value <= 0) {
+            return 0.0;  // Non-positive values round up to 0
+        }
+        // For positive values, round up to next integer or 0.5 increment
+        if (value <= 0.5) return 0.5;
+        if (value <= 1.0) return 1.0;
+        return Math.ceil(value);
     }
 
     /**
