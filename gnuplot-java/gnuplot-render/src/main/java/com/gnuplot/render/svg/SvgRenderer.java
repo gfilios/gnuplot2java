@@ -323,6 +323,10 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
         double zMin = viewport.getZMin();
         double zMax = viewport.getZMax();
 
+        // Calculate actual data Z range (before ticslevel adjustment)
+        // If zMin is negative (due to ticslevel), the data range starts at 0
+        double zDataMin = (zMin < 0) ? 0 : zMin;
+
         // Define 3D axis endpoints in normalized coordinates [-1, 1]
         Point3D origin = new Point3D(-1, -1, -1);
         Point3D xEnd = new Point3D(1, -1, -1);
@@ -437,9 +441,7 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
         // Note: zMin from viewport is already the visual minimum (includes ticslevel offset)
         double ticslevel = 0.5;  // TODO: get from command parser
 
-        // Calculate actual data Z range (before ticslevel adjustment)
-        // If zMin is negative (due to ticslevel), the data range starts at 0
-        double zDataMin = (zMin < 0) ? 0 : zMin;
+        // zDataMin already calculated above for base plane positioning
         double zDataMax = zMax;
         double zDataRange = zDataMax - zDataMin;
 
@@ -1523,6 +1525,7 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
             }
 
             // Normalize to [-1, 1] range for projection using viewport ranges
+            // This includes the ticslevel offset in zMin
             double nx = 2.0 * (point3D.x() - xMin) / (xMax - xMin) - 1.0;
             double ny = 2.0 * (point3D.y() - yMin) / (yMax - yMin) - 1.0;
             double nz = 2.0 * (point3D.z() - zMin) / (zMax - zMin) - 1.0;
