@@ -56,7 +56,7 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
 
         // Calculate plot bounds (scene dimensions minus margins)
         // For 3D plots, use larger left margin to accommodate Z-axis labels
-        boolean is3D = viewport.is3D();
+        boolean is3D = viewport != null && viewport.is3D();
         this.plotLeft = is3D ? 100 : MARGIN_LEFT;  // 100px for 3D (matching C gnuplot ~107px)
         this.plotRight = scene.getWidth() - MARGIN_RIGHT;
         this.plotTop = MARGIN_TOP;
@@ -327,11 +327,40 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
         // If zMin is negative (due to ticslevel), the data range starts at 0
         double zDataMin = (zMin < 0) ? 0 : zMin;
 
+        // Determine which corners to use for each axis based on view rotation
+        // This matches C gnuplot's setup_3d_box_corners() logic
+        // Reference: gnuplot-c/src/graph3d.c:setup_3d_box_corners()
+        double surfaceRotZ = 30.0; // TODO: read from script file
+
+        // Setup corners based on rotation (matches C gnuplot algorithm)
+        int quadrant = (int)(surfaceRotZ / 90);
+
+        double zaxisX, zaxisY, rightX, rightY;
+
+        // Determine X coordinates (from quadrant Z-rotation)
+        if (((quadrant + 1) & 2) != 0) {
+            zaxisX = 1;   // X_AXIS.max
+            rightX = -1;  // X_AXIS.min
+        } else {
+            zaxisX = -1;  // X_AXIS.min
+            rightX = 1;   // X_AXIS.max
+        }
+
+        // Determine Y coordinates (from quadrant Z-rotation)
+        if ((quadrant & 2) != 0) {
+            zaxisY = 1;   // Y_AXIS.max
+            rightY = -1;  // Y_AXIS.min
+        } else {
+            zaxisY = -1;  // Y_AXIS.min
+            rightY = 1;   // Y_AXIS.max
+        }
+
         // Define 3D axis endpoints in normalized coordinates [-1, 1]
-        Point3D origin = new Point3D(-1, -1, -1);
-        Point3D xEnd = new Point3D(1, -1, -1);
-        Point3D yEnd = new Point3D(-1, 1, -1);
-        Point3D zEnd = new Point3D(-1, -1, 1);
+        // Z-axis starts at (zaxisX, zaxisY) corner
+        Point3D origin = new Point3D(zaxisX, zaxisY, -1);
+        Point3D xEnd = new Point3D(rightX, zaxisY, -1);
+        Point3D yEnd = new Point3D(zaxisX, rightY, -1);
+        Point3D zEnd = new Point3D(zaxisX, zaxisY, 1);
 
         // Project to 2D
         ViewTransform3D.Point2D originProj = viewTransform.project(origin);
@@ -1517,6 +1546,15 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
         double zMin = viewport.getZMin();
         double zMax = viewport.getZMax();
 
+        // Calculate actual data Z range (not the visual range with ticslevel)
+        // The viewport Z range includes ticslevel: zMinVisual = zDataMin - (zDataMax - zDataMin) * ticslevel
+        // Solving for zDataMin: zDataMin = (zMin + zMax * ticslevel) / (1 + ticslevel)
+        // C gnuplot's map_z3d uses floor_z1 (data minimum) for normalization
+        // Reference: gnuplot-c/src/util3d.c:map_z3d() and graph3d.c:673
+        double ticslevel = 0.5;
+        double zDataMax = zMax;  // zMax is already the data maximum
+        double zDataMin = (zMin + zMax * ticslevel) / (1.0 + ticslevel);
+
         // Project all 3D points to 2D
         writer.write(String.format("<%s>\n", clipAttr.isEmpty() ? "g" : "g" + clipAttr));
 
@@ -1525,11 +1563,12 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
                 continue;
             }
 
-            // Normalize to [-1, 1] range for projection using viewport ranges
-            // This includes the ticslevel offset in zMin
+            // Normalize to [-1, 1] range for projection using DATA ranges (not visual ranges)
+            // Matches C gnuplot's map_x3d, map_y3d, map_z3d which use data min/max, not visual ranges
+            // Reference: gnuplot-c/src/util3d.c:map_z3d() uses (z - floor_z1)*zscale3d
             double nx = 2.0 * (point3D.x() - xMin) / (xMax - xMin) - 1.0;
             double ny = 2.0 * (point3D.y() - yMin) / (yMax - yMin) - 1.0;
-            double nz = 2.0 * (point3D.z() - zMin) / (zMax - zMin) - 1.0;
+            double nz = 2.0 * (point3D.z() - zDataMin) / (zDataMax - zDataMin) - 1.0;
             Point3D normalized = new Point3D(nx, ny, nz);
 
             // Project to 2D
@@ -1567,6 +1606,15 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
         double zMin = viewport.getZMin();
         double zMax = viewport.getZMax();
 
+        // Calculate actual data Z range (not the visual range with ticslevel)
+        // The viewport Z range includes ticslevel: zMinVisual = zDataMin - (zDataMax - zDataMin) * ticslevel
+        // Solving for zDataMin: zDataMin = (zMin + zMax * ticslevel) / (1 + ticslevel)
+        // C gnuplot's map_z3d uses floor_z1 (data minimum) for normalization
+        // Reference: gnuplot-c/src/util3d.c:map_z3d() and graph3d.c:673
+        double ticslevel = 0.5;
+        double zDataMax = zMax;  // zMax is already the data maximum
+        double zDataMin = (zMin + zMax * ticslevel) / (1.0 + ticslevel);
+
         // Project all points to 2D first
         List<ViewTransform3D.Point2D> projectedPoints = new ArrayList<>();
         for (Point3D point3D : points) {
@@ -1575,10 +1623,12 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
                 continue;
             }
 
-            // Normalize to [-1, 1] range for projection using viewport ranges
+            // Normalize to [-1, 1] range for projection using DATA ranges (not visual ranges)
+            // Matches C gnuplot's map_x3d, map_y3d, map_z3d which use data min/max, not visual ranges
+            // Reference: gnuplot-c/src/util3d.c:map_z3d() uses (z - floor_z1)*zscale3d
             double nx = 2.0 * (point3D.x() - xMin) / (xMax - xMin) - 1.0;
             double ny = 2.0 * (point3D.y() - yMin) / (yMax - yMin) - 1.0;
-            double nz = 2.0 * (point3D.z() - zMin) / (zMax - zMin) - 1.0;
+            double nz = 2.0 * (point3D.z() - zDataMin) / (zDataMax - zDataMin) - 1.0;
             Point3D normalized = new Point3D(nx, ny, nz);
 
             // Project to 2D
@@ -1631,20 +1681,21 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
 
     private double mapProjectedX(double x) {
         // Map normalized x [-1, 1] to screen coordinates
-        // Center the plot in the viewport
-        // Use 4/7 scaling ratio matching C gnuplot (graph3d.c:538)
-        double center = (plotLeft + plotRight) / 2.0;
-        double width = ((plotRight - plotLeft) * 4.0) / 7.0;  // C gnuplot uses 4/7
-        return center + x * width;
+        // Matches C gnuplot's TERMCOORD macro: xvar = (v->x * xscaler) + xmiddle
+        // Reference: gnuplot-c/src/graph3d.c:538-539 and util3d.h:TERMCOORD
+        double xscaler = (plotRight - plotLeft) * 4.0 / 7.0;  // 4/7 viewport width
+        double xmiddle = (plotLeft + plotRight) / 2.0;
+        return x * xscaler + xmiddle;
     }
 
     private double mapProjectedY(double y) {
         // Map normalized y [-1, 1] to screen coordinates
+        // Matches C gnuplot's TERMCOORD macro: yvar = (v->y * yscaler) + ymiddle
         // Note: SVG y-axis is inverted (top=0, bottom=height)
-        // Use 4/7 scaling ratio matching C gnuplot (graph3d.c:539)
-        double center = (plotTop + plotBottom) / 2.0;
-        double height = ((plotBottom - plotTop) * 4.0) / 7.0;  // C gnuplot uses 4/7
-        return center - y * height;  // Invert y-axis
+        // Reference: gnuplot-c/src/graph3d.c:538-539 and util3d.h:TERMCOORD
+        double yscaler = (plotBottom - plotTop) * 4.0 / 7.0;  // 4/7 viewport height
+        double ymiddle = (plotTop + plotBottom) / 2.0;
+        return ymiddle - y * yscaler;  // Invert y-axis for SVG
     }
 
     /**

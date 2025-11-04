@@ -32,13 +32,17 @@ public class ViewTransform3D {
 
     /**
      * Default gnuplot view (60, 30 degrees).
-     * Horizontal rotation adjusted by -90° to match C gnuplot axis positioning.
-     * Scale set to 1.0 - viewport scaling is handled by SvgRenderer's mapProjectedX/Y
-     * which use 4/7 ratio matching C gnuplot (graph3d.c:538-539).
+     * Matches C gnuplot's "set view 60,30" command with coordinate adjustments.
+     * C gnuplot: rotX=60°, rotZ=30°
+     * Java: rotX is negated in project() to compensate for SVG Y-axis direction.
+     *       rotZ=30° is used directly.
+     *       Axis corner positioning is handled by SvgRenderer.setup3DBoxCorners().
+     * Scale adjusted to match C gnuplot visual output.
+     * Additional viewport scaling is handled by SvgRenderer's mapProjectedX/Y.
      * Z-scale (ticslevel) set to 0.5 matching C gnuplot default.
      */
     public static ViewTransform3D gnuplotDefault() {
-        return new ViewTransform3D(60, -60, 1.0, 0.5);  // Scale 1.0, viewport scaling in mapProjectedX/Y
+        return new ViewTransform3D(60, 30, 1.0, 0.5);
     }
 
     /**
@@ -62,7 +66,7 @@ public class ViewTransform3D {
         double z1 = z;
 
         // Apply rotation around X-axis (vertical rotation)
-        // Note: Negate rotation to match gnuplot's coordinate system
+        // Negate rotX to match SVG coordinate system (Y-axis inverted)
         double cosX = Math.cos(-rotX);
         double sinX = Math.sin(-rotX);
         double x2 = x1;
