@@ -32,17 +32,23 @@
 
 ### Known Issues & Active Work
 
-**Priority 1 - Cosmetic Issues:**
-1. **3D Y-Axis Positioning** ([Analysis](3D_YAXIS_POSITIONING_ANALYSIS.md))
-   - Plot appears vertically offset (too low) by ~90-140px
-   - Root cause: Java uses 1/2 viewport scaling, C uses **4/7 ≈ 0.571**
-   - Fix: Update `mapProjectedX/Y()` in [SvgRenderer.java:1637-1643](gnuplot-java/gnuplot-render/src/main/java/com/gnuplot/render/svg/SvgRenderer.java#L1637-L1643)
-   - **Recommended Solution:** Change scaling from `/ 2.0` to `* 4.0 / 7.0`
+**Priority 1 - Missing Features:**
+1. **Impulse Lines** - Not implemented for 2D/3D (affects simple.dem plot 4)
+   - See [BACKLOG_IMPULSES_POINTS.md](BACKLOG_IMPULSES_POINTS.md)
+   - Estimated: 2-3 hours
 
-**Priority 2 - Missing Features:**
-2. **Impulse Lines** - Not implemented for 2D/3D (affects simple.dem plot 4)
-3. **Y/Z Tick Labels** - 3D axes missing labels
-4. **Legend Positioning** - 45px horizontal offset in 3D plots
+**Priority 2 - Minor Cosmetic Issues:**
+2. **Legend Positioning** - 45px horizontal offset in 3D plots (scatter.dem)
+   - Cosmetic only, does not affect functionality
+   - Estimated: 30-60 minutes
+
+**Recently Completed:**
+- ✅ **3D Y-Axis Positioning** (Fixed 2025-11-03, commit 0759a997)
+  - Implemented 4/7 scaling ratio matching C gnuplot
+  - [SvgRenderer.java:1637-1647](gnuplot-java/gnuplot-render/src/main/java/com/gnuplot/render/svg/SvgRenderer.java#L1637-L1647)
+- ✅ **Y/Z Tick Labels** (Already implemented)
+  - All 3D axes have tick marks and labels
+  - 33 labels rendered correctly
 
 ---
 
@@ -310,19 +316,21 @@ outputs/                         # Generated SVG/PNG files
 
 ### To Fix Current Issues (Quick Wins)
 
-1. **3D Y-Axis Positioning** (30 min)
-   - Change `mapProjectedY()` scaling from `/2.0` to `*4.0/7.0`
-   - Matches C gnuplot's `graph3d.c:538-539` algorithm
-   - File: [SvgRenderer.java:1637-1643](gnuplot-java/gnuplot-render/src/main/java/com/gnuplot/render/svg/SvgRenderer.java#L1637-L1643)
-
-2. **Y/Z Tick Labels** (1-2 hours)
-   - Port C axis label rendering from `graphics.c:axis_output_tics()`
-   - Add to `render3DAxes()` in SvgRenderer
-
-3. **Impulse Lines** (2-3 hours)
-   - Implement "with impulses" style
+1. **Impulse Lines** (2-3 hours) ⭐ **TOP PRIORITY**
+   - Implement "with impulses" style for 2D and 3D
    - Vertical lines from baseline to data point
+   - Affects simple.dem plot 4 and scatter.dem
    - See [BACKLOG_IMPULSES_POINTS.md](BACKLOG_IMPULSES_POINTS.md)
+   - C code reference: `graphics.c` and `graph3d.c`
+
+2. **Legend Positioning Fine-tuning** (30-60 min)
+   - Fix 45px horizontal offset in 3D plots
+   - Cosmetic improvement for scatter.dem
+   - File: [SvgRenderer.java](gnuplot-java/gnuplot-render/src/main/java/com/gnuplot/render/svg/SvgRenderer.java)
+
+3. **Number Format Matching** (30 min)
+   - Match C gnuplot's number formatting (`-1` vs `-1.0`)
+   - Low priority, cosmetic only
 
 ### To Add New Demos
 
