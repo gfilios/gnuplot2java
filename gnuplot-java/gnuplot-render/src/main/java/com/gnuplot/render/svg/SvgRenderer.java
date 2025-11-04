@@ -462,7 +462,7 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
             // For Z-axis: all ticks in data range should have labels
             boolean zTickBelowZero = false;
 
-            // X-axis tick and label
+            // X-axis tick and label (only on front bottom edge)
             Point3D xTick = new Point3D(
                     origin.x() + t * (xEnd.x() - origin.x()),
                     origin.y() + t * (xEnd.y() - origin.y()),
@@ -490,7 +490,7 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
                     xValue));
             writer.write("  </g>\n");
 
-            // Y-axis tick and label
+            // Y-axis tick and label (only on left bottom edge)
             Point3D yTick = new Point3D(
                     origin.x() + t * (yEnd.x() - origin.x()),
                     origin.y() + t * (yEnd.y() - origin.y()),
@@ -518,9 +518,10 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
                     yValue));
             writer.write("  </g>\n");
 
-            // Z-axis tick and label
+            // Z-axis tick and label (only on left front edge)
             // Map data Z value to parameter along visual Z-axis geometry
             double tZ = (zDataValue - zMin) / (zMax - zMin);
+
             Point3D zTick = new Point3D(
                     origin.x() + tZ * (zEnd.x() - origin.x()),
                     origin.y() + tZ * (zEnd.y() - origin.y()),

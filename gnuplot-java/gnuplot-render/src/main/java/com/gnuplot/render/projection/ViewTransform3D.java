@@ -33,11 +33,11 @@ public class ViewTransform3D {
     /**
      * Default gnuplot view (60, 30 degrees).
      * Horizontal rotation adjusted by -90° to match C gnuplot axis positioning.
-     * Scale reduced to fit rotated view in viewport.
+     * Scale reduced to fit rotated view within image bounds.
      * Z-scale (ticslevel) set to 0.5 matching C gnuplot default.
      */
     public static ViewTransform3D gnuplotDefault() {
-        return new ViewTransform3D(60, -60, 0.7, 0.5);  // ticslevel default is 0.5 in C gnuplot
+        return new ViewTransform3D(60, -60, 0.6, 0.5);  // Reduced scale to prevent overflow
     }
 
     /**
