@@ -54,12 +54,32 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
         this.viewport = scene.getViewport();
         this.writer = new OutputStreamWriter(output, StandardCharsets.UTF_8);
 
-        // Calculate plot bounds (scene dimensions minus margins)
-        // For 3D plots, use larger left margin to accommodate Z-axis labels
+        // Calculate plot bounds following C gnuplot's algorithm (graph3d.c:369-530)
+        // C gnuplot for 800x600 with no custom margins:
+        // xleft = h_char * 2 + h_tic ≈ 7*2 + 5 = 19
+        // xright = xsize * xmax - h_char * 2 - h_tic ≈ 800 - 7*2 - 5 = 781
+        // ybot = v_char * 2.5 + 1 ≈ 13*2.5 + 1 = 34
+        // ytop = ysize * ymax - v_char * (titlelin + 1.5) - 1 ≈ 600 - 13*2.5 - 1 = 567
+
         boolean is3D = viewport != null && viewport.is3D();
-        this.plotLeft = is3D ? 100 : MARGIN_LEFT;  // 100px for 3D (matching C gnuplot ~107px)
-        this.plotRight = scene.getWidth() - MARGIN_RIGHT;
-        this.plotTop = MARGIN_TOP;
+
+        if (is3D) {
+            // Match C gnuplot's 3D plot bounds calculation
+            // Assuming h_char≈7, h_tic≈5, v_char≈13 for standard terminal
+            int h_char = 7;
+            int h_tic = 5;
+            int v_char = 13;
+            int titleLines = scene.getTitle() != null && !scene.getTitle().isEmpty() ? 1 : 0;
+
+            this.plotLeft = h_char * 2 + h_tic;  // ≈ 19
+            this.plotRight = scene.getWidth() - h_char * 2 - h_tic;  // ≈ 781
+            this.plotTop = v_char * (titleLines + 2);  // ≈ 39 with title, 26 without
+        } else {
+            // 2D plots use simpler margins
+            this.plotLeft = MARGIN_LEFT;
+            this.plotRight = scene.getWidth() - MARGIN_RIGHT;
+            this.plotTop = MARGIN_TOP;
+        }
 
         // Check if there's a bottom margin legend that needs extra space
         // C gnuplot reduces plot area height when legend is in bottom margin
@@ -78,7 +98,14 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
             }
         }
 
-        this.plotBottom = scene.getHeight() - MARGIN_BOTTOM - bottomMarginAdjustment;
+        if (is3D) {
+            // Match C gnuplot: ybot = v_char * 2.5 + 1
+            int v_char = 13;
+            int ybot = (int)(v_char * 2.5 + 1);  // ≈ 34
+            this.plotBottom = scene.getHeight() - ybot - bottomMarginAdjustment;
+        } else {
+            this.plotBottom = scene.getHeight() - MARGIN_BOTTOM - bottomMarginAdjustment;
+        }
 
         try {
             writeSvgHeader();
@@ -312,7 +339,6 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
      * Creates X, Y, Z axes with tick marks and labels.
      */
     private void render3DAxes() throws IOException {
-        ViewTransform3D viewTransform = ViewTransform3D.gnuplotDefault();
         Viewport viewport = scene.getViewport();
 
         // Get axis ranges from viewport
@@ -355,28 +381,33 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
             rightY = 1;   // Y_AXIS.max
         }
 
-        // Define 3D axis endpoints in normalized coordinates [-1, 1]
+        // Define 3D axis endpoints in data coordinates (not normalized)
+        // Convert normalized [-1, 1] coordinates to actual data coordinates
         // Z-axis starts at (zaxisX, zaxisY) corner
-        Point3D origin = new Point3D(zaxisX, zaxisY, -1);
-        Point3D xEnd = new Point3D(rightX, zaxisY, -1);
-        Point3D yEnd = new Point3D(zaxisX, rightY, -1);
-        Point3D zEnd = new Point3D(zaxisX, zaxisY, 1);
+        double originDataX = zaxisX < 0 ? xMin : xMax;
+        double originDataY = zaxisY < 0 ? yMin : yMax;
+        double xEndDataX = rightX < 0 ? xMin : xMax;
+        double yEndDataY = rightY < 0 ? yMin : yMax;
 
-        // Project to 2D
-        ViewTransform3D.Point2D originProj = viewTransform.project(origin);
-        ViewTransform3D.Point2D xProj = viewTransform.project(xEnd);
-        ViewTransform3D.Point2D yProj = viewTransform.project(yEnd);
-        ViewTransform3D.Point2D zProj = viewTransform.project(zEnd);
+        Point3D origin = new Point3D(originDataX, originDataY, zMin);
+        Point3D xEnd = new Point3D(xEndDataX, originDataY, zMin);
+        Point3D yEnd = new Point3D(originDataX, yEndDataY, zMin);
+        Point3D zEnd = new Point3D(originDataX, originDataY, zMax);
 
-        // Map to screen coordinates
-        double ox = mapProjectedX(originProj.x());
-        double oy = mapProjectedY(originProj.y());
-        double xx = mapProjectedX(xProj.x());
-        double xy = mapProjectedY(xProj.y());
-        double yx = mapProjectedX(yProj.x());
-        double yy = mapProjectedY(yProj.y());
-        double zx = mapProjectedX(zProj.x());
-        double zy = mapProjectedY(zProj.y());
+        // Project to 2D using the same pipeline as points
+        double[] originScreen = map3d_to_screen(origin.x(), origin.y(), origin.z(), viewport);
+        double[] xEndScreen = map3d_to_screen(xEnd.x(), xEnd.y(), xEnd.z(), viewport);
+        double[] yEndScreen = map3d_to_screen(yEnd.x(), yEnd.y(), yEnd.z(), viewport);
+        double[] zEndScreen = map3d_to_screen(zEnd.x(), zEnd.y(), zEnd.z(), viewport);
+
+        double ox = originScreen[0];
+        double oy = originScreen[1];
+        double xx = xEndScreen[0];
+        double xy = xEndScreen[1];
+        double yx = yEndScreen[0];
+        double yy = yEndScreen[1];
+        double zx = zEndScreen[0];
+        double zy = zEndScreen[1];
 
         // Calculate axis directions for perpendicular tick marks
         double xDirX = xx - ox;
@@ -409,23 +440,23 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
         // A 3D box has 8 corners and 12 edges
         // We need to project all 8 corners and draw the edges
 
-        // Define all 8 corners of the 3D box
+        // Define all 8 corners of the 3D box in data coordinates
         Point3D[] corners = new Point3D[8];
-        corners[0] = new Point3D(-1, -1, -1);  // origin
-        corners[1] = new Point3D(1, -1, -1);   // x-end
-        corners[2] = new Point3D(-1, 1, -1);   // y-end
-        corners[3] = new Point3D(1, 1, -1);    // x+y corner (bottom)
-        corners[4] = new Point3D(-1, -1, 1);   // z-end (from origin)
-        corners[5] = new Point3D(1, -1, 1);    // x+z corner
-        corners[6] = new Point3D(-1, 1, 1);    // y+z corner
-        corners[7] = new Point3D(1, 1, 1);     // top corner
+        corners[0] = new Point3D(xMin, yMin, zMin);  // origin
+        corners[1] = new Point3D(xMax, yMin, zMin);   // x-end
+        corners[2] = new Point3D(xMin, yMax, zMin);   // y-end
+        corners[3] = new Point3D(xMax, yMax, zMin);    // x+y corner (bottom)
+        corners[4] = new Point3D(xMin, yMin, zMax);   // z-end (from origin)
+        corners[5] = new Point3D(xMax, yMin, zMax);    // x+z corner
+        corners[6] = new Point3D(xMin, yMax, zMax);    // y+z corner
+        corners[7] = new Point3D(xMax, yMax, zMax);     // top corner
 
-        // Project all corners to 2D
+        // Project all corners to 2D using the same pipeline as points
         double[][] screenCorners = new double[8][2];
         for (int i = 0; i < 8; i++) {
-            ViewTransform3D.Point2D proj = viewTransform.project(corners[i]);
-            screenCorners[i][0] = mapProjectedX(proj.x());
-            screenCorners[i][1] = mapProjectedY(proj.y());
+            double[] screen = map3d_to_screen(corners[i].x(), corners[i].y(), corners[i].z(), viewport);
+            screenCorners[i][0] = screen[0];
+            screenCorners[i][1] = screen[1];
         }
 
         writer.write(String.format(Locale.US,
@@ -497,9 +528,9 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
                     origin.y() + t * (xEnd.y() - origin.y()),
                     origin.z() + t * (xEnd.z() - origin.z())
             );
-            ViewTransform3D.Point2D xTickProj = viewTransform.project(xTick);
-            double xtx = mapProjectedX(xTickProj.x());
-            double xty = mapProjectedY(xTickProj.y());
+            double[] xTickScreen = map3d_to_screen(xTick.x(), xTick.y(), xTick.z(), viewport);
+            double xtx = xTickScreen[0];
+            double xty = xTickScreen[1];
 
             writer.write(String.format(Locale.US,
                     "  <g stroke=\"#000000\" stroke-width=\"1.0\" fill=\"none\">\n"));
@@ -525,9 +556,9 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
                     origin.y() + t * (yEnd.y() - origin.y()),
                     origin.z() + t * (yEnd.z() - origin.z())
             );
-            ViewTransform3D.Point2D yTickProj = viewTransform.project(yTick);
-            double ytx = mapProjectedX(yTickProj.x());
-            double yty = mapProjectedY(yTickProj.y());
+            double[] yTickScreen = map3d_to_screen(yTick.x(), yTick.y(), yTick.z(), viewport);
+            double ytx = yTickScreen[0];
+            double yty = yTickScreen[1];
 
             writer.write(String.format(Locale.US,
                     "  <g stroke=\"#000000\" stroke-width=\"1.0\" fill=\"none\">\n"));
@@ -556,9 +587,9 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
                     origin.y() + tZ * (zEnd.y() - origin.y()),
                     origin.z() + tZ * (zEnd.z() - origin.z())
             );
-            ViewTransform3D.Point2D zTickProj = viewTransform.project(zTick);
-            double ztx = mapProjectedX(zTickProj.x());
-            double zty = mapProjectedY(zTickProj.y());
+            double[] zTickScreen = map3d_to_screen(zTick.x(), zTick.y(), zTick.z(), viewport);
+            double ztx = zTickScreen[0];
+            double zty = zTickScreen[1];
 
             writer.write(String.format(Locale.US,
                     "  <g stroke=\"#000000\" stroke-width=\"1.0\" fill=\"none\">\n"));
@@ -1526,6 +1557,10 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
         }
     }
 
+    /**
+     * NEW IMPLEMENTATION - Direct 1:1 translation from C gnuplot
+     * Based on graph3d.c and util3d.c
+     */
     private void renderPointCloud3D(SurfacePlot3D surfacePlot, ViewTransform3D viewTransform, String clipAttr) throws IOException {
         // Get marker style or use default
         MarkerStyle markerStyle = surfacePlot.getMarkerStyle();
@@ -1539,23 +1574,8 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
 
         // Get data ranges from viewport
         Viewport viewport = scene.getViewport();
-        double xMin = viewport.getXMin();
-        double xMax = viewport.getXMax();
-        double yMin = viewport.getYMin();
-        double yMax = viewport.getYMax();
-        double zMin = viewport.getZMin();
-        double zMax = viewport.getZMax();
 
-        // Calculate actual data Z range (not the visual range with ticslevel)
-        // The viewport Z range includes ticslevel: zMinVisual = zDataMin - (zDataMax - zDataMin) * ticslevel
-        // Solving for zDataMin: zDataMin = (zMin + zMax * ticslevel) / (1 + ticslevel)
-        // C gnuplot's map_z3d uses floor_z1 (data minimum) for normalization
-        // Reference: gnuplot-c/src/util3d.c:map_z3d() and graph3d.c:673
-        double ticslevel = 0.5;
-        double zDataMax = zMax;  // zMax is already the data maximum
-        double zDataMin = (zMin + zMax * ticslevel) / (1.0 + ticslevel);
-
-        // Project all 3D points to 2D
+        // Project all 3D points to 2D using C gnuplot algorithm
         writer.write(String.format("<%s>\n", clipAttr.isEmpty() ? "g" : "g" + clipAttr));
 
         for (Point3D point3D : surfacePlot.getPoints()) {
@@ -1563,24 +1583,10 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
                 continue;
             }
 
-            // Normalize to [-1, 1] range for projection using DATA ranges (not visual ranges)
-            // Matches C gnuplot's map_x3d, map_y3d, map_z3d which use data min/max, not visual ranges
-            // Reference: gnuplot-c/src/util3d.c:map_z3d() uses (z - floor_z1)*zscale3d
-            double nx = 2.0 * (point3D.x() - xMin) / (xMax - xMin) - 1.0;
-            double ny = 2.0 * (point3D.y() - yMin) / (yMax - yMin) - 1.0;
-            double nz = 2.0 * (point3D.z() - zDataMin) / (zDataMax - zDataMin) - 1.0;
-            Point3D normalized = new Point3D(nx, ny, nz);
-
-            // Project to 2D
-            ViewTransform3D.Point2D projected = viewTransform.project(normalized);
-
-            if (!projected.isFinite()) {
-                continue;
-            }
-
-            // Map to screen coordinates
-            double x = mapProjectedX(projected.x());
-            double y = mapProjectedY(projected.y());
+            // Call NEW map3d_to_screen method that follows C code exactly
+            double[] screenCoords = map3d_to_screen(point3D.x(), point3D.y(), point3D.z(), viewport);
+            double x = screenCoords[0];
+            double y = screenCoords[1];
 
             // Render point marker using <use> reference (like C gnuplot)
             writer.write(String.format(Locale.US,
@@ -1591,6 +1597,180 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
         writer.write("</g>\n");
     }
 
+    /**
+     * Direct translation of C gnuplot's 3D to 2D projection pipeline.
+     * Follows these C functions step-by-step:
+     * 1. map_x3d(), map_y3d(), map_z3d() - util3d.c:1025-1065
+     * 2. map3d_xyz() - util3d.c:844-875 (transformation matrix multiplication)
+     * 3. TERMCOORD macro - util3d.h:64-72 (screen coordinate mapping)
+     *
+     * @param x data x coordinate
+     * @param y data y coordinate
+     * @param z data z coordinate
+     * @param viewport axis ranges
+     * @return [screenX, screenY]
+     */
+    private double[] map3d_to_screen(double x, double y, double z, Viewport viewport) {
+        // STEP 1: Extract axis ranges (graph3d.c:840-843)
+        double X_AXIS_min = viewport.getXMin();
+        double X_AXIS_max = viewport.getXMax();
+        double Y_AXIS_min = viewport.getYMin();
+        double Y_AXIS_max = viewport.getYMax();
+        double floor_z = viewport.getZMin();  // This already includes ticslevel
+        double ceiling_z = viewport.getZMax();
+
+        // STEP 2: Calculate scale factors (graph3d.c:841-843)
+        // C: xscale3d = 2.0 / (X_AXIS.max - X_AXIS.min);
+        double surface_zscale = 1.0;  // Default value from graph3d.c:107
+        double xscale3d = 2.0 / (X_AXIS_max - X_AXIS_min);
+        double yscale3d = 2.0 / (Y_AXIS_max - Y_AXIS_min);
+        double zscale3d = 2.0 / (ceiling_z - floor_z) * surface_zscale;
+
+        // STEP 3: Calculate center offsets (graph3d.c:853-872)
+        // C: xcenter3d = ycenter3d = zcenter3d = 0.0;
+        // C: zcenter3d = -(ceiling_z - floor_z) / 2.0 * zscale3d + 1;
+        double xcenter3d = 0.0;
+        double ycenter3d = 0.0;
+        double zcenter3d = -(ceiling_z - floor_z) / 2.0 * zscale3d + 1.0;
+
+        // STEP 4: Normalize to [-1, 1] (util3d.c:1025-1065)
+        // C: map_x3d: return ((x - xaxis->min)*xscale3d + xcenter3d - 1.0);
+        // C: map_y3d: return ((y - yaxis->min)*yscale3d + ycenter3d - 1.0);
+        // C: map_z3d: return ((z - floor_z1)*zscale3d + zcenter3d - 1.0);
+        double V0 = (x - X_AXIS_min) * xscale3d + xcenter3d - 1.0;
+        double V1 = (y - Y_AXIS_min) * yscale3d + ycenter3d - 1.0;
+        double V2 = (z - floor_z) * zscale3d + zcenter3d - 1.0;
+        // V3 = 1.0 (homogeneous coordinate, implicit in calculation)
+
+        // STEP 5: Get transformation matrix (graph3d.c:742-750)
+        // C: mat_rot_z(surface_rot_z, trans_mat);  // surface_rot_z = 30
+        // C: mat_rot_x(surface_rot_x, mat);         // surface_rot_x = 60
+        // C: mat_mult(trans_mat, trans_mat, mat);
+        // C: mat_scale(surface_scale / 2.0, surface_scale / 2.0, surface_scale / 2.0, mat);
+        // C: mat_mult(trans_mat, trans_mat, mat);
+
+        double surface_rot_z = 30.0;  // Default from "set view 60,30"
+        double surface_rot_x = 60.0;
+        double surface_scale = 1.0;   // Default from graph3d.c:106
+
+        double[][] trans_mat = compute_transformation_matrix(surface_rot_x, surface_rot_z, surface_scale);
+
+        // STEP 6: Apply transformation matrix (util3d.c:858-866)
+        // C: Res[] = V[] * trans_mat[][] (uses row-vectors)
+        // C: for (i = 0; i < 4; i++) {
+        // C:     Res[i] = trans_mat[3][i];  // V[3] is always 1.
+        // C:     Res[i] += V[0] * trans_mat[0][i];
+        // C:     Res[i] += V[1] * trans_mat[1][i];
+        // C:     Res[i] += V[2] * trans_mat[2][i];
+        // C: }
+        double[] Res = new double[4];
+        for (int i = 0; i < 4; i++) {
+            Res[i] = trans_mat[3][i];  // V3 is always 1.0
+            Res[i] += V0 * trans_mat[0][i];
+            Res[i] += V1 * trans_mat[1][i];
+            Res[i] += V2 * trans_mat[2][i];
+        }
+
+        // STEP 7: Homogeneous divide (util3d.c:868-871)
+        // C: if (Res[3] == 0) Res[3] = 1.0e-5;
+        // C: out->x = Res[0] / Res[3];
+        // C: out->y = Res[1] / Res[3];
+        if (Res[3] == 0) {
+            Res[3] = 1.0e-5;
+        }
+        double vx = Res[0] / Res[3];
+        double vy = Res[1] / Res[3];
+
+        // STEP 8: TERMCOORD - Convert to screen coordinates (util3d.h:64-69, graph3d.c:534-539)
+        // C: xmiddle = (plot_bounds.xright + plot_bounds.xleft) / 2;
+        // C: ymiddle = (plot_bounds.ytop + plot_bounds.ybot) / 2;
+        // C: xscaler = ((plot_bounds.xright - plot_bounds.xleft) * 4L) / 7L;
+        // C: yscaler = ((plot_bounds.ytop - plot_bounds.ybot) * 4L) / 7L;
+        // C: xvar = (((v)->x * xscaler)) + xmiddle;
+        // C: yvar = (((v)->y * yscaler)) + ymiddle;
+
+        double xmiddle = (plotRight + plotLeft) / 2.0;
+        double ymiddle = (plotTop + plotBottom) / 2.0;
+        double xscaler = ((plotRight - plotLeft) * 4.0) / 7.0;
+        double yscaler = ((plotBottom - plotTop) * 4.0) / 7.0;
+
+        double screenX = (vx * xscaler) + xmiddle;
+        double screenY = ymiddle - (vy * yscaler);  // Invert Y for SVG coordinate system
+
+        return new double[]{screenX, screenY};
+    }
+
+    /**
+     * Compute 4x4 transformation matrix exactly as C gnuplot does.
+     * C code: graph3d.c:742-750
+     */
+    private double[][] compute_transformation_matrix(double rot_x_deg, double rot_z_deg, double scale) {
+        // Convert to radians
+        double rot_x = Math.toRadians(rot_x_deg);
+        double rot_z = Math.toRadians(rot_z_deg);
+
+        // Identity matrix
+        double[][] mat = {
+            {1, 0, 0, 0},
+            {0, 1, 0, 0},
+            {0, 0, 1, 0},
+            {0, 0, 0, 1}
+        };
+
+        // Step 1: Rotate around Z axis (horizontal rotation)
+        // C: mat_rot_z(surface_rot_z, trans_mat);
+        double[][] rot_z_mat = {
+            {Math.cos(rot_z), -Math.sin(rot_z), 0, 0},
+            {Math.sin(rot_z), Math.cos(rot_z), 0, 0},
+            {0, 0, 1, 0},
+            {0, 0, 0, 1}
+        };
+        mat = matrixMultiply(mat, rot_z_mat);
+
+        // Step 2: Rotate around X axis (vertical rotation)
+        // C: mat_rot_x(surface_rot_x, mat);
+        // Use rot_x directly (SVG Y inversion handled in TERMCOORD step)
+        double[][] rot_x_mat = {
+            {1, 0, 0, 0},
+            {0, Math.cos(rot_x), -Math.sin(rot_x), 0},
+            {0, Math.sin(rot_x), Math.cos(rot_x), 0},
+            {0, 0, 0, 1}
+        };
+        mat = matrixMultiply(mat, rot_x_mat);
+
+        // Step 3: Scale
+        // C: mat_scale(surface_scale / 2.0, surface_scale / 2.0, surface_scale / 2.0, mat);
+        double s = scale / 2.0;
+        double[][] scale_mat = {
+            {s, 0, 0, 0},
+            {0, s, 0, 0},
+            {0, 0, s, 0},
+            {0, 0, 0, 1}
+        };
+        mat = matrixMultiply(mat, scale_mat);
+
+        return mat;
+    }
+
+    /**
+     * 4x4 matrix multiplication: result = m1 * m2
+     */
+    private double[][] matrixMultiply(double[][] m1, double[][] m2) {
+        double[][] result = new double[4][4];
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                result[i][j] = 0;
+                for (int k = 0; k < 4; k++) {
+                    result[i][j] += m1[i][k] * m2[k][j];
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * NEW IMPLEMENTATION - Direct 1:1 translation from C gnuplot for wireframe rendering
+     */
     private void renderWireframe3D(SurfacePlot3D surfacePlot, ViewTransform3D viewTransform, String clipAttr) throws IOException {
         List<Point3D> points = surfacePlot.getPoints();
         if (points.isEmpty()) {
@@ -1599,41 +1779,18 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
 
         // Get data ranges from viewport
         Viewport viewport = scene.getViewport();
-        double xMin = viewport.getXMin();
-        double xMax = viewport.getXMax();
-        double yMin = viewport.getYMin();
-        double yMax = viewport.getYMax();
-        double zMin = viewport.getZMin();
-        double zMax = viewport.getZMax();
 
-        // Calculate actual data Z range (not the visual range with ticslevel)
-        // The viewport Z range includes ticslevel: zMinVisual = zDataMin - (zDataMax - zDataMin) * ticslevel
-        // Solving for zDataMin: zDataMin = (zMin + zMax * ticslevel) / (1 + ticslevel)
-        // C gnuplot's map_z3d uses floor_z1 (data minimum) for normalization
-        // Reference: gnuplot-c/src/util3d.c:map_z3d() and graph3d.c:673
-        double ticslevel = 0.5;
-        double zDataMax = zMax;  // zMax is already the data maximum
-        double zDataMin = (zMin + zMax * ticslevel) / (1.0 + ticslevel);
-
-        // Project all points to 2D first
-        List<ViewTransform3D.Point2D> projectedPoints = new ArrayList<>();
+        // Project all points to 2D using NEW C-based algorithm
+        List<double[]> screenPoints = new ArrayList<>();
         for (Point3D point3D : points) {
             if (!point3D.isFinite()) {
-                projectedPoints.add(null);
+                screenPoints.add(null);
                 continue;
             }
 
-            // Normalize to [-1, 1] range for projection using DATA ranges (not visual ranges)
-            // Matches C gnuplot's map_x3d, map_y3d, map_z3d which use data min/max, not visual ranges
-            // Reference: gnuplot-c/src/util3d.c:map_z3d() uses (z - floor_z1)*zscale3d
-            double nx = 2.0 * (point3D.x() - xMin) / (xMax - xMin) - 1.0;
-            double ny = 2.0 * (point3D.y() - yMin) / (yMax - yMin) - 1.0;
-            double nz = 2.0 * (point3D.z() - zDataMin) / (zDataMax - zDataMin) - 1.0;
-            Point3D normalized = new Point3D(nx, ny, nz);
-
-            // Project to 2D
-            ViewTransform3D.Point2D projected = viewTransform.project(normalized);
-            projectedPoints.add(projected.isFinite() ? projected : null);
+            // Use NEW map3d_to_screen method
+            double[] screenCoords = map3d_to_screen(point3D.x(), point3D.y(), point3D.z(), viewport);
+            screenPoints.add(screenCoords);
         }
 
         // Render as connected polyline through all points
@@ -1643,16 +1800,15 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
         StringBuilder pathData = new StringBuilder();
         boolean firstPoint = true;
 
-        for (int i = 0; i < projectedPoints.size(); i++) {
-            ViewTransform3D.Point2D projected = projectedPoints.get(i);
-            if (projected == null) {
+        for (double[] screenCoords : screenPoints) {
+            if (screenCoords == null) {
                 // Break in data - start new path segment
                 firstPoint = true;
                 continue;
             }
 
-            double x = mapProjectedX(projected.x());
-            double y = mapProjectedY(projected.y());
+            double x = screenCoords[0];
+            double y = screenCoords[1];
 
             if (firstPoint) {
                 if (pathData.length() > 0) {
