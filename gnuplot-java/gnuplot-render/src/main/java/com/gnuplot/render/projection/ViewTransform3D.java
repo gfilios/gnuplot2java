@@ -33,11 +33,12 @@ public class ViewTransform3D {
     /**
      * Default gnuplot view (60, 30 degrees).
      * Horizontal rotation adjusted by -90° to match C gnuplot axis positioning.
-     * Scale reduced to fit rotated view within image bounds.
+     * Scale set to 1.0 - viewport scaling is handled by SvgRenderer's mapProjectedX/Y
+     * which use 4/7 ratio matching C gnuplot (graph3d.c:538-539).
      * Z-scale (ticslevel) set to 0.5 matching C gnuplot default.
      */
     public static ViewTransform3D gnuplotDefault() {
-        return new ViewTransform3D(60, -60, 0.6, 0.5);  // Reduced scale to prevent overflow
+        return new ViewTransform3D(60, -60, 1.0, 0.5);  // Scale 1.0, viewport scaling in mapProjectedX/Y
     }
 
     /**
