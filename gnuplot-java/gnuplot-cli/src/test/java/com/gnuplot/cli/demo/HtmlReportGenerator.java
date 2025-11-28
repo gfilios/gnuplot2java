@@ -100,10 +100,21 @@ public class HtmlReportGenerator {
         html.append("    .test-details { display: none; padding: 1.5rem; background: #fafafa; ");
         html.append("                    border-top: 1px solid #e0e0e0; }\n");
         html.append("    .test-details.expanded { display: block; }\n");
-        html.append("    .comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1rem; ");
+        html.append("    .comparison { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-top: 1rem; ");
         html.append("                  align-items: start; }\n");
-        html.append("    .comparison-grid { display: grid; grid-template-columns: 1fr 1fr 1.5fr; gap: 1.5rem; ");
+        html.append("    .comparison-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1rem; ");
         html.append("                       align-items: start; }\n");
+        html.append("    .metrics-bar { display: flex; gap: 1rem; align-items: center; margin: 0.75rem 0; padding: 0.5rem 1rem; ");
+        html.append("                   background: #f8f9fa; border-radius: 6px; flex-wrap: wrap; }\n");
+        html.append("    .metric { display: flex; align-items: center; gap: 0.5rem; }\n");
+        html.append("    .metric-label { font-size: 0.85rem; color: #666; }\n");
+        html.append("    .metric-value { font-weight: bold; font-size: 1rem; }\n");
+        html.append("    .similarity-badge { padding: 0.25rem 0.75rem; border-radius: 20px; font-weight: bold; font-size: 0.9rem; }\n");
+        html.append("    .similarity-excellent { background: #d4edda; color: #155724; }\n");
+        html.append("    .similarity-good { background: #fff3cd; color: #856404; }\n");
+        html.append("    .similarity-poor { background: #f8d7da; color: #721c24; }\n");
+        html.append("    .diff-image-container { border: 2px solid #dc3545; border-radius: 4px; padding: 0.5rem; background: #fff5f5; }\n");
+        html.append("    .diff-image-container h4 { color: #dc3545; }\n");
         html.append("    .comparison-text { background: #f8f9fa; padding: 1rem; border-radius: 6px; ");
         html.append("                       max-height: 600px; overflow-y: auto; }\n");
         html.append("    .comparison-text h4 { margin-bottom: 0.75rem; color: #667eea; }\n");
@@ -146,6 +157,22 @@ public class HtmlReportGenerator {
         html.append("    .lightbox img { max-width: 95%; max-height: 95%; object-fit: contain; ");
         html.append("                    box-shadow: 0 0 30px rgba(255,255,255,0.3); }\n");
         html.append("    .svg-output img { cursor: zoom-in; }\n");
+        // Structural comparison styles
+        html.append("    .structural-comparison { background: #f8f9fa; border-radius: 6px; padding: 1rem; margin-top: 1rem; }\n");
+        html.append("    .structural-comparison h4 { color: #667eea; margin-bottom: 0.75rem; }\n");
+        html.append("    .structural-badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 20px; ");
+        html.append("                        font-weight: bold; font-size: 0.9rem; margin-right: 0.5rem; }\n");
+        html.append("    .structural-equivalent { background: #d4edda; color: #155724; }\n");
+        html.append("    .structural-different { background: #f8d7da; color: #721c24; }\n");
+        html.append("    .metrics-table { width: 100%; border-collapse: collapse; margin-top: 0.75rem; font-size: 0.9rem; }\n");
+        html.append("    .metrics-table th, .metrics-table td { padding: 0.5rem; text-align: left; border-bottom: 1px solid #ddd; }\n");
+        html.append("    .metrics-table th { background: #e9ecef; font-weight: bold; }\n");
+        html.append("    .metrics-table .match { color: #28a745; font-weight: bold; }\n");
+        html.append("    .metrics-table .mismatch { color: #dc3545; font-weight: bold; }\n");
+        html.append("    .diff-list { margin-top: 0.75rem; padding: 0; list-style: none; }\n");
+        html.append("    .diff-list li { padding: 0.5rem; margin-bottom: 0.25rem; border-radius: 4px; }\n");
+        html.append("    .diff-list li.critical { background: #f8d7da; color: #721c24; }\n");
+        html.append("    .diff-list li.minor { background: #fff3cd; color: #856404; }\n");
     }
 
     private static void appendSummary(StringBuilder html, List<TestResultRepository.DemoTestRecord> records) {
@@ -263,7 +290,130 @@ public class HtmlReportGenerator {
         html.append("        <div class=\"plot-comparison-row\" style=\"margin-top: 1.5rem;\">\n");
         html.append("          <h5 style=\"color: #667eea;\">Plot ").append(plotNumber).append("</h5>\n");
 
-        // Images side-by-side (2 columns)
+        // Load structural metrics if available
+        String structMetricsFilename = plotNumber == 1 ?
+                "structural_metrics_" + baseName + ".txt" :
+                String.format("structural_metrics_%s_plot%d.txt", baseName, plotNumber);
+        Path structMetricsPath = runDirectory.resolve(structMetricsFilename);
+        java.util.Map<String, String> structMetrics = new java.util.HashMap<>();
+        java.util.List<String> criticalDiffs = new java.util.ArrayList<>();
+        java.util.List<String> minorDiffs = new java.util.ArrayList<>();
+        if (Files.exists(structMetricsPath)) {
+            try {
+                String metricsContent = Files.readString(structMetricsPath);
+                for (String line : metricsContent.split("\n")) {
+                    int eqIdx = line.indexOf('=');
+                    if (eqIdx > 0) {
+                        String key = line.substring(0, eqIdx);
+                        String value = line.substring(eqIdx + 1);
+                        if (key.startsWith("criticalDiff")) {
+                            criticalDiffs.add(value);
+                        } else if (key.startsWith("minorDiff")) {
+                            minorDiffs.add(value);
+                        } else {
+                            structMetrics.put(key, value);
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                // Ignore parsing errors
+            }
+        }
+
+        // Load pixel metrics if available
+        String metricsFilename = plotNumber == 1 ?
+                "metrics_" + baseName + ".txt" :
+                String.format("metrics_%s_plot%d.txt", baseName, plotNumber);
+        Path metricsPath = runDirectory.resolve(metricsFilename);
+        double similarity = -1;
+        int differentPixels = 0;
+        int totalPixels = 0;
+        if (Files.exists(metricsPath)) {
+            try {
+                String metricsContent = Files.readString(metricsPath);
+                for (String line : metricsContent.split("\n")) {
+                    if (line.startsWith("similarity=")) {
+                        similarity = Double.parseDouble(line.substring("similarity=".length()));
+                    } else if (line.startsWith("differentPixels=")) {
+                        differentPixels = Integer.parseInt(line.substring("differentPixels=".length()));
+                    } else if (line.startsWith("totalPixels=")) {
+                        totalPixels = Integer.parseInt(line.substring("totalPixels=".length()));
+                    }
+                }
+            } catch (Exception e) {
+                // Ignore parsing errors
+            }
+        }
+
+        // Structural comparison section (primary)
+        if (!structMetrics.isEmpty()) {
+            boolean isEquivalent = "true".equals(structMetrics.get("structurallyEquivalent"));
+            String structBadgeClass = isEquivalent ? "structural-equivalent" : "structural-different";
+            String structIcon = isEquivalent ? "✅" : "🔴";
+            String structText = isEquivalent ? "Structurally Equivalent" : "Structural Differences Found";
+
+            html.append("          <div class=\"structural-comparison\">\n");
+            html.append("            <h4>📐 Structural Analysis</h4>\n");
+            html.append("            <span class=\"structural-badge ").append(structBadgeClass).append("\">");
+            html.append(structIcon).append(" ").append(structText).append("</span>\n");
+
+            // Metrics table
+            html.append("            <table class=\"metrics-table\">\n");
+            html.append("              <tr><th>Element</th><th>C Gnuplot</th><th>Java Gnuplot</th><th>Match</th></tr>\n");
+
+            appendMetricRow(html, "X-Axis Ticks", structMetrics.get("cXAxisTicks"), structMetrics.get("javaXAxisTicks"));
+            appendMetricRow(html, "Y-Axis Ticks", structMetrics.get("cYAxisTicks"), structMetrics.get("javaYAxisTicks"));
+            appendMetricRow(html, "Data Series", structMetrics.get("cDataSeries"), structMetrics.get("javaDataSeries"));
+            appendMetricRow(html, "Total Data Points", structMetrics.get("cTotalDataPoints"), structMetrics.get("javaTotalDataPoints"));
+            appendMetricRow(html, "Text Elements", structMetrics.get("cTextCount"), structMetrics.get("javaTextCount"));
+
+            html.append("            </table>\n");
+
+            // Critical differences list
+            if (!criticalDiffs.isEmpty()) {
+                html.append("            <ul class=\"diff-list\">\n");
+                for (String diff : criticalDiffs) {
+                    html.append("              <li class=\"critical\">🔴 ").append(escapeHtml(diff)).append("</li>\n");
+                }
+                html.append("            </ul>\n");
+            }
+
+            // Minor differences list
+            if (!minorDiffs.isEmpty()) {
+                html.append("            <ul class=\"diff-list\">\n");
+                for (String diff : minorDiffs) {
+                    html.append("              <li class=\"minor\">🟡 ").append(escapeHtml(diff)).append("</li>\n");
+                }
+                html.append("            </ul>\n");
+            }
+
+            html.append("          </div>\n");
+        }
+
+        // Pixel metrics bar (secondary)
+        if (similarity >= 0) {
+            String badgeClass = similarity > 0.95 ? "similarity-excellent" :
+                               similarity > 0.80 ? "similarity-good" : "similarity-poor";
+            String statusIcon = similarity > 0.95 ? "🟢" : similarity > 0.80 ? "🟡" : "🔴";
+            html.append("          <div class=\"metrics-bar\">\n");
+            html.append("            <div class=\"metric\">\n");
+            html.append("              <span class=\"metric-label\">Pixel Similarity:</span>\n");
+            html.append("              <span class=\"similarity-badge ").append(badgeClass).append("\">");
+            html.append(statusIcon).append(" ").append(String.format("%.1f%%", similarity * 100));
+            html.append("</span>\n");
+            html.append("            </div>\n");
+            html.append("            <div class=\"metric\">\n");
+            html.append("              <span class=\"metric-label\">Different pixels:</span>\n");
+            html.append("              <span class=\"metric-value\">").append(String.format("%,d", differentPixels)).append("</span>\n");
+            html.append("            </div>\n");
+            html.append("            <div class=\"metric\">\n");
+            html.append("              <span class=\"metric-label\">Total pixels:</span>\n");
+            html.append("              <span class=\"metric-value\">").append(String.format("%,d", totalPixels)).append("</span>\n");
+            html.append("            </div>\n");
+            html.append("          </div>\n");
+        }
+
+        // Images side-by-side (3 columns: C, Java, Diff)
         html.append("          <div class=\"comparison\">\n");
 
         // C Gnuplot output for this plot
@@ -315,6 +465,24 @@ public class HtmlReportGenerator {
                 .append(Files.size(javaSvgFile)).append(" bytes</p>\n");
         } else {
             html.append("              <p style=\"color: #dc3545;\">No output generated</p>\n");
+        }
+        html.append("            </div>\n");
+
+        // Diff image (third column)
+        String diffFilename = plotNumber == 1 ?
+                "diff_" + baseName + ".png" :
+                String.format("diff_%s_plot%d.png", baseName, plotNumber);
+        Path diffImagePath = runDirectory.resolve("outputs").resolve(diffFilename);
+        html.append("            <div class=\"implementation diff-image-container\">\n");
+        html.append("              <h4>🔍 Difference</h4>\n");
+        if (Files.exists(diffImagePath)) {
+            Path relativeDiffPath = runDirectory.relativize(diffImagePath);
+            html.append("              <div class=\"svg-output\">\n");
+            html.append("                <img src=\"").append(relativeDiffPath).append("\" alt=\"Difference plot ").append(plotNumber).append("\">\n");
+            html.append("              </div>\n");
+            html.append("              <p style=\"margin-top: 0.5rem; font-size: 0.85rem; color: #666;\">Red areas show differences</p>\n");
+        } else {
+            html.append("              <p style=\"color: #999;\">No diff image available</p>\n");
         }
         html.append("            </div>\n");
 
@@ -386,6 +554,22 @@ public class HtmlReportGenerator {
                    .replace(">", "&gt;")
                    .replace("\"", "&quot;")
                    .replace("'", "&#39;");
+    }
+
+    private static void appendMetricRow(StringBuilder html, String label, String cValue, String javaValue) {
+        if (cValue == null) cValue = "N/A";
+        if (javaValue == null) javaValue = "N/A";
+
+        boolean match = cValue.equals(javaValue);
+        String matchClass = match ? "match" : "mismatch";
+        String matchIcon = match ? "✅" : "❌";
+
+        html.append("              <tr>\n");
+        html.append("                <td>").append(label).append("</td>\n");
+        html.append("                <td>").append(cValue).append("</td>\n");
+        html.append("                <td>").append(javaValue).append("</td>\n");
+        html.append("                <td class=\"").append(matchClass).append("\">").append(matchIcon).append("</td>\n");
+        html.append("              </tr>\n");
     }
 
     private static String formatLogContent(String log) {

@@ -31,7 +31,8 @@ class DemoTestSuite {
 
     private static DemoTestRunner testRunner;
     private static TestResultRepository repository;
-    private static ComparisonRunner comparisonRunner;
+    private static PixelComparator pixelComparator;
+    private static SvgStructuralComparator structuralComparator;
 
     @BeforeAll
     static void setup() throws IOException {
@@ -47,10 +48,8 @@ class DemoTestSuite {
                 .build();
 
         repository = new TestResultRepository(REPOSITORY_ROOT);
-        comparisonRunner = new ComparisonRunner(REPOSITORY_ROOT);
-
-        // Print comparison tools status
-        System.out.println("\n" + comparisonRunner.getToolsStatus());
+        pixelComparator = new PixelComparator();
+        structuralComparator = new SvgStructuralComparator();
     }
 
     @org.junit.jupiter.api.AfterAll
@@ -72,23 +71,116 @@ class DemoTestSuite {
      */
     private static void runAndSaveComparison(Path cSvgOutput, Path javaSvgOutput,
                                             Path runDir, String demoName, int plotNumber) throws IOException {
-        ComparisonRunner.ComparisonResult compResult =
-                comparisonRunner.runComparison(cSvgOutput, javaSvgOutput);
+        // Run structural comparison (primary comparison method)
+        SvgStructuralComparator.StructuralComparisonResult structResult = null;
+        try {
+            structResult = structuralComparator.compare(cSvgOutput, javaSvgOutput);
+        } catch (Exception e) {
+            System.out.println("  ⚠️  Structural comparison failed: " + e.getMessage());
+        }
+
+        // Run pixel comparison with amplified diff (secondary/visual comparison)
+        PixelComparator.PixelComparisonResult pixelResult = null;
+        try {
+            pixelResult = pixelComparator.compareWithAmplifiedDiff(cSvgOutput, javaSvgOutput);
+        } catch (Exception e) {
+            System.out.println("  ⚠️  Pixel comparison failed: " + e.getMessage());
+        }
 
         // Print summary for this plot
         System.out.println("Plot " + plotNumber + ":");
-        if (compResult.hasIssues()) {
-            System.out.println("  ⚠️  " + compResult.getCriticalIssues().size() + " issues found");
-        } else {
-            System.out.println("  ✅ No critical issues");
+
+        // Print structural comparison results (primary)
+        if (structResult != null) {
+            if (structResult.isStructurallyEquivalent()) {
+                System.out.println("  ✅ Structurally equivalent");
+            } else {
+                System.out.println("  🔴 Structural differences found:");
+                for (String diff : structResult.getCriticalDifferences()) {
+                    System.out.println("      • " + diff);
+                }
+            }
+            if (!structResult.getMinorDifferences().isEmpty()) {
+                System.out.println("  🟡 Minor differences:");
+                for (String diff : structResult.getMinorDifferences()) {
+                    System.out.println("      - " + diff);
+                }
+            }
         }
 
-        // Save comparison output to file with plot number
-        String filename = plotNumber == 1 ?
-                "comparison_" + demoName + ".txt" :
-                String.format("comparison_%s_plot%d.txt", demoName, plotNumber);
-        Path comparisonLog = runDir.resolve(filename);
-        Files.writeString(comparisonLog, compResult.getOutput());
+        // Print pixel comparison results
+        if (pixelResult != null) {
+            String similarityColor = pixelResult.getSimilarity() > 0.95 ? "🟢" :
+                                    pixelResult.getSimilarity() > 0.80 ? "🟡" : "🔴";
+            System.out.printf("  %s Pixel similarity: %.2f%% (%,d pixels differ)%n",
+                    similarityColor,
+                    pixelResult.getSimilarity() * 100,
+                    pixelResult.getDifferentPixels());
+
+            // Save diff image
+            String diffFilename = plotNumber == 1 ?
+                    "diff_" + demoName.replace(".dem", "") + ".png" :
+                    String.format("diff_%s_plot%d.png", demoName.replace(".dem", ""), plotNumber);
+            Path diffImagePath = runDir.resolve("outputs").resolve(diffFilename);
+            pixelComparator.saveDiffImage(pixelResult, diffImagePath);
+
+            // Save metrics to a JSON-like file for HTML report (use Locale.US for decimal point)
+            String metricsFilename = plotNumber == 1 ?
+                    "metrics_" + demoName.replace(".dem", "") + ".txt" :
+                    String.format("metrics_%s_plot%d.txt", demoName.replace(".dem", ""), plotNumber);
+            Path metricsPath = runDir.resolve(metricsFilename);
+            String metrics = String.format(java.util.Locale.US,
+                    "similarity=%.4f%ndifferentPixels=%d%ntotalPixels=%d%n",
+                    pixelResult.getSimilarity(),
+                    pixelResult.getDifferentPixels(),
+                    pixelResult.getTotalPixels());
+            Files.writeString(metricsPath, metrics);
+        }
+
+        // Save structural comparison to file
+        if (structResult != null) {
+            String structFilename = plotNumber == 1 ?
+                    "structural_" + demoName.replace(".dem", "") + ".txt" :
+                    String.format("structural_%s_plot%d.txt", demoName.replace(".dem", ""), plotNumber);
+            Path structPath = runDir.resolve(structFilename);
+            Files.writeString(structPath, structResult.toDetailedReport());
+
+            // Save structural metrics in key=value format for HTML report
+            String structMetricsFilename = plotNumber == 1 ?
+                    "structural_metrics_" + demoName.replace(".dem", "") + ".txt" :
+                    String.format("structural_metrics_%s_plot%d.txt", demoName.replace(".dem", ""), plotNumber);
+            Path structMetricsPath = runDir.resolve(structMetricsFilename);
+            StringBuilder structMetrics = new StringBuilder();
+            structMetrics.append("structurallyEquivalent=").append(structResult.isStructurallyEquivalent()).append("\n");
+            structMetrics.append("criticalDifferenceCount=").append(structResult.getCriticalDifferences().size()).append("\n");
+            structMetrics.append("minorDifferenceCount=").append(structResult.getMinorDifferences().size()).append("\n");
+
+            SvgStructuralComparator.SvgMetrics cMetrics = structResult.getCMetrics();
+            SvgStructuralComparator.SvgMetrics javaMetrics = structResult.getJavaMetrics();
+            structMetrics.append("cXAxisTicks=").append(cMetrics.getXAxisTickCount()).append("\n");
+            structMetrics.append("javaXAxisTicks=").append(javaMetrics.getXAxisTickCount()).append("\n");
+            structMetrics.append("cYAxisTicks=").append(cMetrics.getYAxisTickCount()).append("\n");
+            structMetrics.append("javaYAxisTicks=").append(javaMetrics.getYAxisTickCount()).append("\n");
+            structMetrics.append("cDataSeries=").append(cMetrics.getDataPointCounts().size()).append("\n");
+            structMetrics.append("javaDataSeries=").append(javaMetrics.getDataPointCounts().size()).append("\n");
+            structMetrics.append("cTotalDataPoints=").append(cMetrics.getTotalDataPoints()).append("\n");
+            structMetrics.append("javaTotalDataPoints=").append(javaMetrics.getTotalDataPoints()).append("\n");
+            structMetrics.append("cTextCount=").append(cMetrics.getTextCount()).append("\n");
+            structMetrics.append("javaTextCount=").append(javaMetrics.getTextCount()).append("\n");
+
+            // Save critical differences as numbered entries
+            int i = 0;
+            for (String diff : structResult.getCriticalDifferences()) {
+                structMetrics.append("criticalDiff").append(i++).append("=").append(diff).append("\n");
+            }
+            i = 0;
+            for (String diff : structResult.getMinorDifferences()) {
+                structMetrics.append("minorDiff").append(i++).append("=").append(diff).append("\n");
+            }
+
+            Files.writeString(structMetricsPath, structMetrics.toString());
+        }
+
     }
 
     /**
@@ -111,8 +203,7 @@ class DemoTestSuite {
         System.out.println("Java Gnuplot Success: " + result.isJavaExecutionSuccess());
 
         // Run comprehensive comparison if both outputs exist
-        if (comparisonRunner.areToolsAvailable() &&
-            result.isCExecutionSuccess() && result.isJavaExecutionSuccess()) {
+        if (result.isCExecutionSuccess() && result.isJavaExecutionSuccess()) {
 
             System.out.println("\n🔍 Running comprehensive comparison analysis...\n");
 
@@ -167,8 +258,7 @@ class DemoTestSuite {
         System.out.println("Java Gnuplot Success: " + result.isJavaExecutionSuccess());
 
         // Run comprehensive comparison if both outputs exist
-        if (comparisonRunner.areToolsAvailable() &&
-            result.isCExecutionSuccess() && result.isJavaExecutionSuccess()) {
+        if (result.isCExecutionSuccess() && result.isJavaExecutionSuccess()) {
 
             System.out.println("\n🔍 Running comprehensive comparison analysis...\n");
 
