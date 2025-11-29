@@ -112,6 +112,7 @@ public class SvgStructuralComparator {
 
         private int xAxisTickCount;
         private int yAxisTickCount;
+        private int markerCount;
         private List<String> axisLabels;
         private List<String> legendEntries;
         private List<Integer> dataPointCounts;
@@ -144,6 +145,9 @@ public class SvgStructuralComparator {
         public int getYAxisTickCount() { return yAxisTickCount; }
         public void setYAxisTickCount(int yAxisTickCount) { this.yAxisTickCount = yAxisTickCount; }
 
+        public int getMarkerCount() { return markerCount; }
+        public void setMarkerCount(int markerCount) { this.markerCount = markerCount; }
+
         public List<String> getAxisLabels() { return axisLabels; }
         public void setAxisLabels(List<String> axisLabels) { this.axisLabels = axisLabels; }
 
@@ -168,6 +172,7 @@ public class SvgStructuralComparator {
             sb.append("  Text elements: ").append(textCount).append("\n");
             sb.append("  X-axis ticks: ").append(xAxisTickCount).append("\n");
             sb.append("  Y-axis ticks: ").append(yAxisTickCount).append("\n");
+            sb.append("  Point markers: ").append(markerCount).append("\n");
             sb.append("  Axis labels: ").append(axisLabels).append("\n");
             sb.append("  Legend entries: ").append(legendEntries).append("\n");
             sb.append("  Data series: ").append(dataPointCounts.size()).append("\n");
@@ -325,6 +330,9 @@ public class SvgStructuralComparator {
 
         // Extract data point counts
         extractDataPointCounts(paths, polylines, metrics);
+
+        // Extract point marker count
+        metrics.setMarkerCount(extractMarkerCount(doc));
 
         // Extract title
         NodeList titles = doc.getElementsByTagName("title");
@@ -580,5 +588,39 @@ public class SvgStructuralComparator {
         } catch (NumberFormatException e) {
             return defaultValue;
         }
+    }
+
+    /**
+     * Count point markers from both <use> elements (C gnuplot style)
+     * and inline <path> elements with transform (legacy Java style).
+     * This ensures backward compatibility with older SVG outputs.
+     */
+    private int extractMarkerCount(Document doc) {
+        int count = 0;
+
+        // Count <use> elements referencing gpPt* markers (C gnuplot and new Java style)
+        NodeList uses = doc.getElementsByTagName("use");
+        for (int i = 0; i < uses.getLength(); i++) {
+            Element use = (Element) uses.item(i);
+            String href = use.getAttribute("xlink:href");
+            if (href == null || href.isEmpty()) {
+                href = use.getAttribute("href");
+            }
+            if (href != null && href.contains("gpPt")) {
+                count++;
+            }
+        }
+
+        // Count inline marker paths (legacy Java style with transform="translate(...) scale(...)")
+        NodeList paths = doc.getElementsByTagName("path");
+        for (int i = 0; i < paths.getLength(); i++) {
+            Element path = (Element) paths.item(i);
+            String transform = path.getAttribute("transform");
+            if (transform != null && transform.contains("translate") && transform.contains("scale")) {
+                count++;
+            }
+        }
+
+        return count;
     }
 }
