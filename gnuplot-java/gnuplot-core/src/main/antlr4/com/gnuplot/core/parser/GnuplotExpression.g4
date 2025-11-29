@@ -1,9 +1,5 @@
 grammar GnuplotExpression;
 
-@header {
-package com.gnuplot.core.parser;
-}
-
 /*
  * Gnuplot Expression Grammar
  *

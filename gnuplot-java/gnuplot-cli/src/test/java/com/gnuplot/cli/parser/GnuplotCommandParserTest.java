@@ -226,7 +226,8 @@ class GnuplotCommandParserTest {
 
         @SuppressWarnings("unchecked")
         java.util.Map<String, Object> settings = (java.util.Map<String, Object>) setCmd.getValue();
-        assertThat(settings.get("position")).isEqualTo("LEFT");
+        // "left" is stored as horizontal component
+        assertThat(settings.get("horizontal")).isEqualTo("left");
         assertThat(settings.get("showBorder")).isEqualTo(true);
     }
 
@@ -238,7 +239,8 @@ class GnuplotCommandParserTest {
         SetCommand setCmd = (SetCommand) result.getCommands().get(0);
         @SuppressWarnings("unchecked")
         java.util.Map<String, Object> settings = (java.util.Map<String, Object>) setCmd.getValue();
-        assertThat(settings.get("position")).isEqualTo("RIGHT");
+        // "right" is stored as horizontal component
+        assertThat(settings.get("horizontal")).isEqualTo("right");
         assertThat(settings.get("showBorder")).isEqualTo(false);
     }
 
@@ -250,7 +252,10 @@ class GnuplotCommandParserTest {
         SetCommand setCmd = (SetCommand) result.getCommands().get(0);
         @SuppressWarnings("unchecked")
         java.util.Map<String, Object> settings = (java.util.Map<String, Object>) setCmd.getValue();
-        assertThat(settings.get("position")).isEqualTo("BOTTOM_CENTER");
-        assertThat(settings.get("horizontal")).isEqualTo(true);
+        // "bmargin" is vertical, "center" is horizontal
+        assertThat(settings.get("vertical")).isEqualTo("bmargin");
+        assertThat(settings.get("horizontal")).isEqualTo("center");
+        // "horizontal" keyword sets layout direction (stored as boolean)
+        assertThat(settings.get("layout")).isEqualTo(true);
     }
 }
