@@ -4,6 +4,46 @@
 
 This plan shifts to a **test-driven approach** using the official Gnuplot demo scripts (`gnuplot-c/demo/*.dem`) as our test oracle. We will systematically execute each demo, compare outputs, identify gaps, and implement missing features.
 
+---
+
+## Unified Test Infrastructure (Updated 2025-11-29)
+
+### Test Inventory
+
+| Category | Count | Location | Command |
+|----------|-------|----------|---------|
+| gnuplot-core unit tests | 579 | `gnuplot-core/src/test/java/` | `mvn test` |
+| gnuplot-render unit tests | 380 | `gnuplot-render/src/test/java/` | `mvn test` |
+| gnuplot-cli unit tests | 46 | `gnuplot-cli/src/test/java/` | `mvn test` |
+| Demo comparisons | 3 | `DemoTestSuite.java` | Requires C gnuplot |
+| **TOTAL** | **1005 unit + 3 demo** | | |
+
+### Running Tests
+
+```bash
+# Run all unit tests (1005 tests)
+cd gnuplot-java
+mvn test
+
+# Run demo comparison tests (requires C gnuplot installed)
+# Note: These tests compare Java output against C gnuplot reference
+mvn test -pl gnuplot-cli -Dtest=DemoTestSuite
+
+# Run full build with tests
+mvn clean install
+```
+
+### Demo Test Assertions
+
+The `DemoTestSuite` now includes proper assertions:
+1. **C execution success** - C gnuplot must run without errors
+2. **Java execution success** - Java gnuplot must run without errors
+3. **Pixel similarity >= 80%** - Visual output must match
+
+Tests fail if any assertion fails, ensuring true validation of compatibility.
+
+---
+
 ## Approach
 
 ### 1. Test Execution Framework

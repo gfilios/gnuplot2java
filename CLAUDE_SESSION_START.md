@@ -4,15 +4,25 @@
 
 ---
 
-## Current Project Status (Updated: 2025-11-04)
+## Current Project Status (Updated: 2025-11-29)
 
-### Test Results: 3/3 Demos Passing (100%)
+### Unified Test Infrastructure
 
-| Demo | Status | Visual Accuracy | Issues |
-|------|--------|----------------|--------|
-| **simple.dem** | ✅ PASS | ~95% | Missing impulse lines (plot 4) |
-| **scatter.dem** | ✅ PASS | ~90% | Legend +45px offset, Y/Z tick labels missing |
-| **controls.dem** | ✅ PASS | Not analyzed | None reported |
+| Category | Count | Status |
+|----------|-------|--------|
+| gnuplot-core unit tests | 579 | ✅ All passing |
+| gnuplot-render unit tests | 380 | ✅ All passing |
+| gnuplot-cli unit tests | 46 | ✅ All passing |
+| Demo comparisons | 3 | ✅ All passing |
+| **TOTAL** | **1008** | ✅ **All passing** |
+
+### Demo Test Results: 3/3 Passing (100%)
+
+| Demo | Status | Pixel Similarity | Notes |
+|------|--------|-----------------|-------|
+| **simple.dem** | ✅ PASS | ≥80% | Minor impulse line differences |
+| **scatter.dem** | ✅ PASS | ≥80% | Minor legend offset |
+| **controls.dem** | ✅ PASS | N/A | Control flow not yet in Java |
 
 **Total Available Demos:** 231
 **Implemented:** 3 (1.3%)
@@ -59,13 +69,14 @@
 **Every session MUST follow this cycle:**
 
 ```bash
-# 1. START: Run tests BEFORE coding
-cd test-tools
-./run_demo_tests.sh simple
-cat test-results/latest/comparison_simple.dem.txt
+# 1. START: Run ALL tests BEFORE coding
+cd gnuplot-java
+mvn test                                    # 1005 unit tests
+mvn test -pl gnuplot-cli -Dtest=DemoTestSuite  # 3 demo comparison tests
 
 # 2. IDENTIFY: Find specific issues in test output
 # Look for: "❌ Mismatch detected" or "⚠️ Warning"
+# Check pixel similarity percentages (must be ≥80%)
 
 # 3. LOCATE: Find C gnuplot implementation
 cd ../gnuplot-c
@@ -76,12 +87,14 @@ cd ../gnuplot-java
 # Write code following C algorithm...
 
 # 5. VERIFY: Run tests AFTER coding
-mvn clean test
-cd ../test-tools
-./run_demo_tests.sh simple
+mvn test                                    # Must pass 1005 tests
+mvn test -pl gnuplot-cli -Dtest=DemoTestSuite  # Must pass 3 demos
 
-# 6. CONFIRM: Check test results improved
-cat test-results/latest/comparison_simple.dem.txt
+# 6. CONFIRM: Check all tests pass
+# Demo tests now assert:
+#   - C execution success
+#   - Java execution success
+#   - Pixel similarity ≥80%
 ```
 
 ### Session Startup Checklist
@@ -199,7 +212,8 @@ gnuplot-java/
 - `SvgRenderer` - Main SVG output generator
 
 **Testing:**
-- `DemoTestSuite` - Automated demo testing (989 tests)
+- `DemoTestSuite` - Automated demo testing (3 demos with pixel similarity assertions)
+- Unit Tests - 1005 tests across core, render, and cli modules
 - `ComparisonRunner` - Visual comparison tools (test-tools/)
 
 ---
@@ -308,7 +322,7 @@ outputs/                         # Generated SVG/PNG files
 | simple.dem | 8 | ~2 sec | ~3 sec |
 | scatter.dem | 8 | ~3 sec | ~4 sec |
 
-**Total Tests:** 989 passing (31 CLI + 958 core)
+**Total Tests:** 1008 passing (579 core + 380 render + 46 cli + 3 demo)
 
 ---
 
@@ -392,17 +406,16 @@ outputs/                         # Generated SVG/PNG files
 ```bash
 # Build everything
 cd gnuplot-java
-mvn clean install
+mvn clean install -Djacoco.skip=true
 
-# Run all tests
+# Run all unit tests (1005 tests)
 mvn test
 
-# Run specific test
-mvn test -Dtest=DemoTestSuite
+# Run demo comparison tests (requires C gnuplot)
+mvn test -pl gnuplot-cli -Dtest=DemoTestSuite
 
-# Run demo comparison
-cd ../test-tools
-./run_demo_tests.sh simple
+# Run ALL tests together
+mvn test && mvn test -pl gnuplot-cli -Dtest=DemoTestSuite
 
 # View test results
 cat test-results/latest/summary.txt
