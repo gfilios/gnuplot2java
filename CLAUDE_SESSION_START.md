@@ -410,7 +410,7 @@ cat test-results/latest/comparison_simple.dem.txt
 
 # Generate SVG from .dem file
 cd gnuplot-java
-java -jar gnuplot-cli/target/gnuplot-cli-1.0-SNAPSHOT-shaded.jar /path/to/file.dem
+java -jar gnuplot-cli/target/gnuplot-cli-1.0.0-SNAPSHOT-jar-with-dependencies.jar /path/to/file.dem
 
 # View generated SVG
 open /tmp/output.svg
