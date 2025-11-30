@@ -532,23 +532,44 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
             double xtx = xTickScreen[0];
             double xty = xTickScreen[1];
 
+            // X-axis tick mark on FRONT edge (like C gnuplot)
             writer.write(String.format(Locale.US,
-                    "  <g stroke=\"#000000\" stroke-width=\"1.0\" fill=\"none\">\n"));
+                    "<g fill=\"none\" color=\"black\" stroke=\"currentColor\" stroke-width=\"1.00\" stroke-linecap=\"butt\" stroke-linejoin=\"miter\">\n"));
             writer.write(String.format(Locale.US,
-                    "    <path d=\"M %.2f,%.2f L %.2f,%.2f\"/>\n",
+                    "\t<path stroke='black'  d='M%.2f,%.2f L%.2f,%.2f  '/></g>\n",
                     xtx, xty, xtx + xPerpX * tickLength, xty + xPerpY * tickLength));
-            writer.write("  </g>\n");
 
-            // X-axis label
+            // X-axis tick mark on BACK edge (paired tick) + label
+            // Back edge is at yEnd position for the same X value
+            Point3D xTickBack = new Point3D(
+                    yEnd.x() + t * (xMax - xMin),  // Move along X from yEnd
+                    yEnd.y(),
+                    yEnd.z()
+            );
+            double[] xTickBackScreen = map3d_to_screen(
+                    xMin + t * (xMax - xMin),  // X position
+                    yMax,                       // Y at max (back edge)
+                    zMin,                       // Z at base
+                    viewport);
+            double xtxBack = xTickBackScreen[0];
+            double xtyBack = xTickBackScreen[1];
+
+            writer.write(String.format(Locale.US,
+                    "<g fill=\"none\" color=\"black\" stroke=\"currentColor\" stroke-width=\"1.00\" stroke-linecap=\"butt\" stroke-linejoin=\"miter\">\n"));
+            writer.write(String.format(Locale.US,
+                    "\t<path stroke='black'  d='M%.2f,%.2f L%.2f,%.2f  '/>\t",
+                    xtxBack, xtyBack, xtxBack - xPerpX * tickLength, xtyBack - xPerpY * tickLength));
+
+            // X-axis label (attached to back edge tick, like C gnuplot)
             double xLabelX = xtx + xPerpX * (tickLength + labelOffset);
             double xLabelY = xty + xPerpY * (tickLength + labelOffset);
             writer.write(String.format(Locale.US,
-                    "  <g transform=\"translate(%.2f,%.2f)\" stroke=\"none\" fill=\"black\" font-family=\"Arial\" font-size=\"12.00\" text-anchor=\"middle\">\n",
+                    "<g transform=\"translate(%.2f,%.2f)\" stroke=\"none\" fill=\"black\" font-family=\"Arial\" font-size=\"12.00\"  text-anchor=\"middle\">\n",
                     xLabelX, xLabelY));
             writer.write(String.format(Locale.US,
-                    "    <text><tspan font-family=\"Arial\">%.2g</tspan></text>\n",
-                    xValue));
-            writer.write("  </g>\n");
+                    "\t\t<text><tspan font-family=\"Arial\" >%s</tspan></text>\n",
+                    format3DAxisLabel(xValue)));
+            writer.write("\t</g>\n</g>\n");
 
             // Y-axis tick and label (only on left bottom edge)
             Point3D yTick = new Point3D(
@@ -560,23 +581,39 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
             double ytx = yTickScreen[0];
             double yty = yTickScreen[1];
 
+            // Y-axis tick mark on LEFT edge (like C gnuplot)
             writer.write(String.format(Locale.US,
-                    "  <g stroke=\"#000000\" stroke-width=\"1.0\" fill=\"none\">\n"));
+                    "<g fill=\"none\" color=\"black\" stroke=\"currentColor\" stroke-width=\"1.00\" stroke-linecap=\"butt\" stroke-linejoin=\"miter\">\n"));
             writer.write(String.format(Locale.US,
-                    "    <path d=\"M %.2f,%.2f L %.2f,%.2f\"/>\n",
+                    "\t<path stroke='black'  d='M%.2f,%.2f L%.2f,%.2f  '/></g>\n",
                     ytx, yty, ytx + yPerpX * tickLength, yty + yPerpY * tickLength));
-            writer.write("  </g>\n");
 
-            // Y-axis label
-            double yLabelX = ytx + yPerpX * (tickLength + labelOffset);
-            double yLabelY = yty + yPerpY * (tickLength + labelOffset);
+            // Y-axis tick mark on RIGHT edge (paired tick) + label
+            // Right edge is at xEnd position for the same Y value
+            double[] yTickRightScreen = map3d_to_screen(
+                    xMax,                       // X at max (right edge)
+                    yMin + t * (yMax - yMin),  // Y position
+                    zMin,                       // Z at base
+                    viewport);
+            double ytxRight = yTickRightScreen[0];
+            double ytyRight = yTickRightScreen[1];
+
             writer.write(String.format(Locale.US,
-                    "  <g transform=\"translate(%.2f,%.2f)\" stroke=\"none\" fill=\"black\" font-family=\"Arial\" font-size=\"12.00\" text-anchor=\"middle\">\n",
+                    "<g fill=\"none\" color=\"black\" stroke=\"currentColor\" stroke-width=\"1.00\" stroke-linecap=\"butt\" stroke-linejoin=\"miter\">\n"));
+            writer.write(String.format(Locale.US,
+                    "\t<path stroke='black'  d='M%.2f,%.2f L%.2f,%.2f  '/>\t",
+                    ytxRight, ytyRight, ytxRight - yPerpX * tickLength, ytyRight - yPerpY * tickLength));
+
+            // Y-axis label (attached to right edge tick, like C gnuplot - text-anchor="start")
+            double yLabelX = ytxRight + 10;  // Offset to the right
+            double yLabelY = ytyRight;
+            writer.write(String.format(Locale.US,
+                    "<g transform=\"translate(%.2f,%.2f)\" stroke=\"none\" fill=\"black\" font-family=\"Arial\" font-size=\"12.00\"  text-anchor=\"start\">\n",
                     yLabelX, yLabelY));
             writer.write(String.format(Locale.US,
-                    "    <text><tspan font-family=\"Arial\">%.2g</tspan></text>\n",
-                    yValue));
-            writer.write("  </g>\n");
+                    "\t\t<text><tspan font-family=\"Arial\" >%s</tspan></text>\n",
+                    format3DAxisLabel(yValue)));
+            writer.write("\t</g>\n</g>\n");
 
             // Z-axis tick and label (only on left front edge)
             // Map data Z value to parameter along visual Z-axis geometry
@@ -591,12 +628,12 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
             double ztx = zTickScreen[0];
             double zty = zTickScreen[1];
 
+            // Z-axis tick mark (like C gnuplot - horizontal tick on left edge)
             writer.write(String.format(Locale.US,
-                    "  <g stroke=\"#000000\" stroke-width=\"1.0\" fill=\"none\">\n"));
+                    "<g fill=\"none\" color=\"black\" stroke=\"currentColor\" stroke-width=\"1.00\" stroke-linecap=\"butt\" stroke-linejoin=\"miter\">\n"));
             writer.write(String.format(Locale.US,
-                    "    <path d=\"M %.2f,%.2f L %.2f,%.2f\"/>\n",
+                    "\t<path stroke='black'  d='M%.2f,%.2f L%.2f,%.2f  '/>\t",
                     ztx, zty, ztx + zPerpX * tickLength, zty + zPerpY * tickLength));
-            writer.write("  </g>\n");
 
             // Z-axis label (use text-anchor="end" to align right and prevent clipping)
             // Only render labels for ticks at or above Z=0 data plane (controlled by ticslevel)
@@ -604,13 +641,14 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
                 double zLabelX = ztx + zPerpX * (tickLength + labelOffset);
                 double zLabelY = zty + zPerpY * (tickLength + labelOffset);
                 writer.write(String.format(Locale.US,
-                        "  <g transform=\"translate(%.2f,%.2f)\" stroke=\"none\" fill=\"black\" font-family=\"Arial\" font-size=\"12.00\" text-anchor=\"end\">\n",
+                        "<g transform=\"translate(%.2f,%.2f)\" stroke=\"none\" fill=\"black\" font-family=\"Arial\" font-size=\"12.00\"  text-anchor=\"end\">\n",
                         zLabelX, zLabelY));
                 writer.write(String.format(Locale.US,
-                        "    <text><tspan font-family=\"Arial\">%.2g</tspan></text>\n",
-                        zValueVisual));
-                writer.write("  </g>\n");
+                        "\t\t<text><tspan font-family=\"Arial\" >%s</tspan></text>\n",
+                        format3DAxisLabel(zValueVisual)));
+                writer.write("\t</g>\n");
             }
+            writer.write("</g>\n");
         }
     }
 
@@ -1835,5 +1873,27 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
                 .replace(">", "&gt;")
                 .replace("\"", "&quot;")
                 .replace("'", "&apos;");
+    }
+
+    /**
+     * Format a 3D axis label to match C gnuplot behavior.
+     * Integers are shown without decimals, others with minimal decimal places.
+     */
+    private String format3DAxisLabel(double value) {
+        // Handle values very close to zero
+        if (Math.abs(value) < 1e-9) {
+            return "0";
+        }
+
+        // Check if value is effectively an integer
+        double rounded = Math.round(value);
+        if (Math.abs(value - rounded) < 1e-9) {
+            return String.format(Locale.US, "%d", (long) rounded);
+        }
+
+        // For non-integers, use 1 decimal place
+        String formatted = String.format(Locale.US, "%.1f", value);
+        // Remove trailing zeros after decimal
+        return formatted.replaceAll("\\.0$", "");
     }
 }

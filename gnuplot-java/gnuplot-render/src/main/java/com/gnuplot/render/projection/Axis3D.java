@@ -90,8 +90,15 @@ public class Axis3D {
         }
 
         public String getLabel() {
-            // Format label with 1 decimal place
-            return String.format("%.1f", value);
+            // Format label to match C gnuplot - integers without decimal, others minimal decimals
+            double rounded = Math.round(value);
+            if (Math.abs(value - rounded) < 1e-9) {
+                // Value is effectively an integer
+                return String.format("%d", (long) rounded);
+            }
+            // Non-integer: use 1 decimal place, strip trailing zeros
+            String formatted = String.format("%.1f", value);
+            return formatted.replaceAll("\\.0$", "");
         }
     }
 }
