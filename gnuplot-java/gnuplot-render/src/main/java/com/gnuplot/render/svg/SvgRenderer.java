@@ -428,13 +428,16 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
         double zNormX = zDirX / zLen;
         double zNormY = zDirY / zLen;
 
-        // Perpendicular directions (rotate 90° clockwise: (x,y) -> (y,-x))
-        double xPerpX = xNormY;
-        double xPerpY = -xNormX;
-        double yPerpX = yNormY;
-        double yPerpY = -yNormX;
-        double zPerpX = zNormY;
-        double zPerpY = -zNormX;
+        // Tick directions: C gnuplot ticks point ALONG the other axis direction, not perpendicular
+        // X-axis ticks point in Y direction (into the box)
+        // Y-axis ticks point in X direction (into the box)
+        // Z-axis ticks point left (perpendicular, horizontal)
+        double xTickDirX = yNormX;  // X-axis ticks point along Y direction
+        double xTickDirY = yNormY;
+        double yTickDirX = xNormX;  // Y-axis ticks point along X direction
+        double yTickDirY = xNormY;
+        double zTickDirX = -1.0;    // Z-axis ticks point left (horizontal)
+        double zTickDirY = 0.0;
 
         // Draw complete 3D box edges (12 edges total)
         // A 3D box has 8 corners and 12 edges
@@ -532,12 +535,12 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
             double xtx = xTickScreen[0];
             double xty = xTickScreen[1];
 
-            // X-axis tick mark on FRONT edge (like C gnuplot)
+            // X-axis tick mark on FRONT edge (like C gnuplot - points along Y direction into box)
             writer.write(String.format(Locale.US,
                     "<g fill=\"none\" color=\"black\" stroke=\"currentColor\" stroke-width=\"1.00\" stroke-linecap=\"butt\" stroke-linejoin=\"miter\">\n"));
             writer.write(String.format(Locale.US,
                     "\t<path stroke='black'  d='M%.2f,%.2f L%.2f,%.2f  '/></g>\n",
-                    xtx, xty, xtx + xPerpX * tickLength, xty + xPerpY * tickLength));
+                    xtx, xty, xtx + xTickDirX * tickLength, xty + xTickDirY * tickLength));
 
             // X-axis tick mark on BACK edge (paired tick) + label
             // Back edge is at yEnd position for the same X value
@@ -558,11 +561,11 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
                     "<g fill=\"none\" color=\"black\" stroke=\"currentColor\" stroke-width=\"1.00\" stroke-linecap=\"butt\" stroke-linejoin=\"miter\">\n"));
             writer.write(String.format(Locale.US,
                     "\t<path stroke='black'  d='M%.2f,%.2f L%.2f,%.2f  '/>\t",
-                    xtxBack, xtyBack, xtxBack - xPerpX * tickLength, xtyBack - xPerpY * tickLength));
+                    xtxBack, xtyBack, xtxBack - xTickDirX * tickLength, xtyBack - xTickDirY * tickLength));
 
-            // X-axis label (attached to back edge tick, like C gnuplot)
-            double xLabelX = xtx + xPerpX * (tickLength + labelOffset);
-            double xLabelY = xty + xPerpY * (tickLength + labelOffset);
+            // X-axis label (attached to front edge tick, offset below the tick)
+            double xLabelX = xtx + xTickDirX * (tickLength + labelOffset);
+            double xLabelY = xty + xTickDirY * (tickLength + labelOffset);
             writer.write(String.format(Locale.US,
                     "<g transform=\"translate(%.2f,%.2f)\" stroke=\"none\" fill=\"black\" font-family=\"Arial\" font-size=\"12.00\"  text-anchor=\"middle\">\n",
                     xLabelX, xLabelY));
@@ -581,12 +584,12 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
             double ytx = yTickScreen[0];
             double yty = yTickScreen[1];
 
-            // Y-axis tick mark on LEFT edge (like C gnuplot)
+            // Y-axis tick mark on LEFT edge (like C gnuplot - points along X direction into box)
             writer.write(String.format(Locale.US,
                     "<g fill=\"none\" color=\"black\" stroke=\"currentColor\" stroke-width=\"1.00\" stroke-linecap=\"butt\" stroke-linejoin=\"miter\">\n"));
             writer.write(String.format(Locale.US,
                     "\t<path stroke='black'  d='M%.2f,%.2f L%.2f,%.2f  '/></g>\n",
-                    ytx, yty, ytx + yPerpX * tickLength, yty + yPerpY * tickLength));
+                    ytx, yty, ytx + yTickDirX * tickLength, yty + yTickDirY * tickLength));
 
             // Y-axis tick mark on RIGHT edge (paired tick) + label
             // Right edge is at xEnd position for the same Y value
@@ -602,7 +605,7 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
                     "<g fill=\"none\" color=\"black\" stroke=\"currentColor\" stroke-width=\"1.00\" stroke-linecap=\"butt\" stroke-linejoin=\"miter\">\n"));
             writer.write(String.format(Locale.US,
                     "\t<path stroke='black'  d='M%.2f,%.2f L%.2f,%.2f  '/>\t",
-                    ytxRight, ytyRight, ytxRight - yPerpX * tickLength, ytyRight - yPerpY * tickLength));
+                    ytxRight, ytyRight, ytxRight - yTickDirX * tickLength, ytyRight - yTickDirY * tickLength));
 
             // Y-axis label (attached to right edge tick, like C gnuplot - text-anchor="start")
             double yLabelX = ytxRight + 10;  // Offset to the right
@@ -628,18 +631,18 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
             double ztx = zTickScreen[0];
             double zty = zTickScreen[1];
 
-            // Z-axis tick mark (like C gnuplot - horizontal tick on left edge)
+            // Z-axis tick mark (like C gnuplot - horizontal tick pointing left)
             writer.write(String.format(Locale.US,
                     "<g fill=\"none\" color=\"black\" stroke=\"currentColor\" stroke-width=\"1.00\" stroke-linecap=\"butt\" stroke-linejoin=\"miter\">\n"));
             writer.write(String.format(Locale.US,
                     "\t<path stroke='black'  d='M%.2f,%.2f L%.2f,%.2f  '/>\t",
-                    ztx, zty, ztx + zPerpX * tickLength, zty + zPerpY * tickLength));
+                    ztx, zty, ztx + zTickDirX * tickLength, zty + zTickDirY * tickLength));
 
             // Z-axis label (use text-anchor="end" to align right and prevent clipping)
             // Only render labels for ticks at or above Z=0 data plane (controlled by ticslevel)
             if (!zTickBelowZero) {
-                double zLabelX = ztx + zPerpX * (tickLength + labelOffset);
-                double zLabelY = zty + zPerpY * (tickLength + labelOffset);
+                double zLabelX = ztx + zTickDirX * (tickLength + labelOffset);
+                double zLabelY = zty + zTickDirY * (tickLength + labelOffset);
                 writer.write(String.format(Locale.US,
                         "<g transform=\"translate(%.2f,%.2f)\" stroke=\"none\" fill=\"black\" font-family=\"Arial\" font-size=\"12.00\"  text-anchor=\"end\">\n",
                         zLabelX, zLabelY));
