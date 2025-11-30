@@ -83,3 +83,4 @@ Thumbs.db
 
 # Test results (large, frequently changing, don't commit)
 test-results/
+.claude/settings.local.json
