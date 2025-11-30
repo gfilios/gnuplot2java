@@ -25,6 +25,8 @@ public final class SurfacePlot3D implements SceneElement {
     private final String label;
     private final PlotStyle3D plotStyle;
     private final MarkerStyle markerStyle;  // For point rendering
+    private final int gridRows;  // Grid rows for wireframe rendering (0 = not a grid)
+    private final int gridCols;  // Grid columns for wireframe rendering (0 = not a grid)
 
     private SurfacePlot3D(Builder builder) {
         this.id = builder.id;
@@ -33,6 +35,8 @@ public final class SurfacePlot3D implements SceneElement {
         this.label = builder.label;
         this.plotStyle = builder.plotStyle;
         this.markerStyle = builder.markerStyle;
+        this.gridRows = builder.gridRows;
+        this.gridCols = builder.gridCols;
     }
 
     public static Builder builder() {
@@ -73,6 +77,21 @@ public final class SurfacePlot3D implements SceneElement {
         return markerStyle;
     }
 
+    public int getGridRows() {
+        return gridRows;
+    }
+
+    public int getGridCols() {
+        return gridCols;
+    }
+
+    /**
+     * Returns true if this plot has grid structure (for wireframe mesh rendering).
+     */
+    public boolean hasGridStructure() {
+        return gridRows > 0 && gridCols > 0;
+    }
+
     /**
      * 3D plot styles.
      */
@@ -93,6 +112,8 @@ public final class SurfacePlot3D implements SceneElement {
         private String label = "";
         private PlotStyle3D plotStyle = PlotStyle3D.POINTS;
         private MarkerStyle markerStyle = null;
+        private int gridRows = 0;  // 0 means not a grid
+        private int gridCols = 0;
 
         public Builder id(String id) {
             this.id = id;
@@ -131,6 +152,12 @@ public final class SurfacePlot3D implements SceneElement {
 
         public Builder markerStyle(MarkerStyle markerStyle) {
             this.markerStyle = markerStyle;
+            return this;
+        }
+
+        public Builder gridDimensions(int rows, int cols) {
+            this.gridRows = rows;
+            this.gridCols = cols;
             return this;
         }
 

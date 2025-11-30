@@ -1814,7 +1814,9 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
     }
 
     /**
-     * NEW IMPLEMENTATION - Direct 1:1 translation from C gnuplot for wireframe rendering
+     * Render a 3D wireframe mesh matching C gnuplot's wireframe rendering.
+     * For grid data (dgrid3d), this draws lines in both row and column directions
+     * to create a proper mesh/net appearance.
      */
     private void renderWireframe3D(SurfacePlot3D surfacePlot, ViewTransform3D viewTransform, String clipAttr) throws IOException {
         List<Point3D> points = surfacePlot.getPoints();
@@ -1825,29 +1827,98 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
         // Get data ranges from viewport
         Viewport viewport = scene.getViewport();
 
-        // Project all points to 2D using NEW C-based algorithm
+        // Project all points to 2D
         List<double[]> screenPoints = new ArrayList<>();
         for (Point3D point3D : points) {
             if (!point3D.isFinite()) {
                 screenPoints.add(null);
                 continue;
             }
-
-            // Use NEW map3d_to_screen method
             double[] screenCoords = map3d_to_screen(point3D.x(), point3D.y(), point3D.z(), viewport);
             screenPoints.add(screenCoords);
         }
 
-        // Render as connected polyline through all points
         writer.write(String.format("<%s>\n", clipAttr.isEmpty() ? "g" : "g" + clipAttr));
 
-        // Build path by connecting consecutive valid points
+        // Check if we have grid structure for proper wireframe mesh
+        if (surfacePlot.hasGridStructure()) {
+            int rows = surfacePlot.getGridRows();
+            int cols = surfacePlot.getGridCols();
+
+            // Verify dimensions match point count
+            if (rows * cols == screenPoints.size()) {
+                // Draw wireframe mesh: lines in both row and column directions
+                // This matches C gnuplot's approach of drawing iso-u and iso-v curves
+
+                StringBuilder pathData = new StringBuilder();
+
+                // Draw row lines (iso-u curves) - connect points along each row
+                for (int row = 0; row < rows; row++) {
+                    boolean firstInRow = true;
+                    for (int col = 0; col < cols; col++) {
+                        int idx = row * cols + col;
+                        double[] pt = screenPoints.get(idx);
+                        if (pt == null) {
+                            firstInRow = true;
+                            continue;
+                        }
+                        if (firstInRow) {
+                            if (pathData.length() > 0) pathData.append(" ");
+                            pathData.append(String.format(Locale.US, "M%.2f,%.2f", pt[0], pt[1]));
+                            firstInRow = false;
+                        } else {
+                            pathData.append(String.format(Locale.US, " L%.2f,%.2f", pt[0], pt[1]));
+                        }
+                    }
+                }
+
+                // Draw column lines (iso-v curves) - connect points along each column
+                for (int col = 0; col < cols; col++) {
+                    boolean firstInCol = true;
+                    for (int row = 0; row < rows; row++) {
+                        int idx = row * cols + col;
+                        double[] pt = screenPoints.get(idx);
+                        if (pt == null) {
+                            firstInCol = true;
+                            continue;
+                        }
+                        if (firstInCol) {
+                            if (pathData.length() > 0) pathData.append(" ");
+                            pathData.append(String.format(Locale.US, "M%.2f,%.2f", pt[0], pt[1]));
+                            firstInCol = false;
+                        } else {
+                            pathData.append(String.format(Locale.US, " L%.2f,%.2f", pt[0], pt[1]));
+                        }
+                    }
+                }
+
+                // Write the combined path
+                if (pathData.length() > 0) {
+                    writer.write(String.format(Locale.US,
+                            "  <path d=\"%s\" stroke=\"%s\" stroke-width=\"1.0\" fill=\"none\"/>\n",
+                            pathData.toString(), surfacePlot.getColor()));
+                }
+            } else {
+                // Dimension mismatch - fall back to simple line rendering
+                renderSimplePolyline3D(screenPoints, surfacePlot.getColor());
+            }
+        } else {
+            // No grid structure - render as simple connected polyline
+            renderSimplePolyline3D(screenPoints, surfacePlot.getColor());
+        }
+
+        writer.write("</g>\n");
+    }
+
+    /**
+     * Render points as a simple connected polyline (fallback for non-grid data).
+     */
+    private void renderSimplePolyline3D(List<double[]> screenPoints, String color) throws IOException {
         StringBuilder pathData = new StringBuilder();
         boolean firstPoint = true;
 
         for (double[] screenCoords : screenPoints) {
             if (screenCoords == null) {
-                // Break in data - start new path segment
                 firstPoint = true;
                 continue;
             }
@@ -1857,10 +1928,9 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
 
             if (firstPoint) {
                 if (pathData.length() > 0) {
-                    // Write previous path segment
                     writer.write(String.format(Locale.US,
                             "  <path d=\"%s\" stroke=\"%s\" stroke-width=\"1.0\" fill=\"none\"/>\n",
-                            pathData.toString(), surfacePlot.getColor()));
+                            pathData.toString(), color));
                     pathData = new StringBuilder();
                 }
                 pathData.append(String.format(Locale.US, "M %.2f,%.2f", x, y));
@@ -1870,14 +1940,11 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
             }
         }
 
-        // Write final path segment if any
         if (pathData.length() > 0) {
             writer.write(String.format(Locale.US,
                     "  <path d=\"%s\" stroke=\"%s\" stroke-width=\"1.0\" fill=\"none\"/>\n",
-                    pathData.toString(), surfacePlot.getColor()));
+                    pathData.toString(), color));
         }
-
-        writer.write("</g>\n");
     }
 
     private double mapProjectedX(double x) {

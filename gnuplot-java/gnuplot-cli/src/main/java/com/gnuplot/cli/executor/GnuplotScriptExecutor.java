@@ -377,6 +377,11 @@ public class GnuplotScriptExecutor implements CommandVisitor {
                         .plotStyle(plotStyle)
                         .color(DEFAULT_COLORS[colorIndex % DEFAULT_COLORS.length]);
 
+                    // Pass grid dimensions if dgrid3d was applied
+                    if (dgrid3dEnabled) {
+                        builder.gridDimensions(dgrid3dRows, dgrid3dCols);
+                    }
+
                     // Add all points
                     for (Point3D point : points) {
                         builder.addPoint(point.x(), point.y(), point.z());
