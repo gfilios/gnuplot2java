@@ -567,6 +567,45 @@ public class TickGenerator {
     }
 
     /**
+     * Generates tick marks for a linear axis using a pre-computed tick step.
+     * This is useful when the tick step was calculated from the original data range
+     * before the axis was extended to tick boundaries (like C gnuplot does).
+     *
+     * @param min The minimum value of the axis range (may be extended)
+     * @param max The maximum value of the axis range (may be extended)
+     * @param tickStep The pre-computed tick spacing
+     * @return A list of tick marks
+     */
+    public List<Tick> generateTicksWithStep(double min, double max, double tickStep) {
+        List<Tick> ticks = new ArrayList<>();
+
+        if (min >= max || tickStep <= 0) {
+            return ticks; // Invalid range or step
+        }
+
+        // Find the first tick position (rounded down to nearest tick step)
+        double firstTick = Math.floor(min / tickStep) * tickStep;
+        if (firstTick < min) {
+            firstTick += tickStep;
+        }
+
+        // Generate major tick marks
+        double position = firstTick;
+        double epsilon = tickStep * 1e-9; // Very small epsilon for floating point comparison
+        while (position <= max + epsilon) {
+            if (position >= min - epsilon) {
+                // Clamp position to range to avoid floating point errors
+                double clampedPosition = Math.min(Math.max(position, min), max);
+                String label = formatTickLabel(clampedPosition, tickStep);
+                ticks.add(new Tick(clampedPosition, label, TickType.MAJOR));
+            }
+            position += tickStep;
+        }
+
+        return ticks;
+    }
+
+    /**
      * Calculate the tick step for a given range and guide.
      * This is useful for extending axis ranges to tick boundaries.
      *

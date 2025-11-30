@@ -349,9 +349,16 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
         double zMin = viewport.getZMin();
         double zMax = viewport.getZMax();
 
-        // Calculate actual data Z range (before ticslevel adjustment)
-        // If zMin is negative (due to ticslevel), the data range starts at 0
-        double zDataMin = (zMin < 0) ? 0 : zMin;
+        // Get the actual data Z minimum (before ticslevel adjustment)
+        // This is used for generating Z-axis ticks at the correct positions
+        double zDataMin = viewport.getZDataMin();
+        if (zDataMin == 0 && zMin < 0) {
+            // Fallback: if zDataMin not set, assume data starts at 0
+            zDataMin = 0;
+        } else if (zDataMin == 0) {
+            // If zDataMin not set and zMin is not negative, use zMin
+            zDataMin = zMin;
+        }
 
         // Determine which corners to use for each axis based on view rotation
         // This matches C gnuplot's setup_3d_box_corners() logic
@@ -493,37 +500,52 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
 
         writer.write("  </g>\n");
 
-        // Add tick marks and labels (11 ticks per axis) perpendicular to each axis
-        // C gnuplot uses 11 ticks from -1 to 1 in steps of 0.2
+        // Add tick marks and labels using TickGenerator for proper intervals
+        // This matches C gnuplot's quantize_normal_tics algorithm
         double tickLength = 5.0;
         double labelOffset = 15.0; // Distance from tick end to label position
-        int numTicks = 11;
 
         // ticslevel determines where Z=0 plane sits relative to XY base
         // With ticslevel=0.5, the visual Z range is [zMin - 0.5*(zMax-zMin), zMax]
         // Note: zMin from viewport is already the visual minimum (includes ticslevel offset)
-        double ticslevel = 0.5;  // TODO: get from command parser
 
         // zDataMin already calculated above for base plane positioning
         double zDataMax = zMax;
-        double zDataRange = zDataMax - zDataMin;
 
-        for (int i = 0; i < numTicks; i++) {
-            double t = i / (numTicks - 1.0); // Parameter along axis [0, 1]
+        // Use TickGenerator to compute proper tick positions (like C gnuplot)
+        // Important: Use tick steps from viewport if available - these were calculated from
+        // the original data range BEFORE axis extension (like C gnuplot does)
+        TickGenerator tickGen = new TickGenerator();
+        List<TickGenerator.Tick> xTicks;
+        List<TickGenerator.Tick> yTicks;
+        List<TickGenerator.Tick> zTicks;
 
-            // Calculate actual data values
-            double xValue = xMin + t * (xMax - xMin);
-            double yValue = yMin + t * (yMax - yMin);
+        double xTicStep = viewport.getXTicStep();
+        double yTicStep = viewport.getYTicStep();
+        double zTicStep = viewport.getZTicStep();
 
-            // For Z-axis: ticks should be at data values [0, 0.1, 0.2, ..., 1.0]
-            // positioned at their corresponding visual locations
-            double zDataValue = zDataMin + t * zDataRange;
+        if (xTicStep > 0) {
+            xTicks = tickGen.generateTicksWithStep(xMin, xMax, xTicStep);
+        } else {
+            xTicks = tickGen.generateTicks(xMin, xMax);
+        }
 
-            // Visual Z position is same as data value (since data values are absolute)
-            double zValueVisual = zDataValue;
+        if (yTicStep > 0) {
+            yTicks = tickGen.generateTicksWithStep(yMin, yMax, yTicStep);
+        } else {
+            yTicks = tickGen.generateTicks(yMin, yMax);
+        }
 
-            // For Z-axis: all ticks in data range should have labels
-            boolean zTickBelowZero = false;
+        if (zTicStep > 0) {
+            zTicks = tickGen.generateTicksWithStep(zDataMin, zDataMax, zTicStep);
+        } else {
+            zTicks = tickGen.generateTicks(zDataMin, zDataMax);
+        }
+
+        // X-axis ticks and labels
+        for (TickGenerator.Tick tick : xTicks) {
+            double xValue = tick.getPosition();
+            double t = (xValue - xMin) / (xMax - xMin);
 
             // X-axis tick and label (only on front bottom edge)
             Point3D xTick = new Point3D(
@@ -542,17 +564,11 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
                     "\t<path stroke='black'  d='M%.2f,%.2f L%.2f,%.2f  '/></g>\n",
                     xtx, xty, xtx + xTickDirX * tickLength, xty + xTickDirY * tickLength));
 
-            // X-axis tick mark on BACK edge (paired tick) + label
-            // Back edge is at yEnd position for the same X value
-            Point3D xTickBack = new Point3D(
-                    yEnd.x() + t * (xMax - xMin),  // Move along X from yEnd
-                    yEnd.y(),
-                    yEnd.z()
-            );
+            // X-axis tick mark on BACK edge (paired tick)
             double[] xTickBackScreen = map3d_to_screen(
-                    xMin + t * (xMax - xMin),  // X position
-                    yMax,                       // Y at max (back edge)
-                    zMin,                       // Z at base
+                    xValue,  // X position
+                    yMax,    // Y at max (back edge)
+                    zMin,    // Z at base
                     viewport);
             double xtxBack = xTickBackScreen[0];
             double xtyBack = xTickBackScreen[1];
@@ -571,8 +587,14 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
                     xLabelX, xLabelY));
             writer.write(String.format(Locale.US,
                     "\t\t<text><tspan font-family=\"Arial\" >%s</tspan></text>\n",
-                    format3DAxisLabel(xValue)));
+                    tick.getLabel()));
             writer.write("\t</g>\n</g>\n");
+        }
+
+        // Y-axis ticks and labels
+        for (TickGenerator.Tick tick : yTicks) {
+            double yValue = tick.getPosition();
+            double t = (yValue - yMin) / (yMax - yMin);
 
             // Y-axis tick and label (only on left bottom edge)
             Point3D yTick = new Point3D(
@@ -592,11 +614,10 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
                     ytx, yty, ytx + yTickDirX * tickLength, yty + yTickDirY * tickLength));
 
             // Y-axis tick mark on RIGHT edge (paired tick) + label
-            // Right edge is at xEnd position for the same Y value
             double[] yTickRightScreen = map3d_to_screen(
-                    xMax,                       // X at max (right edge)
-                    yMin + t * (yMax - yMin),  // Y position
-                    zMin,                       // Z at base
+                    xMax,    // X at max (right edge)
+                    yValue,  // Y position
+                    zMin,    // Z at base
                     viewport);
             double ytxRight = yTickRightScreen[0];
             double ytyRight = yTickRightScreen[1];
@@ -615,10 +636,14 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
                     yLabelX, yLabelY));
             writer.write(String.format(Locale.US,
                     "\t\t<text><tspan font-family=\"Arial\" >%s</tspan></text>\n",
-                    format3DAxisLabel(yValue)));
+                    tick.getLabel()));
             writer.write("\t</g>\n</g>\n");
+        }
 
-            // Z-axis tick and label (only on left front edge)
+        // Z-axis ticks and labels
+        for (TickGenerator.Tick tick : zTicks) {
+            double zDataValue = tick.getPosition();
+
             // Map data Z value to parameter along visual Z-axis geometry
             double tZ = (zDataValue - zMin) / (zMax - zMin);
 
@@ -639,18 +664,15 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
                     ztx, zty, ztx + zTickDirX * tickLength, zty + zTickDirY * tickLength));
 
             // Z-axis label (use text-anchor="end" to align right and prevent clipping)
-            // Only render labels for ticks at or above Z=0 data plane (controlled by ticslevel)
-            if (!zTickBelowZero) {
-                double zLabelX = ztx + zTickDirX * (tickLength + labelOffset);
-                double zLabelY = zty + zTickDirY * (tickLength + labelOffset);
-                writer.write(String.format(Locale.US,
-                        "<g transform=\"translate(%.2f,%.2f)\" stroke=\"none\" fill=\"black\" font-family=\"Arial\" font-size=\"12.00\"  text-anchor=\"end\">\n",
-                        zLabelX, zLabelY));
-                writer.write(String.format(Locale.US,
-                        "\t\t<text><tspan font-family=\"Arial\" >%s</tspan></text>\n",
-                        format3DAxisLabel(zValueVisual)));
-                writer.write("\t</g>\n");
-            }
+            double zLabelX = ztx + zTickDirX * (tickLength + labelOffset);
+            double zLabelY = zty + zTickDirY * (tickLength + labelOffset);
+            writer.write(String.format(Locale.US,
+                    "<g transform=\"translate(%.2f,%.2f)\" stroke=\"none\" fill=\"black\" font-family=\"Arial\" font-size=\"12.00\"  text-anchor=\"end\">\n",
+                    zLabelX, zLabelY));
+            writer.write(String.format(Locale.US,
+                    "\t\t<text><tspan font-family=\"Arial\" >%s</tspan></text>\n",
+                    tick.getLabel()));
+            writer.write("\t</g>\n");
             writer.write("</g>\n");
         }
 

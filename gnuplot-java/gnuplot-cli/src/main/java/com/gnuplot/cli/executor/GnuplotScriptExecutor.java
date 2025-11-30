@@ -674,13 +674,23 @@ public class GnuplotScriptExecutor implements CommandVisitor {
         }
 
         // Round axis ranges to "nice" values like C gnuplot does
-        // C gnuplot rounds to clean decimal values (e.g., [0.0084, 0.99] becomes [0, 1])
-        xMin = roundAxisMin(xMin);
-        xMax = roundAxisMax(xMax);
-        yMin = roundAxisMin(yMin);
-        yMax = roundAxisMax(yMax);
-        zMin = roundAxisMin(zMin);
-        zMax = roundAxisMax(zMax);
+        // Uses C gnuplot's quantize_normal_tics and round_outward algorithm
+        // Important: The tick step is calculated from the ORIGINAL data range, before rounding
+        double[] xRange = computeAxisRange(xMin, xMax);
+        double xTicStep = xRange[2];  // Save tick step before updating range
+        xMin = xRange[0];
+        xMax = xRange[1];
+
+        double[] yRange = computeAxisRange(yMin, yMax);
+        double yTicStep = yRange[2];  // Save tick step before updating range
+        yMin = yRange[0];
+        yMax = yRange[1];
+
+        double[] zAxisRange = computeAxisRange(zMin, zMax);
+        double zTicStep = zAxisRange[2];  // Save tick step before updating range
+        zMin = zAxisRange[0];
+        zMax = zAxisRange[1];
+        double zDataMinRounded = zMin;  // Save the rounded data minimum for tick generation
 
         // Apply ticslevel to Z-axis range
         // ticslevel determines where the XY base plane sits relative to Z=0 data plane
@@ -690,9 +700,16 @@ public class GnuplotScriptExecutor implements CommandVisitor {
         double zRange = zMax - zMin;
         double zMinVisual = zMin - (zRange * ticslevel);
 
-        // Use rounded data ranges for viewport
-        // The 3D→2D projection will normalize to [-1, 1] internally, but axis labels should show rounded ranges
-        Viewport viewport = Viewport.of3D(xMin, xMax, yMin, yMax, zMinVisual, zMax);
+        // Use rounded data ranges for viewport, including tick steps calculated from original data
+        // The tick steps are used by the renderer to generate ticks at correct intervals
+        // Also pass the data Z minimum (before ticslevel adjustment) for correct tick placement
+        Viewport viewport = Viewport.builder()
+                .xRange(xMin, xMax)
+                .yRange(yMin, yMax)
+                .zRange(zMinVisual, zMax)
+                .ticSteps(xTicStep, yTicStep, zTicStep)
+                .zDataMin(zDataMinRounded)
+                .build();
 
         // Build scene
         // Note: 3D plots don't use 2D borders - axes are part of the 3D scene
@@ -754,32 +771,71 @@ public class GnuplotScriptExecutor implements CommandVisitor {
     }
 
     /**
-     * Rounds axis minimum to a "nice" value (floor to nice increment).
-     * Mimics C gnuplot's axis range rounding behavior.
+     * Compute tic step size using C gnuplot's quantize_normal_tics algorithm.
+     * @param range the axis range (max - min)
+     * @param guide approximate number of tics wanted (default 20)
+     * @return the tic step size
      */
-    private double roundAxisMin(double value) {
-        if (value >= 0) {
-            return 0.0;  // Non-negative values round down to 0
-        }
-        // For negative values, round down to next integer or 0.5 increment
-        double absValue = Math.abs(value);
-        if (absValue <= 0.5) return -0.5;
-        if (absValue <= 1.0) return -1.0;
-        return Math.floor(value);
+    private double quantizeNormalTics(double range, int guide) {
+        if (range == 0) return 1;
+
+        // Order of magnitude of the range
+        double power = Math.pow(10.0, Math.floor(Math.log10(range)));
+        double xnorm = range / power;  // normalized range, expected 1-10
+        double posns = guide / xnorm;  // approx number of tic positions per decade
+
+        // Choose tic step based on number of positions
+        double tics;
+        if (posns > 40)
+            tics = 0.05;
+        else if (posns > 20)
+            tics = 0.1;
+        else if (posns > 10)
+            tics = 0.2;
+        else if (posns > 4)
+            tics = 0.5;
+        else if (posns > 2)
+            tics = 1;
+        else if (posns > 0.5)
+            tics = 2;
+        else
+            tics = Math.ceil(xnorm);
+
+        return tics * power;
     }
 
     /**
-     * Rounds axis maximum to a "nice" value (ceiling to nice increment).
-     * Mimics C gnuplot's axis range rounding behavior.
+     * Round axis value outward to multiple of tic step.
+     * Mimics C gnuplot's round_outward function.
+     *
+     * @param value the value to round
+     * @param ticStep the tic step size
+     * @param upwards true to round up (for max), false to round down (for min)
+     * @return the rounded value
      */
-    private double roundAxisMax(double value) {
-        if (value <= 0) {
-            return 0.0;  // Non-positive values round up to 0
-        }
-        // For positive values, round up to next integer or 0.5 increment
-        if (value <= 0.5) return 0.5;
-        if (value <= 1.0) return 1.0;
-        return Math.ceil(value);
+    private double roundOutward(double value, double ticStep, boolean upwards) {
+        if (ticStep == 0) return value;
+        return ticStep * (upwards
+            ? Math.ceil(value / ticStep)
+            : Math.floor(value / ticStep));
+    }
+
+    /**
+     * Compute axis range and tic step, then round axis endpoints outward.
+     * This combines quantize_normal_tics and round_outward from C gnuplot.
+     *
+     * @param min axis minimum
+     * @param max axis maximum
+     * @return array of [roundedMin, roundedMax, ticStep]
+     */
+    private double[] computeAxisRange(double min, double max) {
+        double range = Math.abs(max - min);
+        double ticStep = quantizeNormalTics(range, 20);  // guide=20 like C gnuplot
+
+        double roundedMin = roundOutward(min, ticStep, false);
+        double roundedMax = roundOutward(max, ticStep, true);
+
+        return new double[]{roundedMin, roundedMax, ticStep};
     }
 
     /**

@@ -19,6 +19,12 @@ public final class Viewport {
     private final double zMin;
     private final double zMax;
     private final boolean is3D;
+    // Tick steps calculated from original data range (before axis extension)
+    private final double xTicStep;
+    private final double yTicStep;
+    private final double zTicStep;
+    // Original data Z minimum (before ticslevel adjustment)
+    private final double zDataMin;
 
     private Viewport(Builder builder) {
         this.xMin = builder.xMin;
@@ -28,6 +34,10 @@ public final class Viewport {
         this.zMin = builder.zMin;
         this.zMax = builder.zMax;
         this.is3D = builder.is3D;
+        this.xTicStep = builder.xTicStep;
+        this.yTicStep = builder.yTicStep;
+        this.zTicStep = builder.zTicStep;
+        this.zDataMin = builder.zDataMin;
 
         if (xMin >= xMax) {
             throw new IllegalArgumentException("xMin must be less than xMax");
@@ -108,6 +118,39 @@ public final class Viewport {
     }
 
     /**
+     * Returns the X-axis tick step (calculated from original data range).
+     * Returns 0 if not set.
+     */
+    public double getXTicStep() {
+        return xTicStep;
+    }
+
+    /**
+     * Returns the Y-axis tick step (calculated from original data range).
+     * Returns 0 if not set.
+     */
+    public double getYTicStep() {
+        return yTicStep;
+    }
+
+    /**
+     * Returns the Z-axis tick step (calculated from original data range).
+     * Returns 0 if not set.
+     */
+    public double getZTicStep() {
+        return zTicStep;
+    }
+
+    /**
+     * Returns the original data Z minimum (before ticslevel adjustment).
+     * Returns 0 if not set. This is used to generate Z-axis ticks at the
+     * correct positions (matching C gnuplot behavior).
+     */
+    public double getZDataMin() {
+        return zDataMin;
+    }
+
+    /**
      * Returns the width of the viewport (x range).
      *
      * @return xMax - xMin
@@ -185,6 +228,10 @@ public final class Viewport {
         private double zMin = 0.0;
         private double zMax = 1.0;
         private boolean is3D = false;
+        private double xTicStep = 0.0;
+        private double yTicStep = 0.0;
+        private double zTicStep = 0.0;
+        private double zDataMin = 0.0;
 
         private Builder() {
         }
@@ -205,6 +252,24 @@ public final class Viewport {
             this.zMin = min;
             this.zMax = max;
             this.is3D = true;
+            return this;
+        }
+
+        /**
+         * Sets the tick steps (calculated from original data range before extension).
+         */
+        public Builder ticSteps(double xStep, double yStep, double zStep) {
+            this.xTicStep = xStep;
+            this.yTicStep = yStep;
+            this.zTicStep = zStep;
+            return this;
+        }
+
+        /**
+         * Sets the original data Z minimum (before ticslevel adjustment).
+         */
+        public Builder zDataMin(double zDataMin) {
+            this.zDataMin = zDataMin;
             return this;
         }
 

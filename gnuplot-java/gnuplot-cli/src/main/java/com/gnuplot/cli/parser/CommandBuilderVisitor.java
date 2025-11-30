@@ -109,18 +109,33 @@ public class CommandBuilderVisitor extends GnuplotCommandBaseVisitor<List<Comman
                 Map<String, Object> dgridSettings = new HashMap<>();
 
                 // Parse dgrid3d options: [rows,cols] [qnorm N]
+                // Grammar: (NUMBER COMMA NUMBER)? (IDENTIFIER NUMBER?)?
+                // Examples:
+                //   "10,10 qnorm 4" -> rows=10, cols=10, mode=qnorm, norm=4
+                //   "qnorm 4"       -> mode=qnorm, norm=4 (without rows/cols)
+                //   "10,10"         -> rows=10, cols=10 (default mode)
                 if (dgridCtx.dgridOptions() != null) {
                     GnuplotCommandParser.DgridOptionsContext opts = dgridCtx.dgridOptions();
                     List<org.antlr.v4.runtime.tree.TerminalNode> numbers = opts.NUMBER();
-                    if (numbers.size() >= 2) {
+
+                    // Check if we have the COMMA token to determine if first two numbers are rows,cols
+                    boolean hasRowsCols = opts.COMMA() != null;
+
+                    if (hasRowsCols && numbers.size() >= 2) {
+                        // Format: rows,cols [mode [norm]]
                         dgridSettings.put("rows", Integer.parseInt(numbers.get(0).getText()));
                         dgridSettings.put("cols", Integer.parseInt(numbers.get(1).getText()));
-                    }
-                    if (opts.IDENTIFIER() != null) {
-                        String mode = opts.IDENTIFIER().getText();
-                        dgridSettings.put("mode", mode); // e.g., "qnorm"
-                        if (numbers.size() >= 3) {
-                            dgridSettings.put("norm", Integer.parseInt(numbers.get(2).getText()));
+                        if (opts.IDENTIFIER() != null) {
+                            dgridSettings.put("mode", opts.IDENTIFIER().getText());
+                            if (numbers.size() >= 3) {
+                                dgridSettings.put("norm", Integer.parseInt(numbers.get(2).getText()));
+                            }
+                        }
+                    } else if (opts.IDENTIFIER() != null) {
+                        // Format: mode [norm] (without rows,cols)
+                        dgridSettings.put("mode", opts.IDENTIFIER().getText());
+                        if (numbers.size() >= 1) {
+                            dgridSettings.put("norm", Integer.parseInt(numbers.get(0).getText()));
                         }
                     }
                 }
