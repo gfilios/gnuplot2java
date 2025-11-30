@@ -653,6 +653,37 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
             }
             writer.write("</g>\n");
         }
+
+        // Render xlabel (X-axis label) at the bottom center of the front base edge
+        // Matching C gnuplot: positioned below the midpoint of the X-axis (from origin to xEnd)
+        String xlabel = scene.getXLabel();
+        if (xlabel != null && !xlabel.isEmpty()) {
+            // Calculate midpoint of the front bottom edge (X-axis)
+            // Use corners 0 (origin) and 1 (x-end) - the front edge at zMin
+            double xlabelX = (screenCorners[0][0] + screenCorners[1][0]) / 2.0;
+            // Position below the bottom edge, offset by label distance
+            double xlabelY = Math.max(screenCorners[0][1], screenCorners[1][1]) + 20;
+
+            writer.write(String.format(Locale.US,
+                    "<g fill=\"none\" color=\"black\" stroke=\"currentColor\" stroke-width=\"1.00\" stroke-linecap=\"butt\" stroke-linejoin=\"miter\">\n"));
+            // Draw bottom edge lines to complete the box (matching C gnuplot structure)
+            // Line from corner 3 (x+y) to corner 1 (x-end)
+            writer.write(String.format(Locale.US,
+                    "\t<path stroke='black'  d='M%.2f,%.2f L%.2f,%.2f  '/></g>\n",
+                    screenCorners[3][0], screenCorners[3][1], screenCorners[1][0], screenCorners[1][1]));
+            writer.write(String.format(Locale.US,
+                    "<g fill=\"none\" color=\"black\" stroke=\"currentColor\" stroke-width=\"1.00\" stroke-linecap=\"butt\" stroke-linejoin=\"miter\">\n"));
+            // Line from origin to corner 1, then add xlabel
+            writer.write(String.format(Locale.US,
+                    "\t<path stroke='black'  d='M%.2f,%.2f L%.2f,%.2f  '/>\t",
+                    screenCorners[0][0], screenCorners[0][1], screenCorners[1][0], screenCorners[1][1]));
+            writer.write(String.format(Locale.US,
+                    "<g transform=\"translate(%.2f,%.2f)\" stroke=\"none\" fill=\"black\" font-family=\"Arial\" font-size=\"12.00\"  text-anchor=\"middle\">\n",
+                    xlabelX, xlabelY));
+            writer.write(String.format(Locale.US,
+                    "\t\t<text><tspan font-family=\"Arial\" >%s</tspan></text>\n", xlabel));
+            writer.write("\t</g>\n</g>\n");
+        }
     }
 
     /**

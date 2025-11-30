@@ -55,6 +55,7 @@ public class GnuplotScriptExecutor implements CommandVisitor {
     private String title = "";
     private String xlabel = "";
     private String ylabel = "";
+    private String zlabel = "";
     private int samples = 100;
     private boolean grid = false;
     private boolean drawBorder = true; // Default: true (matching C Gnuplot's draw_border = 31)
@@ -108,6 +109,11 @@ public class GnuplotScriptExecutor implements CommandVisitor {
             case "ylabel":
                 if (value instanceof String) {
                     ylabel = (String) value;
+                }
+                break;
+            case "zlabel":
+                if (value instanceof String) {
+                    zlabel = (String) value;
                 }
                 break;
             case "samples":
@@ -418,6 +424,9 @@ public class GnuplotScriptExecutor implements CommandVisitor {
             case "ylabel":
                 ylabel = "";
                 break;
+            case "zlabel":
+                zlabel = "";
+                break;
             case "dgrid3d":
                 dgrid3dEnabled = false;
                 System.out.println("dgrid3d disabled");
@@ -437,6 +446,7 @@ public class GnuplotScriptExecutor implements CommandVisitor {
         title = "";
         xlabel = "";
         ylabel = "";
+        zlabel = "";
         samples = 100;
         grid = false;
         plots.clear();
@@ -688,6 +698,17 @@ public class GnuplotScriptExecutor implements CommandVisitor {
 
         if (!title.isEmpty()) {
             sceneBuilder.title(title);
+        }
+
+        // Add axis labels (matching C gnuplot xlabel/ylabel/zlabel)
+        if (!xlabel.isEmpty()) {
+            sceneBuilder.xlabel(xlabel);
+        }
+        if (!ylabel.isEmpty()) {
+            sceneBuilder.ylabel(ylabel);
+        }
+        if (!zlabel.isEmpty()) {
+            sceneBuilder.zlabel(zlabel);
         }
 
         // Add all 3D plots

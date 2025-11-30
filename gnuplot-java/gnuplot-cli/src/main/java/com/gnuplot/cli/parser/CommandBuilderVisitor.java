@@ -47,6 +47,10 @@ public class CommandBuilderVisitor extends GnuplotCommandBaseVisitor<List<Comman
                 GnuplotCommandParser.SetYLabelContext ylabelCtx = (GnuplotCommandParser.SetYLabelContext) optCtx;
                 String ylabel = extractString(ylabelCtx.string(0));
                 commands.add(new SetCommand("ylabel", ylabel));
+            } else if (optCtx instanceof GnuplotCommandParser.SetZLabelContext) {
+                GnuplotCommandParser.SetZLabelContext zlabelCtx = (GnuplotCommandParser.SetZLabelContext) optCtx;
+                String zlabel = extractString(zlabelCtx.string(0));
+                commands.add(new SetCommand("zlabel", zlabel));
             } else if (optCtx instanceof GnuplotCommandParser.SetOutputContext) {
                 GnuplotCommandParser.SetOutputContext outputCtx = (GnuplotCommandParser.SetOutputContext) optCtx;
                 String output = extractString(outputCtx.string());

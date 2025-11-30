@@ -33,6 +33,9 @@ public final class Scene {
     private final int width;
     private final int height;
     private final String title;
+    private final String xlabel;
+    private final String ylabel;
+    private final String zlabel;
     private final Viewport viewport;
     private final List<SceneElement> elements;
     private final RenderingHints hints;
@@ -42,6 +45,9 @@ public final class Scene {
         this.width = builder.width;
         this.height = builder.height;
         this.title = builder.title;
+        this.xlabel = builder.xlabel;
+        this.ylabel = builder.ylabel;
+        this.zlabel = builder.zlabel;
         this.viewport = builder.viewport;
         this.elements = Collections.unmodifiableList(new ArrayList<>(builder.elements));
         this.hints = builder.hints != null ? builder.hints : RenderingHints.empty();
@@ -62,6 +68,18 @@ public final class Scene {
 
     public String getTitle() {
         return title;
+    }
+
+    public String getXLabel() {
+        return xlabel;
+    }
+
+    public String getYLabel() {
+        return ylabel;
+    }
+
+    public String getZLabel() {
+        return zlabel;
     }
 
     public Viewport getViewport() {
@@ -93,6 +111,9 @@ public final class Scene {
         private int width = 800;
         private int height = 600;
         private String title;
+        private String xlabel;
+        private String ylabel;
+        private String zlabel;
         private Viewport viewport;
         private final List<SceneElement> elements = new ArrayList<>();
         private RenderingHints hints;
@@ -110,6 +131,21 @@ public final class Scene {
 
         public Builder title(String title) {
             this.title = Objects.requireNonNull(title, "title cannot be null");
+            return this;
+        }
+
+        public Builder xlabel(String xlabel) {
+            this.xlabel = xlabel;
+            return this;
+        }
+
+        public Builder ylabel(String ylabel) {
+            this.ylabel = ylabel;
+            return this;
+        }
+
+        public Builder zlabel(String zlabel) {
+            this.zlabel = zlabel;
             return this;
         }
 
