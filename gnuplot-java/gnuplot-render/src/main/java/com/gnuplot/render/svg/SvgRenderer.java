@@ -824,9 +824,9 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
                 if (markerStyle == null) {
                     // Create default marker style matching plot color
                     // C gnuplot uses scale(4.50) for point markers, so size = 4.50 * 4.0 = 18.0
-                    // Default point type is CROSS (gpPt1 - the X symbol)
+                    // Default point type is PLUS (gpPt0 - the + symbol), matching C gnuplot
                     Color color = Color.fromHexString(linePlot.getColor());
-                    markerStyle = MarkerStyle.unfilled(18.0, color, PointStyle.CROSS);
+                    markerStyle = MarkerStyle.unfilled(18.0, color, PointStyle.PLUS);
                 }
 
                 // Map PointStyle to gpPt index (matching C gnuplot point types)
@@ -1238,11 +1238,12 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
 
     private void renderLegendMarker(Legend.LegendEntry entry, int x, int y, int fontSize) throws IOException {
         MarkerStyle markerStyle = entry.getMarkerStyle();
-        String markerSvg = renderMarker(x + 17, y, markerStyle.size(),
-                entry.getColor(), markerStyle.pointStyle(), markerStyle.filled());
-        writer.write("  ");
-        writer.write(markerSvg);
-        writer.write("/>\n");
+        // Use <use> reference to gpPt definitions (matching C gnuplot legend rendering)
+        int ptIndex = mapPointStyleToGpPt(markerStyle.pointStyle());
+        double scale = markerStyle.size() / 4.0; // Normalize: 18.0/4.0 = 4.50
+        writer.write(String.format(Locale.US,
+                "  <use xlink:href='#gpPt%d' transform='translate(%d,%d) scale(%.2f)' color='%s'/>\n",
+                ptIndex, x + 17, y, scale, entry.getColor()));
     }
 
     private void renderLegendLineAndMarker(Legend.LegendEntry entry, int x, int y, int fontSize) throws IOException {
@@ -1531,8 +1532,8 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
      */
     private int mapPointStyleToGpPt(PointStyle pointStyle) {
         return switch (pointStyle) {
-            case PLUS -> 0;           // gpPt0: plus (+)
-            case CROSS -> 1;          // gpPt1: cross (×) - DEFAULT
+            case PLUS -> 0;           // gpPt0: plus (+) - DEFAULT
+            case CROSS -> 1;          // gpPt1: cross (×)
             case CIRCLE -> 5;         // gpPt5: circle (unfilled)
             case SQUARE -> 3;         // gpPt3: square (unfilled)
             case DIAMOND -> 11;       // gpPt11: diamond (rotated square)
@@ -1575,11 +1576,11 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
      * Based on graph3d.c and util3d.c
      */
     private void renderPointCloud3D(SurfacePlot3D surfacePlot, ViewTransform3D viewTransform, String clipAttr) throws IOException {
-        // Get marker style or use default
+        // Get marker style or use default (PLUS = gpPt0, matching C gnuplot)
         MarkerStyle markerStyle = surfacePlot.getMarkerStyle();
         if (markerStyle == null) {
             Color color = Color.fromHexString(surfacePlot.getColor());
-            markerStyle = MarkerStyle.unfilled(18.0, color, PointStyle.CROSS);
+            markerStyle = MarkerStyle.unfilled(18.0, color, PointStyle.PLUS);
         }
 
         int ptIndex = mapPointStyleToGpPt(markerStyle.pointStyle());

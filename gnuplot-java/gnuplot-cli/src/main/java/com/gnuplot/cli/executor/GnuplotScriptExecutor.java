@@ -13,6 +13,9 @@ import com.gnuplot.render.elements.Legend;
 import com.gnuplot.render.elements.LinePlot;
 import com.gnuplot.render.elements.Point3D;
 import com.gnuplot.render.elements.SurfacePlot3D;
+import com.gnuplot.render.color.Color;
+import com.gnuplot.render.style.MarkerStyle;
+import com.gnuplot.render.style.PointStyle;
 import com.gnuplot.render.svg.SvgRenderer;
 
 import java.io.BufferedReader;
@@ -704,8 +707,17 @@ public class GnuplotScriptExecutor implements CommandVisitor {
             // Add entry for each plot with a label
             for (SurfacePlot3D plot : plots3D) {
                 if (plot.getLabel() != null && !plot.getLabel().isEmpty()) {
-                    // Use default color and line style for legend
-                    legendBuilder.addEntry(plot.getLabel(), "#9400D3", LinePlot.LineStyle.SOLID);
+                    String color = plot.getColor() != null ? plot.getColor() : "#9400D3";
+                    // Use marker for POINTS style, line for other styles (matching C gnuplot)
+                    if (plot.getPlotStyle() == SurfacePlot3D.PlotStyle3D.POINTS) {
+                        // Use PLUS marker (gpPt0) as default, matching C gnuplot
+                        MarkerStyle markerStyle = MarkerStyle.unfilled(18.0,
+                                Color.fromHexString(color), PointStyle.PLUS);
+                        legendBuilder.addEntry(Legend.LegendEntry.withMarker(
+                                plot.getLabel(), color, markerStyle));
+                    } else {
+                        legendBuilder.addEntry(plot.getLabel(), color, LinePlot.LineStyle.SOLID);
+                    }
                 }
             }
 
