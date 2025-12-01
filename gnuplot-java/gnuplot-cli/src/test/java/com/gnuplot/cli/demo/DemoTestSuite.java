@@ -213,6 +213,8 @@ class DemoTestSuite {
             structMetrics.append("javaTotalDataPoints=").append(javaMetrics.getTotalDataPoints()).append("\n");
             structMetrics.append("cTextCount=").append(cMetrics.getTextCount()).append("\n");
             structMetrics.append("javaTextCount=").append(javaMetrics.getTextCount()).append("\n");
+            structMetrics.append("cContourLines=").append(cMetrics.getContourLineCount()).append("\n");
+            structMetrics.append("javaContourLines=").append(javaMetrics.getContourLineCount()).append("\n");
 
             // Save critical differences as numbered entries
             int i = 0;

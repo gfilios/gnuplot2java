@@ -113,6 +113,7 @@ public class SvgStructuralComparator {
         private int xAxisTickCount;
         private int yAxisTickCount;
         private int markerCount;
+        private int contourLineCount;
         private List<String> axisLabels;
         private List<String> legendEntries;
         private List<Integer> dataPointCounts;
@@ -148,6 +149,9 @@ public class SvgStructuralComparator {
         public int getMarkerCount() { return markerCount; }
         public void setMarkerCount(int markerCount) { this.markerCount = markerCount; }
 
+        public int getContourLineCount() { return contourLineCount; }
+        public void setContourLineCount(int contourLineCount) { this.contourLineCount = contourLineCount; }
+
         public List<String> getAxisLabels() { return axisLabels; }
         public void setAxisLabels(List<String> axisLabels) { this.axisLabels = axisLabels; }
 
@@ -173,6 +177,7 @@ public class SvgStructuralComparator {
             sb.append("  X-axis ticks: ").append(xAxisTickCount).append("\n");
             sb.append("  Y-axis ticks: ").append(yAxisTickCount).append("\n");
             sb.append("  Point markers: ").append(markerCount).append("\n");
+            sb.append("  Contour lines: ").append(contourLineCount).append("\n");
             sb.append("  Axis labels: ").append(axisLabels).append("\n");
             sb.append("  Legend entries: ").append(legendEntries).append("\n");
             sb.append("  Data series: ").append(dataPointCounts.size()).append("\n");
@@ -276,6 +281,22 @@ public class SvgStructuralComparator {
                         cMetrics.getTextCount(), javaMetrics.getTextCount()));
             }
 
+            // Compare contour line count
+            if (cMetrics.getContourLineCount() != javaMetrics.getContourLineCount()) {
+                // Only critical if C has contours but Java doesn't (or vice versa with large difference)
+                int contourDiff = Math.abs(cMetrics.getContourLineCount() - javaMetrics.getContourLineCount());
+                if (cMetrics.getContourLineCount() > 0 && javaMetrics.getContourLineCount() == 0) {
+                    critical.add(String.format("Contour lines missing in Java: C=%d, Java=%d",
+                            cMetrics.getContourLineCount(), javaMetrics.getContourLineCount()));
+                } else if (javaMetrics.getContourLineCount() > 0 && cMetrics.getContourLineCount() == 0) {
+                    minor.add(String.format("Extra contour lines in Java: C=%d, Java=%d",
+                            cMetrics.getContourLineCount(), javaMetrics.getContourLineCount()));
+                } else if (contourDiff > 2) {
+                    minor.add(String.format("Contour line count differs: C=%d, Java=%d",
+                            cMetrics.getContourLineCount(), javaMetrics.getContourLineCount()));
+                }
+            }
+
             boolean equivalent = critical.isEmpty();
 
             return new StructuralComparisonResult(critical, minor, equivalent, cMetrics, javaMetrics);
@@ -333,6 +354,9 @@ public class SvgStructuralComparator {
 
         // Extract point marker count
         metrics.setMarkerCount(extractMarkerCount(doc));
+
+        // Extract contour line count
+        metrics.setContourLineCount(extractContourLineCount(paths));
 
         // Extract title
         NodeList titles = doc.getElementsByTagName("title");
@@ -588,6 +612,55 @@ public class SvgStructuralComparator {
         } catch (NumberFormatException e) {
             return defaultValue;
         }
+    }
+
+    /**
+     * Extract contour line count from path elements.
+     * Contour lines are paths with fill="none" that form closed or open curves with many points.
+     * They can be black (C gnuplot default) or colored (C gnuplot with palette, Java gnuplot).
+     * We detect them by looking for closed paths (Z command) or paths with many points.
+     */
+    private int extractContourLineCount(NodeList paths) {
+        int count = 0;
+
+        for (int i = 0; i < paths.getLength(); i++) {
+            Element path = (Element) paths.item(i);
+            String d = path.getAttribute("d");
+            String stroke = path.getAttribute("stroke");
+            String fill = path.getAttribute("fill");
+
+            if (d == null || d.isEmpty()) continue;
+
+            // Contour lines have no fill
+            boolean hasNoFill = fill == null || fill.isEmpty() ||
+                    fill.equalsIgnoreCase("none");
+
+            if (!hasNoFill) continue;
+
+            // Must have a stroke color
+            boolean hasStroke = stroke != null && !stroke.isEmpty();
+            if (!hasStroke) continue;
+
+            // Count points in the path - contour lines have many points
+            int pointCount = countPathPoints(d);
+
+            // Contour lines typically have many points and/or are closed paths
+            boolean hasClosedPath = d.contains("Z") || d.contains("z");
+            boolean hasManyPoints = pointCount > 15;
+            boolean hasMultipleSegments = d.split("[ML]").length > 8;
+
+            // Skip simple axis/border paths (typically have fewer than 10 points and are not closed)
+            if (!hasClosedPath && pointCount < 10) continue;
+
+            // Contour indicators:
+            // 1. Closed path with reasonable number of points (iso-lines)
+            // 2. Path with many points forming a curve
+            if ((hasClosedPath && pointCount > 5) || hasManyPoints || hasMultipleSegments) {
+                count++;
+            }
+        }
+
+        return count;
     }
 
     /**

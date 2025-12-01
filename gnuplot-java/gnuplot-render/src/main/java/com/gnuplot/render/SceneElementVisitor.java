@@ -2,6 +2,7 @@ package com.gnuplot.render;
 
 import com.gnuplot.render.elements.Axis;
 import com.gnuplot.render.elements.BarChart;
+import com.gnuplot.render.elements.ContourPlot3D;
 import com.gnuplot.render.elements.Legend;
 import com.gnuplot.render.elements.LinePlot;
 import com.gnuplot.render.elements.ScatterPlot;
@@ -56,4 +57,11 @@ public interface SceneElementVisitor {
      * @param surfacePlot the 3D surface plot to visit
      */
     void visitSurfacePlot3D(SurfacePlot3D surfacePlot);
+
+    /**
+     * Visit a 3D contour plot element.
+     *
+     * @param contourPlot the 3D contour plot to visit
+     */
+    void visitContourPlot3D(ContourPlot3D contourPlot);
 }

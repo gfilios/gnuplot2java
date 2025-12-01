@@ -482,6 +482,9 @@ class BarChartTest {
         public void visitSurfacePlot3D(com.gnuplot.render.elements.SurfacePlot3D surfacePlot) {}
 
         @Override
+        public void visitContourPlot3D(com.gnuplot.render.elements.ContourPlot3D contourPlot) {}
+
+        @Override
         public void visitBarChart(BarChart barChart) {
             visitedBarChart = true;
         }

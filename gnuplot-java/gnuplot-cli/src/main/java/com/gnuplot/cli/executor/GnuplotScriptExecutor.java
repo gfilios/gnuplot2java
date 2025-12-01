@@ -13,10 +13,14 @@ import com.gnuplot.render.elements.Legend;
 import com.gnuplot.render.elements.LinePlot;
 import com.gnuplot.render.elements.Point3D;
 import com.gnuplot.render.elements.SurfacePlot3D;
+import com.gnuplot.render.elements.ContourPlot3D;
 import com.gnuplot.render.color.Color;
 import com.gnuplot.render.style.MarkerStyle;
 import com.gnuplot.render.style.PointStyle;
 import com.gnuplot.render.svg.SvgRenderer;
+import com.gnuplot.core.grid.ContourExtractor;
+import com.gnuplot.core.grid.ContourLine;
+import com.gnuplot.core.grid.ContourParams;
 
 import java.io.BufferedReader;
 import java.io.FileOutputStream;
@@ -80,9 +84,14 @@ public class GnuplotScriptExecutor implements CommandVisitor {
     private String dgrid3dMode = "qnorm";
     private int dgrid3dNorm = 1;
 
+    // Contour state
+    private boolean contourEnabled = false;
+    private ContourParams contourParams = new ContourParams();
+
     // Current scene elements
     private final List<LinePlot> plots = new ArrayList<>();
     private final List<SurfacePlot3D> plots3D = new ArrayList<>();
+    private final List<ContourPlot3D> contourPlots3D = new ArrayList<>();
 
     // Accumulated scenes (for multi-page rendering)
     private final List<Scene> scenes = new ArrayList<>();
@@ -194,6 +203,25 @@ public class GnuplotScriptExecutor implements CommandVisitor {
                 }
                 System.out.println("dgrid3d enabled: " + dgrid3dRows + "x" + dgrid3dCols + " " + dgrid3dMode + " " + dgrid3dNorm);
                 break;
+            case "contour":
+                contourEnabled = true;
+                // Parse contour place (base, surface, both)
+                if (value instanceof String) {
+                    String place = ((String) value).toLowerCase();
+                    switch (place) {
+                        case "base":
+                            contourParams.setPlace(ContourParams.ContourPlace.BASE);
+                            break;
+                        case "surface":
+                            contourParams.setPlace(ContourParams.ContourPlace.SURFACE);
+                            break;
+                        case "both":
+                            contourParams.setPlace(ContourParams.ContourPlace.BOTH);
+                            break;
+                    }
+                }
+                System.out.println("contour enabled: " + contourParams.getPlace());
+                break;
         }
     }
 
@@ -299,6 +327,7 @@ public class GnuplotScriptExecutor implements CommandVisitor {
     public void visitSplotCommand(SplotCommand command) {
         // Clear 3D plots from previous splot command
         plots3D.clear();
+        contourPlots3D.clear();
 
         System.out.println("Processing SPLOT command with " + command.getPlotSpecs().size() + " plot spec(s)");
 
@@ -396,6 +425,49 @@ public class GnuplotScriptExecutor implements CommandVisitor {
 
                     // Add to 3D plots list
                     plots3D.add(surfacePlot);
+
+                    // Generate contour lines if enabled and dgrid3d was applied
+                    if (contourEnabled && dgrid3dEnabled) {
+                        System.out.println("    Extracting contour lines...");
+
+                        // Convert points to core Point3D array for contour extraction
+                        com.gnuplot.core.geometry.Point3D[] gridPoints =
+                            new com.gnuplot.core.geometry.Point3D[points.length];
+                        double zMin = Double.MAX_VALUE;
+                        double zMax = -Double.MAX_VALUE;
+                        for (int i = 0; i < points.length; i++) {
+                            gridPoints[i] = new com.gnuplot.core.geometry.Point3D(
+                                points[i].x(), points[i].y(), points[i].z());
+                            if (points[i].z() < zMin) zMin = points[i].z();
+                            if (points[i].z() > zMax) zMax = points[i].z();
+                        }
+
+                        // Extract contours
+                        ContourExtractor extractor = new ContourExtractor();
+                        List<ContourLine> contours = extractor.extract(
+                            gridPoints, dgrid3dRows, dgrid3dCols, contourParams);
+
+                        System.out.println("    Extracted " + contours.size() + " contour lines");
+
+                        if (!contours.isEmpty()) {
+                            // Assign colors to contours based on z-level (like C gnuplot)
+                            List<ContourLine> coloredContours = assignContourColors(contours);
+
+                            // Create contour plot element
+                            ContourPlot3D contourPlot = ContourPlot3D.builder()
+                                .id("contour_" + expression)
+                                .contourLines(coloredContours)
+                                .place(contourParams.getPlace())
+                                .color("#000000")  // Fallback color
+                                .baseZ(zMin)
+                                .showLabels(false)  // Labels not yet implemented in grammar
+                                .build();
+
+                            contourPlots3D.add(contourPlot);
+                            System.out.println("    Created ContourPlot3D with " + coloredContours.size() + " lines");
+                        }
+                    }
+
                     colorIndex++;  // Next color for next plot
                 } else {
                     System.err.println("    No valid points loaded from " + expression);
@@ -435,6 +507,10 @@ public class GnuplotScriptExecutor implements CommandVisitor {
             case "dgrid3d":
                 dgrid3dEnabled = false;
                 System.out.println("dgrid3d disabled");
+                break;
+            case "contour":
+                contourEnabled = false;
+                System.out.println("contour disabled");
                 break;
         }
     }
@@ -736,6 +812,11 @@ public class GnuplotScriptExecutor implements CommandVisitor {
         // Add all 3D plots
         for (SurfacePlot3D plot : plots3D) {
             sceneBuilder.addElement(plot);
+        }
+
+        // Add all contour plots
+        for (ContourPlot3D contour : contourPlots3D) {
+            sceneBuilder.addElement(contour);
         }
 
         // Create and add legend if any plot has a label
@@ -1080,6 +1161,44 @@ public class GnuplotScriptExecutor implements CommandVisitor {
         }
 
         return pointsList.toArray(new Point3D[0]);
+    }
+
+    /**
+     * Assign colors to contour lines based on their z-level.
+     * Each unique z-level gets a color from the DEFAULT_COLORS palette,
+     * cycling through the palette if there are more levels than colors.
+     * This matches C gnuplot's behavior of coloring contours by level.
+     *
+     * @param contours the list of contour lines to colorize
+     * @return a new list of contour lines with colors assigned
+     */
+    private List<ContourLine> assignContourColors(List<ContourLine> contours) {
+        if (contours.isEmpty()) {
+            return contours;
+        }
+
+        // Get unique z-levels in sorted order
+        java.util.Set<Double> uniqueLevels = new java.util.TreeSet<>();
+        for (ContourLine contour : contours) {
+            uniqueLevels.add(contour.zLevel());
+        }
+
+        // Map each z-level to a color index
+        java.util.Map<Double, String> levelColorMap = new java.util.HashMap<>();
+        int colorIdx = 0;
+        for (Double level : uniqueLevels) {
+            levelColorMap.put(level, DEFAULT_COLORS[colorIdx % DEFAULT_COLORS.length]);
+            colorIdx++;
+        }
+
+        // Create new contour lines with assigned colors
+        List<ContourLine> coloredContours = new java.util.ArrayList<>();
+        for (ContourLine contour : contours) {
+            String color = levelColorMap.get(contour.zLevel());
+            coloredContours.add(contour.withColor(color));
+        }
+
+        return coloredContours;
     }
 
     /**

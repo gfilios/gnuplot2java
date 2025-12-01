@@ -5,11 +5,14 @@ import com.gnuplot.render.axis.TickGenerator;
 import com.gnuplot.render.color.Color;
 import com.gnuplot.render.elements.Axis;
 import com.gnuplot.render.elements.BarChart;
+import com.gnuplot.render.elements.ContourPlot3D;
 import com.gnuplot.render.elements.Legend;
 import com.gnuplot.render.elements.LinePlot;
 import com.gnuplot.render.elements.Point3D;
 import com.gnuplot.render.elements.ScatterPlot;
 import com.gnuplot.render.elements.SurfacePlot3D;
+import com.gnuplot.core.grid.ContourLine;
+import com.gnuplot.core.grid.ContourParams;
 import com.gnuplot.render.projection.ViewTransform3D;
 import com.gnuplot.render.style.MarkerStyle;
 import com.gnuplot.render.style.PointStyle;
@@ -2019,5 +2022,142 @@ public class SvgRenderer implements Renderer, SceneElementVisitor {
         String formatted = String.format(Locale.US, "%.1f", value);
         // Remove trailing zeros after decimal
         return formatted.replaceAll("\\.0$", "");
+    }
+
+    /**
+     * Visit and render a 3D contour plot element.
+     * Port of gnuplot-c/src/graph3d.c:cntr3d_lines()
+     *
+     * @param contourPlot the contour plot to visit
+     */
+    @Override
+    public void visitContourPlot3D(ContourPlot3D contourPlot) {
+        try {
+            Viewport viewport = scene.getViewport();
+            String clipAttr = " clip-path=\"url(#plotClip)\"";
+
+            writer.write(String.format("<g%s>\n", clipAttr));
+
+            for (ContourLine contour : contourPlot.getContourLines()) {
+                if (!contour.isValid()) {
+                    continue;
+                }
+
+                // Use per-contour color if set, otherwise fall back to plot color
+                String color = contour.color() != null ? contour.color() : contourPlot.getColor();
+
+                // Render on base plane if requested
+                if (contourPlot.shouldDrawOnBase()) {
+                    renderContourOnBase(contour, contourPlot.getBaseZ(), color, viewport);
+                }
+
+                // Render on surface if requested
+                if (contourPlot.shouldDrawOnSurface()) {
+                    renderContourOnSurface(contour, color, viewport);
+                }
+
+                // Render label if requested
+                if (contourPlot.isShowLabels()) {
+                    renderContourLabel(contour, contourPlot.shouldDrawOnBase() ?
+                            contourPlot.getBaseZ() : contour.zLevel(), viewport);
+                }
+            }
+
+            writer.write("</g>\n");
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to render contour plot", e);
+        }
+    }
+
+    /**
+     * Render a contour line on the base plane (projected at z=baseZ).
+     * Port of gnuplot-c/src/graph3d.c:cntr3d_lines() with CONTOUR_BASE
+     */
+    private void renderContourOnBase(ContourLine contour, double baseZ, String color, Viewport viewport) throws IOException {
+        List<com.gnuplot.core.geometry.Point3D> points = contour.points();
+        if (points.size() < 2) {
+            return;
+        }
+
+        StringBuilder pathData = new StringBuilder();
+        boolean first = true;
+
+        for (com.gnuplot.core.geometry.Point3D p : points) {
+            // Project point at base z-level
+            double[] screen = map3d_to_screen(p.getX(), p.getY(), baseZ, viewport);
+
+            if (first) {
+                pathData.append(String.format(Locale.US, "M%.2f,%.2f", screen[0], screen[1]));
+                first = false;
+            } else {
+                pathData.append(String.format(Locale.US, " L%.2f,%.2f", screen[0], screen[1]));
+            }
+        }
+
+        // Close path if contour is closed
+        if (contour.isClosed() && points.size() > 2) {
+            pathData.append(" Z");
+        }
+
+        writer.write(String.format(Locale.US,
+                "  <path d=\"%s\" stroke=\"%s\" stroke-width=\"1.0\" fill=\"none\"/>\n",
+                pathData.toString(), color));
+    }
+
+    /**
+     * Render a contour line on the 3D surface (at its actual z-level).
+     * Port of gnuplot-c/src/graph3d.c:cntr3d_lines() with CONTOUR_SURFACE
+     */
+    private void renderContourOnSurface(ContourLine contour, String color, Viewport viewport) throws IOException {
+        List<com.gnuplot.core.geometry.Point3D> points = contour.points();
+        if (points.size() < 2) {
+            return;
+        }
+
+        StringBuilder pathData = new StringBuilder();
+        boolean first = true;
+
+        for (com.gnuplot.core.geometry.Point3D p : points) {
+            // Project point at its actual z-level
+            double[] screen = map3d_to_screen(p.getX(), p.getY(), p.getZ(), viewport);
+
+            if (first) {
+                pathData.append(String.format(Locale.US, "M%.2f,%.2f", screen[0], screen[1]));
+                first = false;
+            } else {
+                pathData.append(String.format(Locale.US, " L%.2f,%.2f", screen[0], screen[1]));
+            }
+        }
+
+        // Close path if contour is closed
+        if (contour.isClosed() && points.size() > 2) {
+            pathData.append(" Z");
+        }
+
+        writer.write(String.format(Locale.US,
+                "  <path d=\"%s\" stroke=\"%s\" stroke-width=\"1.0\" fill=\"none\"/>\n",
+                pathData.toString(), color));
+    }
+
+    /**
+     * Render a contour label at the midpoint of the contour line.
+     */
+    private void renderContourLabel(ContourLine contour, double z, Viewport viewport) throws IOException {
+        List<com.gnuplot.core.geometry.Point3D> points = contour.points();
+        if (points.isEmpty()) {
+            return;
+        }
+
+        // Get midpoint of contour
+        int midIdx = points.size() / 2;
+        com.gnuplot.core.geometry.Point3D midPoint = points.get(midIdx);
+
+        // Project to screen
+        double[] screen = map3d_to_screen(midPoint.getX(), midPoint.getY(), z, viewport);
+
+        // Render label
+        writer.write(String.format(Locale.US,
+                "  <text x=\"%.2f\" y=\"%.2f\" font-size=\"8\" text-anchor=\"middle\" dominant-baseline=\"middle\">%s</text>\n",
+                screen[0], screen[1], escapeXml(contour.label())));
     }
 }

@@ -158,6 +158,10 @@ public class CommandBuilderVisitor extends GnuplotCommandBaseVisitor<List<Comman
                 styleSettings.put("value", styleValue);
 
                 commands.add(new SetCommand("style", styleSettings));
+            } else if (optCtx instanceof GnuplotCommandParser.SetContourContext) {
+                // Enable contour with default place (base)
+                // TODO: Parse "set contour base|surface|both" when grammar is extended
+                commands.add(new SetCommand("contour", "base"));
             }
         }
 
