@@ -4,61 +4,35 @@
 
 ---
 
-## Current Project Status (Updated: 2025-11-29)
+## Modernization Approach
 
-### Unified Test Infrastructure
+This project is a **progressive rewrite** of gnuplot from C to Java. The original C implementation is preserved in `gnuplot-c/` as the reference ("oracle"), while the new Java implementation lives in `gnuplot-java/`.
 
-| Category | Count | Status |
-|----------|-------|--------|
-| gnuplot-core unit tests | 579 | ✅ All passing |
-| gnuplot-render unit tests | 380 | ✅ All passing |
-| gnuplot-cli unit tests | 46 | ✅ All passing |
-| Demo comparisons | 3 | ✅ All passing |
-| **TOTAL** | **1008** | ✅ **All passing** |
+**Key Principle:** The C gnuplot output is the ground truth. Java must produce visually identical results.
 
-### Demo Test Results: 3/3 Passing (100%)
+### Why Progressive Rewrite (Not Conversion)
 
-| Demo | Status | Pixel Similarity | Notes |
-|------|--------|-----------------|-------|
-| **simple.dem** | ✅ PASS | ≥80% | Minor impulse line differences |
-| **scatter.dem** | ✅ PASS | ≥80% | Minor legend offset |
-| **controls.dem** | ✅ PASS | N/A | Control flow not yet in Java |
+1. **C code is not directly convertible** - gnuplot's C codebase uses patterns that don't translate well to Java
+2. **Algorithm extraction** - We study C algorithms and reimplement them using Java idioms
+3. **Test-driven validation** - Official demo files (`gnuplot-c/demo/*.dem`) serve as test oracles
+4. **Incremental progress** - Each demo file validated = more features working
 
-**Total Available Demos:** 231
-**Implemented:** 3 (1.3%)
+### The Oracle Pattern
 
-### Recent Changes
-
-**Latest Fix (2025-10-07):** Point marker visibility (CRITICAL)
-- **Issue:** Point markers invisible in SVG despite correct structure
-- **Root Cause:** SVG `clip-path` incompatibility with `<path>` transforms
-- **Solution:** Wrap paths in `<g>` element, apply clip-path to parent
-- **Impact:** All point marker types now visible (Cross, Plus, Circle, etc.)
-- **Files:** [SvgRenderer.java:469-504](gnuplot-java/gnuplot-render/src/main/java/com/gnuplot/render/svg/SvgRenderer.java#L469-L504)
-
-**Previous Milestones:**
-- 2025-10-05: Default plot styles, impulses rendering, legend positioning
-- 2025-10-01: CLI interface complete (5 execution modes), 31 CLI tests passing
-
-### Known Issues & Active Work
-
-**Priority 1 - Missing Features:**
-1. **Impulse Lines** - Not implemented for 2D/3D (affects simple.dem plot 4)
-   - See [BACKLOG_IMPULSES_POINTS.md](BACKLOG_IMPULSES_POINTS.md)
-   - Estimated: 2-3 hours
-
-**Priority 2 - Minor Cosmetic Issues:**
-2. **Legend Positioning** - 45px horizontal offset in 3D plots (scatter.dem)
-   - Cosmetic only, does not affect functionality
-   - Estimated: 30-60 minutes
-
-**Recently Completed:**
-- ✅ **3D Y-Axis Positioning** (Fixed 2025-11-03, commit 0759a997)
-  - Implemented 4/7 scaling ratio matching C gnuplot
-  - [SvgRenderer.java:1637-1647](gnuplot-java/gnuplot-render/src/main/java/com/gnuplot/render/svg/SvgRenderer.java#L1637-L1647)
-- ✅ **Y/Z Tick Labels** (Already implemented)
-  - All 3D axes have tick marks and labels
-  - 33 labels rendered correctly
+```
+C Gnuplot (Oracle)          Java Gnuplot (Implementation)
+       │                              │
+       ▼                              ▼
+   demo.dem ──────────────────► demo.dem
+       │                              │
+       ▼                              ▼
+   output.svg                    output.svg
+       │                              │
+       └──────── COMPARE ─────────────┘
+                    │
+                    ▼
+            Pixel Similarity ≥80%
+```
 
 ---
 
@@ -263,98 +237,6 @@ outputs/                         # Generated SVG/PNG files
 
 ---
 
-## Implementation Features Matrix
-
-### What's Working ✅
-
-**2D Plotting:**
-- Function evaluation (sin, cos, atan, bessel)
-- Point markers (8 types, optimized with `<use>` refs)
-- Line plots (continuous lines)
-- Legend (92% accurate positioning)
-- Axes with tick marks
-- Grid lines
-- Titles and labels
-- Variable sampling (50-400 samples)
-
-**3D Plotting:**
-- Point cloud scatter plots
-- Wireframe rendering (LINES style)
-- 3D coordinate axes
-- ViewTransform3D projection (60°, 30° rotation)
-- dgrid3d qnorm interpolation (weighted)
-- Legend positioning (top-right)
-
-**Rendering & Optimization:**
-- SVG output (primary format)
-- Point marker optimization (75% size reduction vs inline paths)
-- File size 50% smaller than C gnuplot
-
-### What's Missing ❌
-
-**2D Features:**
-- Impulses (vertical bars from baseline)
-- Boxes, steps, histograms
-- More advanced plot styles
-
-**3D Features:**
-- Y/Z axis tick labels
-- Impulse guide lines
-- Surface plots (pm3d)
-- Contour lines
-
----
-
-## Performance Metrics
-
-### File Size Optimization
-
-| Metric | C Gnuplot | Java (Optimized) | Improvement |
-|--------|-----------|------------------|-------------|
-| scatter.dem SVG | 50 KB | 25 KB | **50% smaller** |
-| Line count | 600 | 282 | **53% reduction** |
-| Point markers | 257 inline | 249 `<use>` refs | **Optimized** |
-
-### Test Execution
-
-| Demo | Plots | C Runtime | Java Runtime |
-|------|-------|-----------|--------------|
-| simple.dem | 8 | ~2 sec | ~3 sec |
-| scatter.dem | 8 | ~3 sec | ~4 sec |
-
-**Total Tests:** 1008 passing (579 core + 380 render + 46 cli + 3 demo)
-
----
-
-## Next Priorities (Suggested)
-
-### To Fix Current Issues (Quick Wins)
-
-1. **Impulse Lines** (2-3 hours) ⭐ **TOP PRIORITY**
-   - Implement "with impulses" style for 2D and 3D
-   - Vertical lines from baseline to data point
-   - Affects simple.dem plot 4 and scatter.dem
-   - See [BACKLOG_IMPULSES_POINTS.md](BACKLOG_IMPULSES_POINTS.md)
-   - C code reference: `graphics.c` and `graph3d.c`
-
-2. **Legend Positioning Fine-tuning** (30-60 min)
-   - Fix 45px horizontal offset in 3D plots
-   - Cosmetic improvement for scatter.dem
-   - File: [SvgRenderer.java](gnuplot-java/gnuplot-render/src/main/java/com/gnuplot/render/svg/SvgRenderer.java)
-
-3. **Number Format Matching** (30 min)
-   - Match C gnuplot's number formatting (`-1` vs `-1.0`)
-   - Low priority, cosmetic only
-
-### To Add New Demos
-
-**Next suggested demos:**
-- `arrows.dem` - Arrow rendering
-- `boxes.dem` - Box plots
-- `surface1.dem` - 3D surfaces
-
----
-
 ## Essential Documentation Links
 
 ### Must-Read Documents
@@ -364,38 +246,19 @@ outputs/                         # Generated SVG/PNG files
 3. **[README.md](README.md)** - Project overview, quick start, architecture
 4. **[CONTRIBUTING.md](CONTRIBUTING.md)** - Contribution guidelines, coding standards
 
-### Deep Dive Documentation
+### Strategy & Planning
 
-**Strategy & Planning:**
 - [MODERNIZATION_STRATEGY.md](MODERNIZATION_STRATEGY.md) - Why progressive rewrite vs conversion
 - [TEST_DRIVEN_PLAN.md](TEST_DRIVEN_PLAN.md) - TDD methodology using demo suite as oracle
-- [MODERNIZATION_PROPOSAL.md](MODERNIZATION_PROPOSAL.md) - Original architecture proposal
 
-**Testing:**
+### Testing
+
 - [TESTING.md](TESTING.md) - How to run tests, test infrastructure
 - [test-tools/README.md](test-tools/README.md) - Visual comparison tools
-- [test-tools/docs/INTEGRATED_TESTING_GUIDE.md](test-tools/docs/INTEGRATED_TESTING_GUIDE.md) - Automated comparison
 
-**Implementation Details:**
-- [3D_YAXIS_POSITIONING_ANALYSIS.md](3D_YAXIS_POSITIONING_ANALYSIS.md) - 3D positioning issue analysis
-- [gnuplot-render/ARCHITECTURE.md](gnuplot-java/gnuplot-render/ARCHITECTURE.md) - Scene graph, visitor pattern
-- [docs/STORY_TDD4_ROADMAP.md](docs/STORY_TDD4_ROADMAP.md) - simple.dem implementation roadmap
+### Setup
 
-**Current Stories:**
-- [BACKLOG_IMPULSES_POINTS.md](BACKLOG_IMPULSES_POINTS.md) - Impulses and point marker fixes
-- [docs/STORY_TDD6_LEGEND_INTEGRATION.md](docs/STORY_TDD6_LEGEND_INTEGRATION.md) - Legend system integration
-
-### Reference Documentation
-
-**Setup:**
 - [SETUP.md](SETUP.md) - Development environment (JDK 21, Maven 3.9+)
-- [QUICK_START.md](QUICK_START.md) - Get started in 5 minutes
-
-**Backlog:**
-- [IMPLEMENTATION_BACKLOG.md](IMPLEMENTATION_BACKLOG.md) - Complete backlog (200+ stories, 39K tokens - too large to read in one go, use search)
-
-**C Reference:**
-- [gnuplot-c/README_MODERNIZATION.md](gnuplot-c/README_MODERNIZATION.md) - Purpose of preserved C code
 
 ---
 
@@ -529,16 +392,4 @@ grep -rn "ticslevel\|xscaler\|quantize" gnuplot-c/src/
 
 ---
 
-## Document History
-
-- **Created:** 2025-11-04
-- **Purpose:** Consolidated session startup guide for Claude Code
-- **Replaces:** Reading 5-7 separate documents at session start
-- **Estimated Read Time:** 5-7 minutes
-- **Token Count:** ~10,000 tokens (fits in single read)
-
----
-
-**Remember:** Test-driven development is mandatory. Always run tests before and after changes. Never hardcode values. Always reference C source code. Document everything.
-
-Happy coding!
+**Remember:** Test-driven development is mandatory. Always run tests before and after changes. Never hardcode values. Always reference C source code.
