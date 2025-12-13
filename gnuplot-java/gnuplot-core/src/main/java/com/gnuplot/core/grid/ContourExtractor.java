@@ -553,10 +553,9 @@ public class ContourExtractor {
         Edge currentEdge = startEdge;
         Polygon lastPoly = null;
 
-        // Mark start edge as inactive (unless closed contour)
-        if (!isClosed) {
-            startEdge.isActive = false;
-        }
+        // Mark start edge as inactive - applies to both open and closed contours
+        // This prevents the algorithm from re-tracing the same contour
+        startEdge.isActive = false;
 
         // Check if we have polygons to trace
         if (currentEdge.poly[0] == null && currentEdge.poly[1] == null) {
