@@ -20,6 +20,9 @@ public class HtmlReportGenerator {
     public static void generateReport(Path outputFile, List<TestResultRepository.DemoTestRecord> records,
                                      Path runDirectory) throws IOException {
 
+        // Generate timestamp for the report
+        String timestamp = java.time.LocalDateTime.now().format(TIMESTAMP_FORMAT);
+
         StringBuilder html = new StringBuilder();
 
         // HTML header
@@ -38,7 +41,7 @@ public class HtmlReportGenerator {
         // Header section
         html.append("  <div class=\"header\">\n");
         html.append("    <h1>🧪 Gnuplot Demo Test Results</h1>\n");
-        html.append("    <p class=\"timestamp\">Test Run: ").append(runDirectory.getFileName()).append("</p>\n");
+        html.append("    <p class=\"timestamp\">Test Run: ").append(timestamp).append("</p>\n");
         html.append("  </div>\n");
 
         // Summary section

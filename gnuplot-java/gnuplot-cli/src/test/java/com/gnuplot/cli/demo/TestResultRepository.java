@@ -88,22 +88,37 @@ public class TestResultRepository {
         // Create repository structure
         Files.createDirectories(repositoryRoot);
 
-        // Create timestamped directory for this run
-        String timestamp = LocalDateTime.now().format(TIMESTAMP_FORMAT);
-        this.currentRunDir = repositoryRoot.resolve("run_" + timestamp);
-        Files.createDirectories(currentRunDir);
+        // Use "latest" directory directly (not as a symlink)
+        this.currentRunDir = repositoryRoot.resolve("latest");
+        this.latestSymlink = null; // Not used anymore
 
-        // Create/update "latest" symlink
-        this.latestSymlink = repositoryRoot.resolve("latest");
-        if (Files.exists(latestSymlink)) {
-            Files.delete(latestSymlink);
+        // Clear and recreate the latest directory
+        if (Files.exists(currentRunDir)) {
+            deleteDirectoryRecursively(currentRunDir);
         }
-        Files.createSymbolicLink(latestSymlink, currentRunDir.getFileName());
+        Files.createDirectories(currentRunDir);
 
         // Create subdirectories
         Files.createDirectories(currentRunDir.resolve("scripts"));
         Files.createDirectories(currentRunDir.resolve("outputs"));
         Files.createDirectories(currentRunDir.resolve("logs"));
+    }
+
+    /**
+     * Recursively delete a directory and all its contents.
+     */
+    private void deleteDirectoryRecursively(Path directory) throws IOException {
+        if (Files.exists(directory)) {
+            Files.walk(directory)
+                .sorted((a, b) -> b.compareTo(a)) // Reverse order to delete files before directories
+                .forEach(path -> {
+                    try {
+                        Files.delete(path);
+                    } catch (IOException e) {
+                        // Ignore errors during cleanup
+                    }
+                });
+        }
     }
 
     /**
@@ -200,10 +215,13 @@ public class TestResultRepository {
     public void generateSummaryReport() throws IOException {
         Path summaryFile = currentRunDir.resolve("summary.txt");
 
+        // Generate timestamp for the report
+        String timestamp = LocalDateTime.now().format(TIMESTAMP_FORMAT);
+
         StringBuilder sb = new StringBuilder();
         sb.append("Gnuplot Demo Test Results\n");
         sb.append("=========================\n");
-        sb.append("Test Run: ").append(currentRunDir.getFileName()).append("\n");
+        sb.append("Test Run: ").append(timestamp).append("\n");
         sb.append("Total Tests: ").append(records.size()).append("\n");
 
         long passing = records.stream().filter(DemoTestRecord::isPassing).count();
