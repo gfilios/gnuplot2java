@@ -453,13 +453,19 @@ public class GnuplotScriptExecutor implements CommandVisitor {
                             // Assign colors to contours based on z-level (like C gnuplot)
                             List<ContourLine> coloredContours = assignContourColors(contours);
 
+                            // Calculate zMinVisual - the bottom of the 3D plot box
+                            // This matches the ticslevel adjustment in buildScene()
+                            double ticslevel = 0.5;  // TODO: get from command parser
+                            double zRange = zMax - zMin;
+                            double zMinVisual = zMin - (zRange * ticslevel);
+
                             // Create contour plot element
                             ContourPlot3D contourPlot = ContourPlot3D.builder()
                                 .id("contour_" + expression)
                                 .contourLines(coloredContours)
                                 .place(contourParams.getPlace())
                                 .color("#000000")  // Fallback color
-                                .baseZ(zMin)
+                                .baseZ(zMinVisual)  // Use visual base, not data minimum
                                 .showLabels(false)  // Labels not yet implemented in grammar
                                 .build();
 
