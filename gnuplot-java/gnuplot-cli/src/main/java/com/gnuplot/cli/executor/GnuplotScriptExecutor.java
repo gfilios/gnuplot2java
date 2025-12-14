@@ -865,9 +865,9 @@ public class GnuplotScriptExecutor implements CommandVisitor {
                     }
                 }
 
-                // Sort by z-level and add legend entries
+                // Sort by z-level descending (high to low) to match C gnuplot legend order
                 java.util.List<Double> sortedLevels = new java.util.ArrayList<>(contourLevelColors.keySet());
-                java.util.Collections.sort(sortedLevels);
+                java.util.Collections.sort(sortedLevels, java.util.Collections.reverseOrder());
                 for (Double level : sortedLevels) {
                     String color = contourLevelColors.get(level);
                     // Format like C gnuplot: nice compact representation
@@ -1229,15 +1229,17 @@ public class GnuplotScriptExecutor implements CommandVisitor {
             return contours;
         }
 
-        // Get unique z-levels in sorted order
-        java.util.Set<Double> uniqueLevels = new java.util.TreeSet<>();
+        // Get unique z-levels in descending order (highest first, like C gnuplot)
+        java.util.Set<Double> uniqueLevels = new java.util.TreeSet<>(java.util.Collections.reverseOrder());
         for (ContourLine contour : contours) {
             uniqueLevels.add(contour.zLevel());
         }
 
-        // Map each z-level to a color index
+        // Map each z-level to a color index (highest level gets first color)
+        // Start from index 1 to skip the first color (used by surface plot),
+        // matching C gnuplot behavior where contours start from linetype 1
         java.util.Map<Double, String> levelColorMap = new java.util.HashMap<>();
-        int colorIdx = 0;
+        int colorIdx = 1;  // Skip first color (used by surface plot)
         for (Double level : uniqueLevels) {
             levelColorMap.put(level, DEFAULT_COLORS[colorIdx % DEFAULT_COLORS.length]);
             colorIdx++;
