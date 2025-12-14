@@ -1,6 +1,12 @@
 package com.gnuplot.core.evaluator;
 
 import com.gnuplot.core.ast.*;
+import com.gnuplot.core.parser.ExpressionParser;
+import com.gnuplot.core.parser.ParseResult;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Evaluates an Abstract Syntax Tree (AST) to compute mathematical results.
@@ -34,6 +40,7 @@ import com.gnuplot.core.ast.*;
 public class Evaluator implements ASTVisitor<Double> {
 
     private final EvaluationContext context;
+    private final ExpressionParser parser;
 
     /**
      * Creates a new evaluator with an empty context.
@@ -49,6 +56,7 @@ public class Evaluator implements ASTVisitor<Double> {
      */
     public Evaluator(EvaluationContext context) {
         this.context = context;
+        this.parser = new ExpressionParser();
     }
 
     /**
@@ -148,32 +156,101 @@ public class Evaluator implements ASTVisitor<Double> {
 
     @Override
     public Double visitFunctionCall(FunctionCall node) {
+        String functionName = node.functionName();
+
         // Evaluate all arguments
         double[] args = node.arguments().stream()
                 .mapToDouble(arg -> arg.accept(this))
                 .toArray();
 
-        // Look up and call the function
-        if (!context.hasFunction(node.functionName())) {
+        // Check for user-defined functions first
+        EvaluationContext.UserFunction userFunc = context.getUserFunction(functionName);
+        if (userFunc != null) {
+            return evaluateUserFunction(userFunc, args, node);
+        }
+
+        // Fall back to built-in functions
+        if (!context.hasFunction(functionName)) {
             throw new EvaluationException(
                     String.format("Undefined function: %s at line %d, column %d",
-                            node.functionName(),
+                            functionName,
                             node.getLocation().line(),
                             node.getLocation().column())
             );
         }
 
         try {
-            return context.getFunction(node.functionName()).call(args);
+            return context.getFunction(functionName).call(args);
         } catch (Exception e) {
             throw new EvaluationException(
                     String.format("Error calling function %s at line %d, column %d: %s",
-                            node.functionName(),
+                            functionName,
                             node.getLocation().line(),
                             node.getLocation().column(),
                             e.getMessage()),
                     e
             );
+        }
+    }
+
+    /**
+     * Evaluates a user-defined function by binding arguments to parameters
+     * and evaluating the body expression.
+     *
+     * @param userFunc the user function definition
+     * @param args the evaluated argument values
+     * @param node the function call node (for error reporting)
+     * @return the result of evaluating the function body
+     */
+    private Double evaluateUserFunction(EvaluationContext.UserFunction userFunc, double[] args, FunctionCall node) {
+        List<String> parameters = userFunc.parameters();
+
+        // Validate argument count
+        if (args.length != parameters.size()) {
+            throw new EvaluationException(
+                    String.format("Function %s expects %d argument(s) but got %d at line %d, column %d",
+                            node.functionName(),
+                            parameters.size(),
+                            args.length,
+                            node.getLocation().line(),
+                            node.getLocation().column())
+            );
+        }
+
+        // Save current variable values for parameters (to restore later)
+        Map<String, Double> savedValues = new HashMap<>();
+        for (String param : parameters) {
+            if (context.hasVariable(param)) {
+                savedValues.put(param, context.getVariable(param));
+            }
+        }
+
+        try {
+            // Bind arguments to parameters
+            for (int i = 0; i < parameters.size(); i++) {
+                context.setVariable(parameters.get(i), args[i]);
+            }
+
+            // Parse and evaluate the function body
+            ParseResult parseResult = parser.parse(userFunc.bodyExpression());
+            if (!parseResult.isSuccess()) {
+                throw new EvaluationException(
+                        String.format("Error parsing function %s body: %s",
+                                node.functionName(),
+                                parseResult.getError())
+                );
+            }
+
+            return evaluate(parseResult.getAst());
+        } finally {
+            // Restore previous variable values
+            for (String param : parameters) {
+                if (savedValues.containsKey(param)) {
+                    context.setVariable(param, savedValues.get(param));
+                } else {
+                    context.removeVariable(param);
+                }
+            }
         }
     }
 

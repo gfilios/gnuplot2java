@@ -1,5 +1,5 @@
 set term svg size 800,600
-set output '/var/folders/hq/0d5018vj44x5wg2ynxt_swl40000gn/T/junit14426666402732978830/simple_java.svg'
+set output '/var/folders/hq/0d5018vj44x5wg2ynxt_swl40000gn/T/junit18089912085785788457/simple_java.svg'
 # Requires data files "[123].dat" from this directory,
 # so change current working directory to this directory before running.
 # gnuplot> set term <term-type>

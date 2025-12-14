@@ -69,6 +69,12 @@ public class GnuplotScriptExecutor implements CommandVisitor {
     private boolean outputFileExplicitlySet = false; // Track if user set output file
     private final Map<String, Double> variables = new HashMap<>();
 
+    // Axis range state (set by "set xrange", "set yrange", etc.)
+    private Double globalXMin = null;  // null means autoscale
+    private Double globalXMax = null;
+    private Double globalYMin = null;
+    private Double globalYMax = null;
+
     // Legend/key state - split into vertical and horizontal components to match gnuplot's incremental behavior
     private String keyVerticalPosition = "top";  // top, bottom, center, tmargin, bmargin
     private String keyHorizontalPosition = "right";  // left, right, center (gnuplot default is right)
@@ -233,6 +239,30 @@ public class GnuplotScriptExecutor implements CommandVisitor {
                     }
                 }
                 break;
+            case "xrange":
+                if (value instanceof Map) {
+                    @SuppressWarnings("unchecked")
+                    Map<String, Double> rangeValues = (Map<String, Double>) value;
+                    if (rangeValues.containsKey("min")) {
+                        globalXMin = rangeValues.get("min");
+                    }
+                    if (rangeValues.containsKey("max")) {
+                        globalXMax = rangeValues.get("max");
+                    }
+                }
+                break;
+            case "yrange":
+                if (value instanceof Map) {
+                    @SuppressWarnings("unchecked")
+                    Map<String, Double> rangeValues = (Map<String, Double>) value;
+                    if (rangeValues.containsKey("min")) {
+                        globalYMin = rangeValues.get("min");
+                    }
+                    if (rangeValues.containsKey("max")) {
+                        globalYMax = rangeValues.get("max");
+                    }
+                }
+                break;
         }
     }
 
@@ -241,26 +271,34 @@ public class GnuplotScriptExecutor implements CommandVisitor {
         // Clear plots from previous plot command
         plots.clear();
 
-        // Update X range from plot command
+        // Determine default X range: use global "set xrange" if set, otherwise -10 to 10
+        double defaultXMin = globalXMin != null ? globalXMin : -10.0;
+        double defaultXMax = globalXMax != null ? globalXMax : 10.0;
+
+        // Update X range from plot command (overrides global if specified)
         if (command.getXRange() != null) {
             PlotCommand.Range xRange = command.getXRange();
-            currentXMin = xRange.getMin() != null ? xRange.getMin() : -10.0;
-            currentXMax = xRange.getMax() != null ? xRange.getMax() : 10.0;
+            currentXMin = xRange.getMin() != null ? xRange.getMin() : defaultXMin;
+            currentXMax = xRange.getMax() != null ? xRange.getMax() : defaultXMax;
         } else {
-            // Reset to default if no range specified
-            currentXMin = -10.0;
-            currentXMax = 10.0;
+            // Use global range or default
+            currentXMin = defaultXMin;
+            currentXMax = defaultXMax;
         }
 
-        // Update Y range from plot command
+        // Determine default Y range: use global "set yrange" if set, otherwise autoscale
+        Double defaultYMin = globalYMin;
+        Double defaultYMax = globalYMax;
+
+        // Update Y range from plot command (overrides global if specified)
         if (command.getYRange() != null) {
             PlotCommand.Range yRange = command.getYRange();
-            currentYMin = yRange.getMin();
-            currentYMax = yRange.getMax();
+            currentYMin = yRange.getMin() != null ? yRange.getMin() : defaultYMin;
+            currentYMax = yRange.getMax() != null ? yRange.getMax() : defaultYMax;
         } else {
-            // Reset to auto-scale if no range specified
-            currentYMin = null;
-            currentYMax = null;
+            // Use global range or autoscale
+            currentYMin = defaultYMin;
+            currentYMax = defaultYMax;
         }
 
         int colorIndex = 0;  // Track color cycling for multi-plot commands
@@ -551,6 +589,35 @@ public class GnuplotScriptExecutor implements CommandVisitor {
         variables.clear();
     }
 
+    @Override
+    public void visitFunctionDefinitionCommand(FunctionDefinitionCommand command) {
+        // Register the user-defined function in the evaluation context
+        evaluationContext.registerUserFunction(
+            command.getFunctionName(),
+            command.getParameters(),
+            command.getBodyExpression()
+        );
+    }
+
+    @Override
+    public void visitVariableAssignmentCommand(VariableAssignmentCommand command) {
+        // Evaluate the expression and assign to the variable
+        String expression = command.getExpression();
+        ParseResult parseResult = expressionParser.parse(expression);
+
+        if (!parseResult.isSuccess()) {
+            System.err.println("Parse error in assignment '" + command + "': " + parseResult.getError());
+            return;
+        }
+
+        try {
+            double value = evaluator.evaluate(parseResult.getAst());
+            evaluationContext.setVariable(command.getVariableName(), value);
+        } catch (Exception e) {
+            System.err.println("Evaluation error in assignment '" + command + "': " + e.getMessage());
+        }
+    }
+
     // Current plot ranges (updated from plot command)
     private double currentXMin = -10.0;
     private double currentXMax = 10.0;
@@ -574,7 +641,7 @@ public class GnuplotScriptExecutor implements CommandVisitor {
                 double x = xMin + i * step;
                 points[i] = new LinePlot.Point2D(x, Double.NaN);
             }
-            System.err.println("Parse error: " + parseResult.getError());
+            System.err.println("Parse error for '" + expression + "': " + parseResult.getError());
             return points;
         }
 

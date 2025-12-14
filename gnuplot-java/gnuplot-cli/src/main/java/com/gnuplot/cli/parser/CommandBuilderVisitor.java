@@ -172,10 +172,41 @@ public class CommandBuilderVisitor extends GnuplotCommandBaseVisitor<List<Comman
                     }
                 }
                 commands.add(new SetCommand("dummy", dummyVars));
+            } else if (optCtx instanceof GnuplotCommandParser.SetXRangeContext) {
+                GnuplotCommandParser.SetXRangeContext xrangeCtx = (GnuplotCommandParser.SetXRangeContext) optCtx;
+                PlotCommand.Range range = parseRange(xrangeCtx.range());
+                Map<String, Double> rangeValues = rangeToMap(range);
+                commands.add(new SetCommand("xrange", rangeValues));
+            } else if (optCtx instanceof GnuplotCommandParser.SetYRangeContext) {
+                GnuplotCommandParser.SetYRangeContext yrangeCtx = (GnuplotCommandParser.SetYRangeContext) optCtx;
+                PlotCommand.Range range = parseRange(yrangeCtx.range());
+                Map<String, Double> rangeValues = rangeToMap(range);
+                commands.add(new SetCommand("yrange", rangeValues));
+            } else if (optCtx instanceof GnuplotCommandParser.SetZRangeContext) {
+                GnuplotCommandParser.SetZRangeContext zrangeCtx = (GnuplotCommandParser.SetZRangeContext) optCtx;
+                PlotCommand.Range range = parseRange(zrangeCtx.range());
+                Map<String, Double> rangeValues = rangeToMap(range);
+                commands.add(new SetCommand("zrange", rangeValues));
             }
         }
 
         return commands;
+    }
+
+    /**
+     * Convert a PlotCommand.Range to a Map for SetCommand.
+     */
+    private Map<String, Double> rangeToMap(PlotCommand.Range range) {
+        Map<String, Double> result = new HashMap<>();
+        if (range != null) {
+            if (range.getMin() != null) {
+                result.put("min", range.getMin());
+            }
+            if (range.getMax() != null) {
+                result.put("max", range.getMax());
+            }
+        }
+        return result;
     }
 
     @Override
@@ -321,6 +352,35 @@ public class CommandBuilderVisitor extends GnuplotCommandBaseVisitor<List<Comman
     @Override
     public List<Command> visitResetCommand(GnuplotCommandParser.ResetCommandContext ctx) {
         commands.add(new ResetCommand());
+        return commands;
+    }
+
+    @Override
+    public List<Command> visitFunctionDefinition(GnuplotCommandParser.FunctionDefinitionContext ctx) {
+        // Parse function definition: f(x, y) = expression
+        String functionName = ctx.IDENTIFIER().getText();
+
+        List<String> parameters = new ArrayList<>();
+        if (ctx.parameterList() != null) {
+            for (org.antlr.v4.runtime.tree.TerminalNode id : ctx.parameterList().IDENTIFIER()) {
+                parameters.add(id.getText());
+            }
+        }
+
+        // Get the body expression text
+        String bodyExpression = ctx.expression().getText();
+
+        commands.add(new FunctionDefinitionCommand(functionName, parameters, bodyExpression));
+        return commands;
+    }
+
+    @Override
+    public List<Command> visitAssignmentCommand(GnuplotCommandParser.AssignmentCommandContext ctx) {
+        // Parse variable assignment: var = expression
+        String variableName = ctx.IDENTIFIER().getText();
+        String expression = ctx.expression().getText();
+
+        commands.add(new VariableAssignmentCommand(variableName, expression));
         return commands;
     }
 

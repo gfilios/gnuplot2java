@@ -1,6 +1,7 @@
 package com.gnuplot.core.evaluator;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -22,8 +23,21 @@ import java.util.Map;
  */
 public class EvaluationContext {
 
+    /**
+     * Represents a user-defined function with parameters and body expression.
+     *
+     * @param parameters the function parameter names (e.g., ["x", "y"])
+     * @param bodyExpression the function body as a string expression (e.g., "x*y + 1")
+     */
+    public record UserFunction(List<String> parameters, String bodyExpression) {
+        public UserFunction {
+            parameters = List.copyOf(parameters);
+        }
+    }
+
     private final Map<String, Double> variables;
     private final Map<String, MathFunction> functions;
+    private final Map<String, UserFunction> userFunctions;
 
     /**
      * Creates a new empty evaluation context.
@@ -31,6 +45,7 @@ public class EvaluationContext {
     public EvaluationContext() {
         this.variables = new HashMap<>();
         this.functions = new HashMap<>();
+        this.userFunctions = new HashMap<>();
         registerStandardConstants();
         registerStandardFunctions();
     }
@@ -256,5 +271,54 @@ public class EvaluationContext {
      */
     public void clearFunctions() {
         functions.clear();
+    }
+
+    // ========== User-defined Functions ==========
+
+    /**
+     * Registers a user-defined function.
+     *
+     * @param name the function name
+     * @param parameters the parameter names
+     * @param bodyExpression the function body expression
+     */
+    public void registerUserFunction(String name, List<String> parameters, String bodyExpression) {
+        userFunctions.put(name, new UserFunction(parameters, bodyExpression));
+    }
+
+    /**
+     * Gets a user-defined function.
+     *
+     * @param name the function name
+     * @return the user function, or null if not defined
+     */
+    public UserFunction getUserFunction(String name) {
+        return userFunctions.get(name);
+    }
+
+    /**
+     * Checks if a user-defined function exists.
+     *
+     * @param name the function name
+     * @return true if the user function is defined
+     */
+    public boolean hasUserFunction(String name) {
+        return userFunctions.containsKey(name);
+    }
+
+    /**
+     * Removes a user-defined function.
+     *
+     * @param name the function name
+     */
+    public void removeUserFunction(String name) {
+        userFunctions.remove(name);
+    }
+
+    /**
+     * Clears all user-defined functions.
+     */
+    public void clearUserFunctions() {
+        userFunctions.clear();
     }
 }

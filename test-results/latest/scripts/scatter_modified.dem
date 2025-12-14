@@ -1,5 +1,5 @@
 set term svg size 800,600
-set output '/var/folders/hq/0d5018vj44x5wg2ynxt_swl40000gn/T/junit14426666402732978830/scatter_java.svg'
+set output '/var/folders/hq/0d5018vj44x5wg2ynxt_swl40000gn/T/junit18089912085785788457/scatter_java.svg'
 #
 # Simple demo of scatter data conversion to grid data.
 #

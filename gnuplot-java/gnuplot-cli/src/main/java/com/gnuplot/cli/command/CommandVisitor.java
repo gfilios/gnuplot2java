@@ -10,4 +10,6 @@ public interface CommandVisitor {
     void visitUnsetCommand(UnsetCommand command);
     void visitPauseCommand(PauseCommand command);
     void visitResetCommand(ResetCommand command);
+    void visitFunctionDefinitionCommand(FunctionDefinitionCommand command);
+    void visitVariableAssignmentCommand(VariableAssignmentCommand command);
 }

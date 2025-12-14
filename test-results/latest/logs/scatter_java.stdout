@@ -1,11 +1,11 @@
-Executing script: /var/folders/hq/0d5018vj44x5wg2ynxt_swl40000gn/T/junit14426666402732978830/scatter_java_modified.dem
+Executing script: /var/folders/hq/0d5018vj44x5wg2ynxt_swl40000gn/T/junit18089912085785788457/scatter_java_modified.dem
 Processing SPLOT command with 1 plot spec(s)
   Plot: "hemisphr.dat"
     Explicit style: none
     Style data setting: points
     Title: "hemisphr.dat"
     Loaded 249 3D points from "hemisphr.dat"
-    Created SurfacePlot3D: com.gnuplot.render.elements.SurfacePlot3D@16022d9d
+    Created SurfacePlot3D: com.gnuplot.render.elements.SurfacePlot3D@17695df3
 dgrid3d enabled: 10x10 qnorm 1
 Processing SPLOT command with 1 plot spec(s)
   Plot: "hemisphr.dat"
@@ -15,7 +15,7 @@ Processing SPLOT command with 1 plot spec(s)
     Loaded 249 3D points from "hemisphr.dat"
     Applying dgrid3d interpolation: 10x10 qnorm 1
     Interpolated to 100 grid points
-    Created SurfacePlot3D: com.gnuplot.render.elements.SurfacePlot3D@2bea5ab4
+    Created SurfacePlot3D: com.gnuplot.render.elements.SurfacePlot3D@76329302
 dgrid3d enabled: 10x10 qnorm 4
 Processing SPLOT command with 1 plot spec(s)
   Plot: "hemisphr.dat"
@@ -25,7 +25,7 @@ Processing SPLOT command with 1 plot spec(s)
     Loaded 249 3D points from "hemisphr.dat"
     Applying dgrid3d interpolation: 10x10 qnorm 4
     Interpolated to 100 grid points
-    Created SurfacePlot3D: com.gnuplot.render.elements.SurfacePlot3D@2a40cd94
+    Created SurfacePlot3D: com.gnuplot.render.elements.SurfacePlot3D@62fdb4a6
 dgrid3d enabled: 10x10 qnorm 16
 Processing SPLOT command with 1 plot spec(s)
   Plot: "hemisphr.dat"
@@ -35,7 +35,7 @@ Processing SPLOT command with 1 plot spec(s)
     Loaded 249 3D points from "hemisphr.dat"
     Applying dgrid3d interpolation: 10x10 qnorm 16
     Interpolated to 100 grid points
-    Created SurfacePlot3D: com.gnuplot.render.elements.SurfacePlot3D@f4168b8
+    Created SurfacePlot3D: com.gnuplot.render.elements.SurfacePlot3D@11e21d0e
 contour enabled: BASE
 Processing SPLOT command with 1 plot spec(s)
   Plot: "hemisphr.dat"
@@ -45,7 +45,7 @@ Processing SPLOT command with 1 plot spec(s)
     Loaded 249 3D points from "hemisphr.dat"
     Applying dgrid3d interpolation: 10x10 qnorm 16
     Interpolated to 100 grid points
-    Created SurfacePlot3D: com.gnuplot.render.elements.SurfacePlot3D@3bd94634
+    Created SurfacePlot3D: com.gnuplot.render.elements.SurfacePlot3D@1dd02175
     Extracting contour lines...
     Extracted 11 contour lines
     Created ContourPlot3D with 11 lines
@@ -56,7 +56,7 @@ Processing SPLOT command with 1 plot spec(s)
     Style data setting: points
     Title: "scatter2.dat"
     Loaded 115 3D points from "scatter2.dat"
-    Created SurfacePlot3D: com.gnuplot.render.elements.SurfacePlot3D@62fdb4a6
+    Created SurfacePlot3D: com.gnuplot.render.elements.SurfacePlot3D@23a5fd2
 dgrid3d enabled: 10x10 qnorm 1
 Processing SPLOT command with 1 plot spec(s)
   Plot: "scatter2.dat"
@@ -66,7 +66,7 @@ Processing SPLOT command with 1 plot spec(s)
     Loaded 115 3D points from "scatter2.dat"
     Applying dgrid3d interpolation: 10x10 qnorm 1
     Interpolated to 100 grid points
-    Created SurfacePlot3D: com.gnuplot.render.elements.SurfacePlot3D@11e21d0e
+    Created SurfacePlot3D: com.gnuplot.render.elements.SurfacePlot3D@78a2da20
     Extracting contour lines...
     Extracted 4 contour lines
     Created ContourPlot3D with 4 lines
@@ -79,17 +79,17 @@ Processing SPLOT command with 1 plot spec(s)
     Loaded 115 3D points from "scatter2.dat"
     Applying dgrid3d interpolation: 10x10 qnorm 4
     Interpolated to 100 grid points
-    Created SurfacePlot3D: com.gnuplot.render.elements.SurfacePlot3D@3e77a1ed
+    Created SurfacePlot3D: com.gnuplot.render.elements.SurfacePlot3D@58fdd99
     Extracting contour lines...
     Extracted 3 contour lines
     Created ContourPlot3D with 3 lines
-Rendered scene 1 to: /var/folders/hq/0d5018vj44x5wg2ynxt_swl40000gn/T/junit14426666402732978830/scatter_java.svg
-Rendered scene 2 to: /var/folders/hq/0d5018vj44x5wg2ynxt_swl40000gn/T/junit14426666402732978830/scatter_java_002.svg
-Rendered scene 3 to: /var/folders/hq/0d5018vj44x5wg2ynxt_swl40000gn/T/junit14426666402732978830/scatter_java_003.svg
-Rendered scene 4 to: /var/folders/hq/0d5018vj44x5wg2ynxt_swl40000gn/T/junit14426666402732978830/scatter_java_004.svg
-Rendered scene 5 to: /var/folders/hq/0d5018vj44x5wg2ynxt_swl40000gn/T/junit14426666402732978830/scatter_java_005.svg
-Rendered scene 6 to: /var/folders/hq/0d5018vj44x5wg2ynxt_swl40000gn/T/junit14426666402732978830/scatter_java_006.svg
-Rendered scene 7 to: /var/folders/hq/0d5018vj44x5wg2ynxt_swl40000gn/T/junit14426666402732978830/scatter_java_007.svg
-Rendered scene 8 to: /var/folders/hq/0d5018vj44x5wg2ynxt_swl40000gn/T/junit14426666402732978830/scatter_java_008.svg
+Rendered scene 1 to: /var/folders/hq/0d5018vj44x5wg2ynxt_swl40000gn/T/junit18089912085785788457/scatter_java.svg
+Rendered scene 2 to: /var/folders/hq/0d5018vj44x5wg2ynxt_swl40000gn/T/junit18089912085785788457/scatter_java_002.svg
+Rendered scene 3 to: /var/folders/hq/0d5018vj44x5wg2ynxt_swl40000gn/T/junit18089912085785788457/scatter_java_003.svg
+Rendered scene 4 to: /var/folders/hq/0d5018vj44x5wg2ynxt_swl40000gn/T/junit18089912085785788457/scatter_java_004.svg
+Rendered scene 5 to: /var/folders/hq/0d5018vj44x5wg2ynxt_swl40000gn/T/junit18089912085785788457/scatter_java_005.svg
+Rendered scene 6 to: /var/folders/hq/0d5018vj44x5wg2ynxt_swl40000gn/T/junit18089912085785788457/scatter_java_006.svg
+Rendered scene 7 to: /var/folders/hq/0d5018vj44x5wg2ynxt_swl40000gn/T/junit18089912085785788457/scatter_java_007.svg
+Rendered scene 8 to: /var/folders/hq/0d5018vj44x5wg2ynxt_swl40000gn/T/junit18089912085785788457/scatter_java_008.svg
 Total: 8 scenes rendered
 Script executed successfully.
