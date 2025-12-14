@@ -16,6 +16,8 @@ grammar GnuplotExpression;
  * - Variables and constants
  * - Parentheses for grouping
  * - Ternary conditional: condition ? expr1 : expr2
+ * - Assignment expression: x = value (returns assigned value)
+ * - Comma operator: a, b (evaluates both, returns right)
  */
 
 // ============================================================================
@@ -29,7 +31,19 @@ compilationUnit
 
 // Expression hierarchy (lowest to highest precedence)
 expression
-    : ternaryExpression
+    : commaExpression
+    ;
+
+// Comma operator: a, b (evaluates both, returns right) - lowest precedence
+commaExpression
+    : assignmentExpression (COMMA assignmentExpression)*  # CommaExpr
+    ;
+
+// Assignment: x = value (returns assigned value)
+// Only simple identifiers can be assigned to
+assignmentExpression
+    : IDENTIFIER ASSIGN assignmentExpression              # AssignExpr
+    | ternaryExpression                                   # AssignTernary
     ;
 
 // Ternary conditional: condition ? trueExpr : falseExpr
@@ -110,8 +124,10 @@ primaryExpression
     ;
 
 // Function argument list
+// Use assignmentExpression, not expression, so commas separate arguments
+// (not parsed as comma operator)
 argumentList
-    : expression (COMMA expression)*
+    : assignmentExpression (COMMA assignmentExpression)*
     ;
 
 // ============================================================================
@@ -127,6 +143,9 @@ STAR        : '*' ;
 SLASH       : '/' ;
 PERCENT     : '%' ;
 POW         : '**' ;
+
+// Assignment operator (must be before comparison to avoid conflicts)
+ASSIGN      : '=' ;
 
 // Comparison operators
 LT          : '<' ;

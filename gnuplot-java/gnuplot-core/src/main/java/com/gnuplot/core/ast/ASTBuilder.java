@@ -23,6 +23,35 @@ public class ASTBuilder extends GnuplotExpressionBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitExpression(GnuplotExpressionParser.ExpressionContext ctx) {
+        return visit(ctx.commaExpression());
+    }
+
+    @Override
+    public ASTNode visitCommaExpr(GnuplotExpressionParser.CommaExprContext ctx) {
+        var operands = ctx.assignmentExpression();
+        if (operands.size() == 1) {
+            return visit(operands.get(0));
+        }
+
+        // Build left-associative chain: (a, b), c
+        ASTNode left = visit(operands.get(0));
+        for (int i = 1; i < operands.size(); i++) {
+            ASTNode right = visit(operands.get(i));
+            left = new CommaExpression(left, right, getLocation(ctx));
+        }
+
+        return left;
+    }
+
+    @Override
+    public ASTNode visitAssignExpr(GnuplotExpressionParser.AssignExprContext ctx) {
+        String variableName = ctx.IDENTIFIER().getText();
+        ASTNode valueExpr = visit(ctx.assignmentExpression());
+        return new AssignmentExpression(variableName, valueExpr, getLocation(ctx));
+    }
+
+    @Override
+    public ASTNode visitAssignTernary(GnuplotExpressionParser.AssignTernaryContext ctx) {
         return visit(ctx.ternaryExpression());
     }
 
@@ -204,7 +233,7 @@ public class ASTBuilder extends GnuplotExpressionBaseVisitor<ASTNode> {
         List<ASTNode> arguments = new ArrayList<>();
 
         if (ctx.argumentList() != null) {
-            for (GnuplotExpressionParser.ExpressionContext exprCtx : ctx.argumentList().expression()) {
+            for (GnuplotExpressionParser.AssignmentExpressionContext exprCtx : ctx.argumentList().assignmentExpression()) {
                 arguments.add(visit(exprCtx));
             }
         }

@@ -321,4 +321,80 @@ class EvaluatorTest {
                 .isInstanceOf(EvaluationException.class)
                 .hasMessageContaining("null AST");
     }
+
+    // ========== Assignment Expression ==========
+
+    @Test
+    @DisplayName("should evaluate assignment and return assigned value")
+    void shouldEvaluateAssignmentAndReturnValue() {
+        // Assignment should return the assigned value
+        assertThat(eval("x = 5")).isEqualTo(5.0);
+        // And the variable should now be defined
+        assertThat(evaluator.getContext().getVariable("x")).isEqualTo(5.0);
+    }
+
+    @Test
+    @DisplayName("should evaluate assignment with expression")
+    void shouldEvaluateAssignmentWithExpression() {
+        assertThat(eval("x = 2 + 3")).isEqualTo(5.0);
+        assertThat(evaluator.getContext().getVariable("x")).isEqualTo(5.0);
+    }
+
+    @Test
+    @DisplayName("should evaluate chained assignment")
+    void shouldEvaluateChainedAssignment() {
+        // x = y = 5 means x = (y = 5), so both should be 5
+        assertThat(eval("x = y = 5")).isEqualTo(5.0);
+        assertThat(evaluator.getContext().getVariable("x")).isEqualTo(5.0);
+        assertThat(evaluator.getContext().getVariable("y")).isEqualTo(5.0);
+    }
+
+    // ========== Comma Expression ==========
+
+    @Test
+    @DisplayName("should evaluate comma and return right value")
+    void shouldEvaluateCommaAndReturnRightValue() {
+        // Comma evaluates both but returns right
+        assertThat(eval("1, 2")).isEqualTo(2.0);
+        assertThat(eval("1, 2, 3")).isEqualTo(3.0);
+    }
+
+    @Test
+    @DisplayName("should evaluate assignment with comma")
+    void shouldEvaluateAssignmentWithComma() {
+        // s=0.1, x evaluates to x, but s is assigned
+        evaluator.getContext().setVariable("x", 10.0);
+        assertThat(eval("s = 0.1, x")).isEqualTo(10.0);
+        assertThat(evaluator.getContext().getVariable("s")).isEqualTo(0.1);
+    }
+
+    @Test
+    @DisplayName("should evaluate controls.dem pattern")
+    void shouldEvaluateControlsDemPattern() {
+        // Simulate controls.dem: s=.1,c(t) where c(t) uses s
+        // First define a simple function that uses s
+        evaluator.getContext().registerFunction("c", args -> {
+            double t = args[0];
+            double s = evaluator.getContext().getVariable("s");
+            return t * s;  // Simple mock function
+        });
+        evaluator.getContext().setVariable("t", 10.0);
+
+        // s=0.1, c(t) should set s=0.1, then evaluate c(t) with s=0.1
+        assertThat(eval("s = 0.1, c(t)")).isEqualTo(1.0);  // 10 * 0.1 = 1.0
+        assertThat(evaluator.getContext().getVariable("s")).isEqualTo(0.1);
+
+        // Now with different s value
+        assertThat(eval("s = 0.5, c(t)")).isEqualTo(5.0);  // 10 * 0.5 = 5.0
+        assertThat(evaluator.getContext().getVariable("s")).isEqualTo(0.5);
+    }
+
+    @Test
+    @DisplayName("should evaluate multiple assignments with comma")
+    void shouldEvaluateMultipleAssignmentsWithComma() {
+        // x=1, y=2, x+y should return 3
+        assertThat(eval("x = 1, y = 2, x + y")).isEqualTo(3.0);
+        assertThat(evaluator.getContext().getVariable("x")).isEqualTo(1.0);
+        assertThat(evaluator.getContext().getVariable("y")).isEqualTo(2.0);
+    }
 }

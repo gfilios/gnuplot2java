@@ -25,4 +25,10 @@ public interface ASTVisitor<T> {
 
     // Ternary conditional
     T visitTernaryConditional(TernaryConditional node);
+
+    // Assignment expression (x = value, returns assigned value)
+    T visitAssignmentExpression(AssignmentExpression node);
+
+    // Comma expression (a, b - evaluates both, returns right)
+    T visitCommaExpression(CommaExpression node);
 }

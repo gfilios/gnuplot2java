@@ -61,6 +61,7 @@ public class GnuplotScriptExecutor implements CommandVisitor {
     private String ylabel = "";
     private String zlabel = "";
     private int samples = 100;
+    private String dummyVariable = "x"; // Default dummy variable for 2D plots
     private boolean grid = false;
     private boolean drawBorder = true; // Default: true (matching C Gnuplot's draw_border = 31)
     private String outputFile = "output.svg";
@@ -221,6 +222,16 @@ public class GnuplotScriptExecutor implements CommandVisitor {
                     }
                 }
                 System.out.println("contour enabled: " + contourParams.getPlace());
+                break;
+            case "dummy":
+                if (value instanceof List) {
+                    @SuppressWarnings("unchecked")
+                    List<String> dummyVars = (List<String>) value;
+                    if (!dummyVars.isEmpty()) {
+                        // First variable is the primary dummy variable for 2D plots
+                        dummyVariable = dummyVars.get(0);
+                    }
+                }
                 break;
         }
     }
@@ -570,7 +581,9 @@ public class GnuplotScriptExecutor implements CommandVisitor {
         for (int i = 0; i < samples; i++) {
             double x = xMin + i * step;
 
-            // Set x variable in evaluation context
+            // Set dummy variable (e.g., x, t, u) in evaluation context
+            evaluationContext.setVariable(dummyVariable, x);
+            // Also set x as an alias for compatibility
             evaluationContext.setVariable("x", x);
 
             try {

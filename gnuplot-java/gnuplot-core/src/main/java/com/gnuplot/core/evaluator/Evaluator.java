@@ -188,6 +188,24 @@ public class Evaluator implements ASTVisitor<Double> {
         }
     }
 
+    @Override
+    public Double visitAssignmentExpression(AssignmentExpression node) {
+        // Evaluate the value expression
+        double value = node.valueExpression().accept(this);
+        // Assign to the variable
+        context.setVariable(node.variableName(), value);
+        // Return the assigned value (assignment is an expression in gnuplot, like C)
+        return value;
+    }
+
+    @Override
+    public Double visitCommaExpression(CommaExpression node) {
+        // Evaluate left expression and discard the result
+        node.left().accept(this);
+        // Evaluate right expression and return the result
+        return node.right().accept(this);
+    }
+
     /**
      * Gets the evaluation context.
      *

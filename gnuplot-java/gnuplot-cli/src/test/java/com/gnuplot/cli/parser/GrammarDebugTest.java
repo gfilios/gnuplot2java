@@ -49,9 +49,9 @@ class GrammarDebugTest {
                 GnuplotCommandParser.PlotCommandContext plotCmd = stmt.command().plotCommand();
                 System.out.println("Plot specs: " + plotCmd.plotSpec().size());
                 for (GnuplotCommandParser.PlotSpecContext spec : plotCmd.plotSpec()) {
-                    System.out.println("  Expression context: " + spec.expression());
-                    if (spec.expression() != null) {
-                        System.out.println("  Expression text: '" + spec.expression().getText() + "'");
+                    System.out.println("  PlotExpression context: " + spec.plotExpression());
+                    if (spec.plotExpression() != null) {
+                        System.out.println("  PlotExpression text: '" + spec.plotExpression().getText() + "'");
                     }
                     System.out.println("  DataSource context: " + spec.dataSource());
                     if (spec.dataSource() != null) {

@@ -60,6 +60,7 @@ setOption
     | HIDDEN3D                                      # SetHidden3D
     | DGRID3D dgridOptions                          # SetDgrid3D
     | CONTOUR                                       # SetContour
+    | DUMMY dummyVars                               # SetDummy
     ;
 
 keySpec
@@ -120,6 +121,10 @@ dgridOptions
     : (NUMBER COMMA NUMBER)? (IDENTIFIER NUMBER?)?
     ;
 
+dummyVars
+    : IDENTIFIER (COMMA IDENTIFIER)*
+    ;
+
 // UNSET commands
 unsetCommand
     : UNSET unsetOption
@@ -143,7 +148,36 @@ plotCommand
     ;
 
 plotSpec
-    : range? (expression | dataSource) plotModifiers*
+    : range? (plotExpression | dataSource) plotModifiers*
+    ;
+
+// Plot expression allows inline assignments before the actual plotted expression
+// e.g., "s=.1,c(t)" sets s=0.1 then plots c(t)
+plotExpression
+    : (assignmentExpr COMMA)* plotBaseExpr
+    ;
+
+// Assignment expression: identifier = value (returns assigned value)
+assignmentExpr
+    : IDENTIFIER EQUALS plotBaseExpr
+    ;
+
+// Base expression for plotting (without comma operator at top level)
+plotBaseExpr
+    : plotBaseExpr (STAR | SLASH | PERCENT) plotBaseExpr     # PlotMulDivMod
+    | plotBaseExpr (PLUS | MINUS) plotBaseExpr               # PlotAddSub
+    | plotBaseExpr (LT | LE | GT | GE | EQ | NE) plotBaseExpr # PlotComparison
+    | plotBaseExpr (AND | OR) plotBaseExpr                   # PlotLogicalOp
+    | MINUS plotBaseExpr                                     # PlotUnaryMinus
+    | PLUS plotBaseExpr                                      # PlotUnaryPlus
+    | NOT plotBaseExpr                                       # PlotLogicalNot
+    | functionCall                                           # PlotFuncCall
+    | IDENTIFIER                                             # PlotVariable
+    | NUMBER                                                 # PlotNumber
+    | string                                                 # PlotStringLiteral
+    | LPAREN expression RPAREN                               # PlotParens
+    | plotBaseExpr QUESTION plotBaseExpr COLON plotBaseExpr  # PlotTernaryOp
+    | plotBaseExpr POWER plotBaseExpr                        # PlotPowerOp
     ;
 
 dataSource
@@ -311,6 +345,7 @@ TICSLEVEL   : 'ticslevel' ;
 HIDDEN3D    : 'hidden3d' ;
 DGRID3D     : 'dgrid3d' ;
 CONTOUR     : 'contour' ;
+DUMMY       : 'dummy' ;
 
 // Position keywords
 LEFT        : 'left' ;

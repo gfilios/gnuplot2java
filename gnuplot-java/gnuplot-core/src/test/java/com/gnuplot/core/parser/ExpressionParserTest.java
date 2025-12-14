@@ -251,4 +251,110 @@ class ExpressionParserTest {
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("Cannot get error from successful parse");
     }
+
+    // ============================================================================
+    // Assignment Expression Tests
+    // ============================================================================
+
+    @Test
+    @DisplayName("should parse simple assignment expression")
+    void shouldParseSimpleAssignment() {
+        // When
+        ParseResult result = parser.parse("x = 5");
+
+        // Then
+        assertThat(result.isSuccess()).isTrue();
+        assertThat(result.getAst()).isInstanceOf(AssignmentExpression.class);
+        AssignmentExpression assign = (AssignmentExpression) result.getAst();
+        assertThat(assign.variableName()).isEqualTo("x");
+        assertThat(assign.valueExpression()).isInstanceOf(NumberLiteral.class);
+    }
+
+    @Test
+    @DisplayName("should parse chained assignment (right-associative)")
+    void shouldParseChainedAssignment() {
+        // When: x = y = 5 should parse as x = (y = 5)
+        ParseResult result = parser.parse("x = y = 5");
+
+        // Then
+        assertThat(result.isSuccess()).isTrue();
+        assertThat(result.getAst()).isInstanceOf(AssignmentExpression.class);
+        AssignmentExpression outerAssign = (AssignmentExpression) result.getAst();
+        assertThat(outerAssign.variableName()).isEqualTo("x");
+        assertThat(outerAssign.valueExpression()).isInstanceOf(AssignmentExpression.class);
+        AssignmentExpression innerAssign = (AssignmentExpression) outerAssign.valueExpression();
+        assertThat(innerAssign.variableName()).isEqualTo("y");
+    }
+
+    @Test
+    @DisplayName("should parse assignment with expression value")
+    void shouldParseAssignmentWithExpressionValue() {
+        // When
+        ParseResult result = parser.parse("x = 2 + 3");
+
+        // Then
+        assertThat(result.isSuccess()).isTrue();
+        assertThat(result.getAst()).isInstanceOf(AssignmentExpression.class);
+        AssignmentExpression assign = (AssignmentExpression) result.getAst();
+        assertThat(assign.variableName()).isEqualTo("x");
+        assertThat(assign.valueExpression()).isInstanceOf(BinaryOperation.class);
+    }
+
+    // ============================================================================
+    // Comma Expression Tests
+    // ============================================================================
+
+    @Test
+    @DisplayName("should parse simple comma expression")
+    void shouldParseSimpleCommaExpression() {
+        // When
+        ParseResult result = parser.parse("1, 2");
+
+        // Then
+        assertThat(result.isSuccess()).isTrue();
+        assertThat(result.getAst()).isInstanceOf(CommaExpression.class);
+        CommaExpression comma = (CommaExpression) result.getAst();
+        assertThat(comma.left()).isInstanceOf(NumberLiteral.class);
+        assertThat(comma.right()).isInstanceOf(NumberLiteral.class);
+    }
+
+    @Test
+    @DisplayName("should parse chained comma expression (left-associative)")
+    void shouldParseChainedCommaExpression() {
+        // When: 1, 2, 3 should parse as ((1, 2), 3)
+        ParseResult result = parser.parse("1, 2, 3");
+
+        // Then
+        assertThat(result.isSuccess()).isTrue();
+        assertThat(result.getAst()).isInstanceOf(CommaExpression.class);
+        CommaExpression outerComma = (CommaExpression) result.getAst();
+        assertThat(outerComma.left()).isInstanceOf(CommaExpression.class);
+        assertThat(outerComma.right()).isInstanceOf(NumberLiteral.class);
+    }
+
+    @Test
+    @DisplayName("should parse comma with assignment")
+    void shouldParseCommaWithAssignment() {
+        // When: s=.1, c(t) - the controls.dem pattern
+        ParseResult result = parser.parse("s = 0.1, f(t)");
+
+        // Then
+        assertThat(result.isSuccess()).isTrue();
+        assertThat(result.getAst()).isInstanceOf(CommaExpression.class);
+        CommaExpression comma = (CommaExpression) result.getAst();
+        assertThat(comma.left()).isInstanceOf(AssignmentExpression.class);
+        assertThat(comma.right()).isInstanceOf(FunctionCall.class);
+    }
+
+    @Test
+    @DisplayName("should parse complex controls.dem pattern")
+    void shouldParseControlsDemPattern() {
+        // When: s=.1,c(t),s=.3,c(t) - exactly like controls.dem
+        ParseResult result = parser.parse("s=.1,c(t),s=.3,c(t)");
+
+        // Then
+        assertThat(result.isSuccess()).isTrue();
+        // Should be: ((s=.1, c(t)), s=.3), c(t))
+        assertThat(result.getAst()).isInstanceOf(CommaExpression.class);
+    }
 }

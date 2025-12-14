@@ -162,6 +162,16 @@ public class CommandBuilderVisitor extends GnuplotCommandBaseVisitor<List<Comman
                 // Enable contour with default place (base)
                 // TODO: Parse "set contour base|surface|both" when grammar is extended
                 commands.add(new SetCommand("contour", "base"));
+            } else if (optCtx instanceof GnuplotCommandParser.SetDummyContext) {
+                GnuplotCommandParser.SetDummyContext dummyCtx = (GnuplotCommandParser.SetDummyContext) optCtx;
+                // Parse dummy variable names (e.g., "set dummy t" or "set dummy u,v")
+                List<String> dummyVars = new ArrayList<>();
+                if (dummyCtx.dummyVars() != null) {
+                    for (org.antlr.v4.runtime.tree.TerminalNode id : dummyCtx.dummyVars().IDENTIFIER()) {
+                        dummyVars.add(id.getText());
+                    }
+                }
+                commands.add(new SetCommand("dummy", dummyVars));
             }
         }
 
@@ -196,8 +206,8 @@ public class CommandBuilderVisitor extends GnuplotCommandBaseVisitor<List<Comman
             }
 
             // Extract expression or data source
-            if (specCtx.expression() != null) {
-                expression = specCtx.expression().getText();
+            if (specCtx.plotExpression() != null) {
+                expression = specCtx.plotExpression().getText();
             } else if (specCtx.dataSource() != null) {
                 expression = specCtx.dataSource().getText();
             } else {
@@ -256,8 +266,8 @@ public class CommandBuilderVisitor extends GnuplotCommandBaseVisitor<List<Comman
             }
 
             // Extract expression or data source
-            if (specCtx.expression() != null) {
-                expression = specCtx.expression().getText();
+            if (specCtx.plotExpression() != null) {
+                expression = specCtx.plotExpression().getText();
             } else if (specCtx.dataSource() != null) {
                 expression = specCtx.dataSource().getText();
             } else {
