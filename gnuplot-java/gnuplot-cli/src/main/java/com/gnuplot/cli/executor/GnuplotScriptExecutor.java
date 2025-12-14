@@ -1,8 +1,8 @@
 package com.gnuplot.cli.executor;
 
 import com.gnuplot.cli.command.*;
+import com.gnuplot.core.evaluator.ComplexEvaluator;
 import com.gnuplot.core.evaluator.EvaluationContext;
-import com.gnuplot.core.evaluator.Evaluator;
 import com.gnuplot.core.parser.ExpressionParser;
 import com.gnuplot.core.parser.ParseResult;
 import com.gnuplot.render.Scene;
@@ -52,7 +52,7 @@ public class GnuplotScriptExecutor implements CommandVisitor {
 
     private final ExpressionParser expressionParser = new ExpressionParser();
     private final EvaluationContext evaluationContext = new EvaluationContext();
-    private final Evaluator evaluator = new Evaluator(evaluationContext);
+    private final ComplexEvaluator evaluator = new ComplexEvaluator(evaluationContext);
     private final SvgRenderer renderer = new SvgRenderer();
 
     // Current plot state
@@ -611,7 +611,7 @@ public class GnuplotScriptExecutor implements CommandVisitor {
         }
 
         try {
-            double value = evaluator.evaluate(parseResult.getAst());
+            double value = evaluator.evaluateReal(parseResult.getAst());
             evaluationContext.setVariable(command.getVariableName(), value);
         } catch (Exception e) {
             System.err.println("Evaluation error in assignment '" + command + "': " + e.getMessage());
@@ -654,8 +654,8 @@ public class GnuplotScriptExecutor implements CommandVisitor {
             evaluationContext.setVariable("x", x);
 
             try {
-                // Evaluate the expression
-                double y = evaluator.evaluate(parseResult.getAst());
+                // Evaluate the expression using complex arithmetic (returns real part)
+                double y = evaluator.evaluateReal(parseResult.getAst());
 
                 points[i] = new LinePlot.Point2D(x, y);
             } catch (Exception e) {

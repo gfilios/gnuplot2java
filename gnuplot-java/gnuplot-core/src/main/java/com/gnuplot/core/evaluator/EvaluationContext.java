@@ -37,6 +37,7 @@ public class EvaluationContext {
 
     private final Map<String, Double> variables;
     private final Map<String, MathFunction> functions;
+    private final Map<String, ComplexMathFunction> complexFunctions;
     private final Map<String, UserFunction> userFunctions;
 
     /**
@@ -45,9 +46,11 @@ public class EvaluationContext {
     public EvaluationContext() {
         this.variables = new HashMap<>();
         this.functions = new HashMap<>();
+        this.complexFunctions = new HashMap<>();
         this.userFunctions = new HashMap<>();
         registerStandardConstants();
         registerStandardFunctions();
+        registerComplexFunctions();
     }
 
     /**
@@ -320,5 +323,59 @@ public class EvaluationContext {
      */
     public void clearUserFunctions() {
         userFunctions.clear();
+    }
+
+    // ========== Complex Math Functions ==========
+
+    /**
+     * Registers complex-aware mathematical functions.
+     * These are used when real-valued functions produce invalid results.
+     */
+    private void registerComplexFunctions() {
+        // Square root - handles negative numbers
+        complexFunctions.put("sqrt", ComplexMathFunction.withArgCount(1,
+                args -> Complex.sqrt(args[0])));
+
+        // Exponential
+        complexFunctions.put("exp", ComplexMathFunction.withArgCount(1,
+                args -> Complex.exp(args[0])));
+
+        // Logarithm
+        complexFunctions.put("log", ComplexMathFunction.withArgCount(1,
+                args -> Complex.log(args[0])));
+
+        // Trigonometric functions
+        complexFunctions.put("sin", ComplexMathFunction.withArgCount(1,
+                args -> Complex.sin(args[0])));
+        complexFunctions.put("cos", ComplexMathFunction.withArgCount(1,
+                args -> Complex.cos(args[0])));
+        complexFunctions.put("tan", ComplexMathFunction.withArgCount(1,
+                args -> Complex.tan(args[0])));
+        complexFunctions.put("atan", ComplexMathFunction.withArgCount(1,
+                args -> Complex.atan(args[0])));
+
+        // Power function
+        complexFunctions.put("pow", ComplexMathFunction.withArgCount(2,
+                args -> Complex.pow(args[0], args[1])));
+    }
+
+    /**
+     * Gets a complex math function.
+     *
+     * @param name the function name
+     * @return the complex function, or null if not defined
+     */
+    public ComplexMathFunction getComplexFunction(String name) {
+        return complexFunctions.get(name);
+    }
+
+    /**
+     * Checks if a complex math function exists.
+     *
+     * @param name the function name
+     * @return true if the complex function is defined
+     */
+    public boolean hasComplexFunction(String name) {
+        return complexFunctions.containsKey(name);
     }
 }
