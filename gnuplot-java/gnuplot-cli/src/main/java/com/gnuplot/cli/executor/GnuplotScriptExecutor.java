@@ -825,9 +825,10 @@ public class GnuplotScriptExecutor implements CommandVisitor {
             sceneBuilder.addElement(contour);
         }
 
-        // Create and add legend if any plot has a label
+        // Create and add legend if any plot has a label or there are contours
         boolean hasLabels = plots3D.stream().anyMatch(plot -> plot.getLabel() != null && !plot.getLabel().isEmpty());
-        if (hasLabels) {
+        boolean hasContours = !contourPlots3D.isEmpty();
+        if (hasLabels || hasContours) {
             Legend.Builder legendBuilder = Legend.builder()
                     .id("legend")
                     .position(combineKeyPosition(keyVerticalPosition, keyHorizontalPosition))
@@ -851,10 +852,55 @@ public class GnuplotScriptExecutor implements CommandVisitor {
                 }
             }
 
+            // Add legend entries for contour levels (matching C gnuplot behavior)
+            if (hasContours) {
+                // Collect unique z-levels with their colors across all contour plots
+                java.util.Map<Double, String> contourLevelColors = new java.util.LinkedHashMap<>();
+                for (ContourPlot3D contourPlot : contourPlots3D) {
+                    for (ContourLine contour : contourPlot.getContourLines()) {
+                        // Only add if not already present (first color wins)
+                        if (!contourLevelColors.containsKey(contour.zLevel())) {
+                            contourLevelColors.put(contour.zLevel(), contour.color());
+                        }
+                    }
+                }
+
+                // Sort by z-level and add legend entries
+                java.util.List<Double> sortedLevels = new java.util.ArrayList<>(contourLevelColors.keySet());
+                java.util.Collections.sort(sortedLevels);
+                for (Double level : sortedLevels) {
+                    String color = contourLevelColors.get(level);
+                    // Format like C gnuplot: nice compact representation
+                    // Remove trailing zeros from decimal representation
+                    String label = formatContourLevel(level);
+                    legendBuilder.addEntry(label, color, LinePlot.LineStyle.SOLID);
+                }
+            }
+
             sceneBuilder.addElement(legendBuilder.build());
         }
 
         scenes.add(sceneBuilder.build());
+    }
+
+    /**
+     * Format a contour level value for legend display.
+     * Produces compact representation like C gnuplot (e.g., "0.2" not "0.200000").
+     */
+    private String formatContourLevel(double level) {
+        // Round to 10 significant digits to avoid floating point artifacts
+        // (e.g., 0.6000000000000001 -> 0.6)
+        double rounded = Math.round(level * 1e10) / 1e10;
+
+        // Check if it's an integer value
+        if (rounded == Math.floor(rounded) && Math.abs(rounded) < 1e10) {
+            return String.format(java.util.Locale.US, "%.0f", rounded);
+        }
+
+        // Use BigDecimal to strip trailing zeros
+        java.math.BigDecimal bd = java.math.BigDecimal.valueOf(rounded);
+        bd = bd.stripTrailingZeros();
+        return bd.toPlainString();
     }
 
     /**

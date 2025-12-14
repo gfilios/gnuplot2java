@@ -183,22 +183,38 @@ public class ContourExtractor {
     }
 
     /**
-     * Quantize to nice round values (2, 5, or 10 multiples).
+     * Quantize to nice round values for tic spacing.
      * Port of gnuplot-c/src/axis.c:quantize_normal_tics()
+     *
+     * @param arg   the range to quantize
+     * @param guide approximate upper limit on number of tics
+     * @return quantized tic step size
      */
-    private double quantizeNormalTics(double tic, int guide) {
-        double power = Math.pow(10.0, Math.floor(Math.log10(tic / guide)));
-        double xnorm = tic / guide / power;
+    private double quantizeNormalTics(double arg, int guide) {
+        // Order of magnitude of argument
+        double power = Math.pow(10.0, Math.floor(Math.log10(arg)));
+        double xnorm = arg / power;    // approx number of decades (1 <= xnorm <= 10)
+        double posns = guide / xnorm;  // approx number of tic posns per decade
 
-        if (xnorm <= 2.0) {
-            xnorm = 2.0;
-        } else if (xnorm <= 5.0) {
-            xnorm = 5.0;
+        double tics;
+        if (posns > 40) {
+            tics = 0.05;        // eg 0, .05, .10, ...
+        } else if (posns > 20) {
+            tics = 0.1;         // eg 0, .1, .2, ...
+        } else if (posns > 10) {
+            tics = 0.2;         // eg 0, 0.2, 0.4, ...
+        } else if (posns > 4) {
+            tics = 0.5;         // 0, 0.5, 1, ...
+        } else if (posns > 2) {
+            tics = 1;           // 0, 1, 2, ...
+        } else if (posns > 0.5) {
+            tics = 2;           // 0, 2, 4, 6
         } else {
-            xnorm = 10.0;
+            // Getting desperate - round up to avoid going under
+            tics = Math.ceil(xnorm);
         }
 
-        return xnorm * power;
+        return tics * power;
     }
 
     /**
