@@ -1,0 +1,18 @@
+structurallyEquivalent=false
+criticalDifferenceCount=1
+minorDifferenceCount=2
+cXAxisTicks=7
+javaXAxisTicks=7
+cYAxisTicks=5
+javaYAxisTicks=5
+cDataSeries=3
+javaDataSeries=3
+cTotalDataPoints=792
+javaTotalDataPoints=808
+cTextCount=15
+javaTextCount=15
+cContourLines=2
+javaContourLines=0
+criticalDiff0=Contour lines missing in Java: C=2, Java=0
+minorDiff0=Data series 2 point count differs slightly: C=386, Java=400
+minorDiff1=Data series 3 point count differs slightly: C=398, Java=400

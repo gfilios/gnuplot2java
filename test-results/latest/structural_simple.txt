@@ -1,0 +1,41 @@
+=== SVG Structural Comparison Report ===
+
+Overall Status: DIFFERENT
+
+--- C Gnuplot Metrics ---
+  Lines: 0
+  Paths: 23
+  Polylines: 0
+  Text elements: 16
+  X-axis ticks: 5
+  Y-axis ticks: 7
+  Point markers: 7
+  Contour lines: 3
+  Axis labels: [-1.5, -1, -0.5, 0, 0.5, 1, 1.5, -10, -5, 0, 5, 10]
+  Legend entries: [sin(x), atan(x), cos(atan(x))]
+  Data series: 4
+  Total data points: 164
+  Title: Gnuplot
+
+--- Java Gnuplot Metrics ---
+  Lines: 29
+  Paths: 6
+  Polylines: 3
+  Text elements: 16
+  X-axis ticks: 5
+  Y-axis ticks: 7
+  Point markers: 7
+  Contour lines: 0
+  Axis labels: [-10, -5, 0, 5, 10, -1.5, -1, -0.5, 0, 0.5, 1, 1.5]
+  Legend entries: [sin(x), atan(x), cos(atan(x))]
+  Data series: 4
+  Total data points: 158
+
+--- Critical Differences ---
+  * Contour lines missing in Java: C=3, Java=0
+
+--- Minor Differences ---
+  - Data series 2 point count differs slightly: C=52, Java=50
+  - Data series 3 point count differs slightly: C=52, Java=50
+  - Data series 4 point count differs slightly: C=52, Java=50
+

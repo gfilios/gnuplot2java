@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="800" height="600" viewBox="0 0 800 600">
+  <defs>
+    <clipPath id="plotClip">
+      <rect x="54" y="66" width="721" height="498"/>
+    </clipPath>
+
+    <!-- Point marker definitions (matching C Gnuplot) -->
+    <circle id='gpDot' r='0.5' stroke-width='0.5' stroke='currentColor'/>
+    <path id='gpPt0' stroke-width='0.222' stroke='currentColor' d='M-1,0 h2 M0,-1 v2'/>
+    <path id='gpPt1' stroke-width='0.222' stroke='currentColor' d='M-1,-1 L1,1 M1,-1 L-1,1'/>
+    <path id='gpPt2' stroke-width='0.222' stroke='currentColor' d='M-1,0 L1,0 M0,-1 L0,1 M-1,-1 L1,1 M-1,1 L1,-1'/>
+    <rect id='gpPt3' stroke-width='0.222' stroke='currentColor' x='-1' y='-1' width='2' height='2'/>
+    <rect id='gpPt4' stroke-width='0.222' stroke='currentColor' fill='currentColor' x='-1' y='-1' width='2' height='2'/>
+    <circle id='gpPt5' stroke-width='0.222' stroke='currentColor' cx='0' cy='0' r='1'/>
+    <use xlink:href='#gpPt5' id='gpPt6' fill='currentColor' stroke='none'/>
+    <path id='gpPt7' stroke-width='0.222' stroke='currentColor' d='M0,-1.33 L-1.33,0.67 L1.33,0.67 z'/>
+    <use xlink:href='#gpPt7' id='gpPt8' fill='currentColor' stroke='none'/>
+    <use xlink:href='#gpPt7' id='gpPt9' stroke='currentColor' transform='rotate(180)'/>
+    <use xlink:href='#gpPt9' id='gpPt10' fill='currentColor' stroke='none'/>
+    <use xlink:href='#gpPt3' id='gpPt11' stroke='currentColor' transform='rotate(45)'/>
+    <use xlink:href='#gpPt11' id='gpPt12' fill='currentColor' stroke='none'/>
+    <path id='gpPt13' stroke-width='0.222' stroke='currentColor' d='M0,1.330 L1.265,0.411 L0.782,-1.067 L-0.782,-1.076 L-1.265,0.411 z'/>
+    <use xlink:href='#gpPt13' id='gpPt14' fill='currentColor' stroke='none'/>
+  </defs>
+  <rect width="800" height="600" fill="#FFFFFF"/>
+  <line x1="54" y1="564.00" x2="775" y2="564.00" stroke="#000" stroke-width="1"/>
+  <line x1="54.00" y1="564.00" x2="54.00" y2="558.00" stroke="#000" stroke-width="1"/>
+  <line x1="54.00" y1="66.00" x2="54.00" y2="72.00" stroke="#000" stroke-width="1"/>
+  <text x="54.00" y="582.00" text-anchor="middle" font-size="12">-10</text>
+  <line x1="234.25" y1="564.00" x2="234.25" y2="558.00" stroke="#000" stroke-width="1"/>
+  <line x1="234.25" y1="66.00" x2="234.25" y2="72.00" stroke="#000" stroke-width="1"/>
+  <text x="234.25" y="582.00" text-anchor="middle" font-size="12">-5</text>
+  <line x1="414.50" y1="564.00" x2="414.50" y2="558.00" stroke="#000" stroke-width="1"/>
+  <line x1="414.50" y1="66.00" x2="414.50" y2="72.00" stroke="#000" stroke-width="1"/>
+  <text x="414.50" y="582.00" text-anchor="middle" font-size="12">0</text>
+  <line x1="594.75" y1="564.00" x2="594.75" y2="558.00" stroke="#000" stroke-width="1"/>
+  <line x1="594.75" y1="66.00" x2="594.75" y2="72.00" stroke="#000" stroke-width="1"/>
+  <text x="594.75" y="582.00" text-anchor="middle" font-size="12">5</text>
+  <line x1="775.00" y1="564.00" x2="775.00" y2="558.00" stroke="#000" stroke-width="1"/>
+  <line x1="775.00" y1="66.00" x2="775.00" y2="72.00" stroke="#000" stroke-width="1"/>
+  <text x="775.00" y="582.00" text-anchor="middle" font-size="12">10</text>
+  <line x1="54.00" y1="66" x2="54.00" y2="564" stroke="#000" stroke-width="1"/>
+  <line x1="54.00" y1="564.00" x2="60.00" y2="564.00" stroke="#000" stroke-width="1"/>
+  <line x1="775.00" y1="564.00" x2="769.00" y2="564.00" stroke="#000" stroke-width="1"/>
+  <text x="44.00" y="568.00" text-anchor="end" font-size="12">-10</text>
+  <line x1="54.00" y1="439.50" x2="60.00" y2="439.50" stroke="#000" stroke-width="1"/>
+  <line x1="775.00" y1="439.50" x2="769.00" y2="439.50" stroke="#000" stroke-width="1"/>
+  <text x="44.00" y="443.50" text-anchor="end" font-size="12">-5</text>
+  <line x1="54.00" y1="315.00" x2="60.00" y2="315.00" stroke="#000" stroke-width="1"/>
+  <line x1="775.00" y1="315.00" x2="769.00" y2="315.00" stroke="#000" stroke-width="1"/>
+  <text x="44.00" y="319.00" text-anchor="end" font-size="12">0</text>
+  <line x1="54.00" y1="190.50" x2="60.00" y2="190.50" stroke="#000" stroke-width="1"/>
+  <line x1="775.00" y1="190.50" x2="769.00" y2="190.50" stroke="#000" stroke-width="1"/>
+  <text x="44.00" y="194.50" text-anchor="end" font-size="12">5</text>
+  <line x1="54.00" y1="66.00" x2="60.00" y2="66.00" stroke="#000" stroke-width="1"/>
+  <line x1="775.00" y1="66.00" x2="769.00" y2="66.00" stroke="#000" stroke-width="1"/>
+  <text x="44.00" y="70.00" text-anchor="end" font-size="12">10</text>
+  <polyline points="" fill="none" stroke="#9400D3" stroke-width="1.0" stroke-linecap="round" stroke-linejoin="round" clip-path="url(#plotClip)"/>
+  <rect x="718" y="71" width="52" height="18" fill="#FFFFFF" stroke="#000000" stroke-width="1"/>
+  <text x="725" y="83" font-family="Arial" font-size="12" alignment-baseline="middle" text-anchor="end">s</text>
+  <line x1="735" y1="80" x2="760" y2="80" stroke="#9400D3" stroke-width="2"/>
+  <path d="M 54.00 66.00 L 775.00 66.00 L 775.00 564.00 L 54.00 564.00 Z" stroke="#000000" stroke-width="1.0" fill="none"/>
+</svg>

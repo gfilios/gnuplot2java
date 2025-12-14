@@ -1,0 +1,1715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gnuplot Demo Test Results</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;            background: #f5f5f5; color: #333; line-height: 1.6; }
+    .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);               color: white; padding: 2rem; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .header h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
+    .timestamp { opacity: 0.9; font-size: 0.9rem; }
+    .summary { background: white; margin: 2rem auto; max-width: 1200px;                padding: 2rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .summary h2 { color: #667eea; margin-bottom: 1rem; }
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+    .stat-card { background: #f8f9fa; padding: 1rem; border-radius: 6px; text-align: center; }
+    .stat-card .number { font-size: 2rem; font-weight: bold; color: #667eea; }
+    .stat-card .label { color: #666; font-size: 0.9rem; margin-top: 0.5rem; }
+    .container { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; }
+    .test-result { background: white; margin-bottom: 1.5rem; border-radius: 8px;                    box-shadow: 0 2px 5px rgba(0,0,0,0.1); overflow: hidden; }
+    .test-header { padding: 1rem 1.5rem; cursor: pointer; display: flex;                    justify-content: space-between; align-items: center;                    transition: background 0.2s; }
+    .test-header:hover { background: #f8f9fa; }
+    .test-header.passing { border-left: 4px solid #28a745; }
+    .test-header.failing { border-left: 4px solid #dc3545; }
+    .test-title { font-weight: bold; font-size: 1.1rem; }
+    .status-badge { padding: 0.25rem 0.75rem; border-radius: 20px;                     font-size: 0.85rem; font-weight: bold; }
+    .status-badge.pass { background: #d4edda; color: #155724; }
+    .status-badge.fail { background: #f8d7da; color: #721c24; }
+    .test-details { display: none; padding: 1.5rem; background: #fafafa;                     border-top: 1px solid #e0e0e0; }
+    .test-details.expanded { display: block; }
+    .comparison { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-top: 1rem;                   align-items: start; }
+    .comparison-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1rem;                        align-items: start; }
+    .metrics-bar { display: flex; gap: 1rem; align-items: center; margin: 0.75rem 0; padding: 0.5rem 1rem;                    background: #f8f9fa; border-radius: 6px; flex-wrap: wrap; }
+    .metric { display: flex; align-items: center; gap: 0.5rem; }
+    .metric-label { font-size: 0.85rem; color: #666; }
+    .metric-value { font-weight: bold; font-size: 1rem; }
+    .similarity-badge { padding: 0.25rem 0.75rem; border-radius: 20px; font-weight: bold; font-size: 0.9rem; }
+    .similarity-excellent { background: #d4edda; color: #155724; }
+    .similarity-good { background: #fff3cd; color: #856404; }
+    .similarity-poor { background: #f8d7da; color: #721c24; }
+    .diff-image-container { border: 2px solid #dc3545; border-radius: 4px; padding: 0.5rem; background: #fff5f5; }
+    .diff-image-container h4 { color: #dc3545; }
+    .comparison-text { background: #f8f9fa; padding: 1rem; border-radius: 6px;                        max-height: 600px; overflow-y: auto; }
+    .comparison-text h4 { margin-bottom: 0.75rem; color: #667eea; }
+    .comparison-content { background: #2d2d2d; color: #f8f8f2; padding: 1rem;                           border-radius: 4px; font-family: 'Courier New', monospace;                           font-size: 0.75rem; max-height: 500px; overflow-y: auto; }
+    .comparison-content pre { margin: 0; white-space: pre-wrap; word-wrap: break-word; }
+    .implementation { background: white; padding: 1rem; border-radius: 6px;                       min-width: 0; }
+    .implementation h4 { margin-bottom: 0.75rem; color: #667eea; }
+    .svg-output { border: 1px solid #ddd; border-radius: 4px; padding: 0.5rem;                   background: white; width: 100%; overflow: visible;                   display: flex; justify-content: center; align-items: center; }
+    .svg-output img { max-width: 100%; width: 100%; height: auto; display: block; }
+    .log-section { margin-top: 1rem; }
+    .log-section h5 { font-size: 0.9rem; color: #666; margin-bottom: 0.5rem; }
+    .log-content { background: #2d2d2d; color: #f8f8f2; padding: 1rem;                    border-radius: 4px; font-family: 'Courier New', monospace;                    font-size: 0.85rem; overflow-x: auto; max-height: 300px; overflow-y: auto; }
+    .error-line { color: #ff6b6b; }
+    .warning-line { color: #ffd93d; }
+    .success-line { color: #6bcf7f; }
+    .script-section { margin-top: 1rem; }
+    .script-section h4 { transition: background 0.2s; padding: 0.5rem;                          border-radius: 4px; margin: 0; }
+    .script-section h4:hover { background: #f0f0f0; }
+    .script-content { background: #f5f5f5; padding: 0; border-radius: 4px;                       overflow-x: auto; max-height: 400px; overflow-y: auto;                       margin-top: 0.5rem; }
+    .script-content pre { margin: 0; padding: 1rem;                           font-family: 'Courier New', monospace; font-size: 0.85rem;                           white-space: pre-wrap; word-wrap: break-word; }
+    .toggle-icon { transition: transform 0.3s; }
+    .toggle-icon.expanded { transform: rotate(90deg); }
+    .lightbox { display: none; position: fixed; z-index: 9999; left: 0; top: 0;                 width: 100%; height: 100%; background-color: rgba(0,0,0,0.9);                 justify-content: center; align-items: center; cursor: pointer; }
+    .lightbox.active { display: flex; }
+    .lightbox img { max-width: 95%; max-height: 95%; object-fit: contain;                     box-shadow: 0 0 30px rgba(255,255,255,0.3); }
+    .svg-output img { cursor: zoom-in; }
+    .structural-comparison { background: #f8f9fa; border-radius: 6px; padding: 1rem; margin-top: 1rem; }
+    .structural-comparison h4 { color: #667eea; margin-bottom: 0.75rem; }
+    .structural-badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 20px;                         font-weight: bold; font-size: 0.9rem; margin-right: 0.5rem; }
+    .structural-equivalent { background: #d4edda; color: #155724; }
+    .structural-different { background: #f8d7da; color: #721c24; }
+    .metrics-table { width: 100%; border-collapse: collapse; margin-top: 0.75rem; font-size: 0.9rem; }
+    .metrics-table th, .metrics-table td { padding: 0.5rem; text-align: left; border-bottom: 1px solid #ddd; }
+    .metrics-table th { background: #e9ecef; font-weight: bold; }
+    .metrics-table .match { color: #28a745; font-weight: bold; }
+    .metrics-table .mismatch { color: #dc3545; font-weight: bold; }
+    .diff-list { margin-top: 0.75rem; padding: 0; list-style: none; }
+    .diff-list li { padding: 0.5rem; margin-bottom: 0.25rem; border-radius: 4px; }
+    .diff-list li.critical { background: #f8d7da; color: #721c24; }
+    .diff-list li.minor { background: #fff3cd; color: #856404; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🧪 Gnuplot Demo Test Results</h1>
+    <p class="timestamp">Test Run: 2025-12-14 11:51:32</p>
+  </div>
+  <div class="summary">
+    <h2>📊 Summary</h2>
+    <div class="stats">
+      <div class="stat-card">
+        <div class="number">3</div>
+        <div class="label">Total Tests</div>
+      </div>
+      <div class="stat-card">
+        <div class="number" style="color: #28a745;">3</div>
+        <div class="label">Passing (100,0%)</div>
+      </div>
+      <div class="stat-card">
+        <div class="number" style="color: #17a2b8;">3</div>
+        <div class="label">C Gnuplot Success</div>
+      </div>
+      <div class="stat-card">
+        <div class="number" style="color: #fd7e14;">3</div>
+        <div class="label">Java Gnuplot Success</div>
+      </div>
+    </div>
+  </div>
+  <div class="container">
+    <h2>Test Results</h2>
+    <div class="test-result">
+      <div class="test-header passing" onclick="toggleDetails('simple')">
+        <div>
+          <span class="toggle-icon" id="icon-simple">▶</span>           <span class="test-title">simple.dem</span>
+          <small style="color: #666; margin-left: 1rem;">C: ✓ | Java: ✓</small>
+        </div>
+        <span class="status-badge pass">✅ PASS</span>
+      </div>
+      <div class="test-details" id="details-simple">
+        <div class="script-section">
+          <h4 onclick="toggleScript('simple')" style="cursor: pointer; user-select: none;"><span class="toggle-icon" id="script-icon-simple">▶</span> 📝 Original Script</h4>
+          <div class="script-content" id="script-simple" style="display: none;"><pre># Requires data files &quot;[123].dat&quot; from this directory,
+# so change current working directory to this directory before running.
+# gnuplot&gt; set term &lt;term-type&gt;
+# gnuplot&gt; load &#39;simple.dem&#39;
+#
+set title &quot;Simple Plots&quot; font &quot;,20&quot;
+set key left box
+set samples 50
+set style data points
+
+plot [-10:10] sin(x),atan(x),cos(atan(x))
+pause -1 &quot;Hit return to continue&quot;
+
+set key right nobox
+set samples 100
+plot [-pi/2:pi] cos(x),-(sin(x) &gt; sin(x+1) ? sin(x) : sin(x+1))
+pause -1 &quot;Hit return to continue&quot;
+
+set key left box
+set samples 200
+plot [-3:5] asin(x),acos(x)
+pause -1 &quot;Hit return to continue&quot;
+
+plot [-30:20] besj0(x)*0.12e1 with impulses, [0:*] (x**besj0(x))-2.5 with points
+pause -1 &quot;Hit return to continue&quot;
+
+set samples 400
+plot [-10:10] real(sin(x)**besj0(x))
+pause -1 &quot;Hit return to continue&quot;
+
+set key bmargin center horizontal
+plot [-5*pi:5*pi] [-5:5] real(tan(x)/atan(x)), 1/x
+pause -1 &quot;Hit return to continue&quot;
+
+set key left box
+set autoscale
+set samples 800
+plot [-30:20] sin(x*20)*atan(x)
+pause -1 &quot;Hit return to continue&quot;
+
+plot [-19:19] &#39;1.dat&#39;with impulses ,&#39;2.dat&#39; ,&#39;3.dat&#39; with lines
+pause -1 &quot;Hit return to continue&quot;
+
+reset
+
+</pre></div>
+        </div>
+        <h4 style="margin-top: 1.5rem;">🖼️ Output Comparison</h4>
+        <div class="plot-comparison-row" style="margin-top: 1.5rem;">
+          <h5 style="color: #667eea;">Plot 1</h5>
+          <div class="structural-comparison">
+            <h4>📐 Structural Analysis</h4>
+            <span class="structural-badge structural-different">🔴 Structural Differences Found</span>
+            <table class="metrics-table">
+              <tr><th>Element</th><th>C Gnuplot</th><th>Java Gnuplot</th><th>Match</th></tr>
+              <tr>
+                <td>X-Axis Ticks</td>
+                <td>5</td>
+                <td>5</td>
+                <td class="match">✅</td>
+              </tr>
+              <tr>
+                <td>Y-Axis Ticks</td>
+                <td>7</td>
+                <td>7</td>
+                <td class="match">✅</td>
+              </tr>
+              <tr>
+                <td>Data Series</td>
+                <td>4</td>
+                <td>4</td>
+                <td class="match">✅</td>
+              </tr>
+              <tr>
+                <td>Total Data Points</td>
+                <td>164</td>
+                <td>158</td>
+                <td class="mismatch">❌</td>
+              </tr>
+              <tr>
+                <td>Text Elements</td>
+                <td>16</td>
+                <td>16</td>
+                <td class="match">✅</td>
+              </tr>
+            </table>
+            <ul class="diff-list">
+              <li class="critical">🔴 1</li>
+              <li class="critical">🔴 Contour lines missing in Java: C=3, Java=0</li>
+            </ul>
+            <ul class="diff-list">
+              <li class="minor">🟡 3</li>
+              <li class="minor">🟡 Data series 2 point count differs slightly: C=52, Java=50</li>
+              <li class="minor">🟡 Data series 3 point count differs slightly: C=52, Java=50</li>
+              <li class="minor">🟡 Data series 4 point count differs slightly: C=52, Java=50</li>
+            </ul>
+          </div>
+          <div class="metrics-bar">
+            <div class="metric">
+              <span class="metric-label">Pixel Similarity:</span>
+              <span class="similarity-badge similarity-excellent">🟢 98,0%</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Different pixels:</span>
+              <span class="metric-value">9.841</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Total pixels:</span>
+              <span class="metric-value">480.000</span>
+            </div>
+          </div>
+          <div class="comparison">
+            <div class="implementation">
+              <h4>C Gnuplot</h4>
+              <div class="svg-output">
+                <img src="outputs/simple_c.svg" alt="C Gnuplot plot 1">
+              </div>
+              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Size: 12750 bytes</p>
+            </div>
+            <div class="implementation">
+              <h4>Java Gnuplot</h4>
+              <div class="svg-output">
+                <img src="outputs/simple_java.svg" alt="Java Gnuplot plot 1">
+              </div>
+              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Size: 8446 bytes</p>
+            </div>
+            <div class="implementation diff-image-container">
+              <h4>🔍 Difference</h4>
+              <div class="svg-output">
+                <img src="outputs/diff_simple.png" alt="Difference plot 1">
+              </div>
+              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Red areas show differences</p>
+            </div>
+          </div>
+        </div>
+        <div class="plot-comparison-row" style="margin-top: 1.5rem;">
+          <h5 style="color: #667eea;">Plot 2</h5>
+          <div class="structural-comparison">
+            <h4>📐 Structural Analysis</h4>
+            <span class="structural-badge structural-different">🔴 Structural Differences Found</span>
+            <table class="metrics-table">
+              <tr><th>Element</th><th>C Gnuplot</th><th>Java Gnuplot</th><th>Match</th></tr>
+              <tr>
+                <td>X-Axis Ticks</td>
+                <td>10</td>
+                <td>10</td>
+                <td class="match">✅</td>
+              </tr>
+              <tr>
+                <td>Y-Axis Ticks</td>
+                <td>5</td>
+                <td>5</td>
+                <td class="match">✅</td>
+              </tr>
+              <tr>
+                <td>Data Series</td>
+                <td>3</td>
+                <td>3</td>
+                <td class="match">✅</td>
+              </tr>
+              <tr>
+                <td>Total Data Points</td>
+                <td>212</td>
+                <td>208</td>
+                <td class="mismatch">❌</td>
+              </tr>
+              <tr>
+                <td>Text Elements</td>
+                <td>18</td>
+                <td>18</td>
+                <td class="match">✅</td>
+              </tr>
+            </table>
+            <ul class="diff-list">
+              <li class="critical">🔴 2</li>
+              <li class="critical">🔴 Legend entries missing in Java: [-(sin(x) &gt; sin(x+1) ? sin(x) : sin(x+1))]</li>
+              <li class="critical">🔴 Contour lines missing in Java: C=2, Java=0</li>
+            </ul>
+            <ul class="diff-list">
+              <li class="minor">🟡 2</li>
+              <li class="minor">🟡 Data series 2 point count differs slightly: C=102, Java=100</li>
+              <li class="minor">🟡 Data series 3 point count differs slightly: C=102, Java=100</li>
+            </ul>
+          </div>
+          <div class="metrics-bar">
+            <div class="metric">
+              <span class="metric-label">Pixel Similarity:</span>
+              <span class="similarity-badge similarity-excellent">🟢 98,2%</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Different pixels:</span>
+              <span class="metric-value">8.875</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Total pixels:</span>
+              <span class="metric-value">480.000</span>
+            </div>
+          </div>
+          <div class="comparison">
+            <div class="implementation">
+              <h4>C Gnuplot</h4>
+              <div class="svg-output">
+                <img src="outputs/simple_c_002.svg" alt="C Gnuplot plot 2">
+              </div>
+              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Size: 14018 bytes</p>
+            </div>
+            <div class="implementation">
+              <h4>Java Gnuplot</h4>
+              <div class="svg-output">
+                <img src="outputs/simple_java_002.svg" alt="Java Gnuplot plot 2">
+              </div>
+              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Size: 9485 bytes</p>
+            </div>
+            <div class="implementation diff-image-container">
+              <h4>🔍 Difference</h4>
+              <div class="svg-output">
+                <img src="outputs/diff_simple_plot2.png" alt="Difference plot 2">
+              </div>
+              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Red areas show differences</p>
+            </div>
+          </div>
+        </div>
+        <div class="plot-comparison-row" style="margin-top: 1.5rem;">
+          <h5 style="color: #667eea;">Plot 3</h5>
+          <div class="structural-comparison">
+            <h4>📐 Structural Analysis</h4>
+            <span class="structural-badge structural-different">🔴 Structural Differences Found</span>
+            <table class="metrics-table">
+              <tr><th>Element</th><th>C Gnuplot</th><th>Java Gnuplot</th><th>Match</th></tr>
+              <tr>
+                <td>X-Axis Ticks</td>
+                <td>9</td>
+                <td>9</td>
+                <td class="match">✅</td>
+              </tr>
+              <tr>
+                <td>Y-Axis Ticks</td>
+                <td>10</td>
+                <td>10</td>
+                <td class="match">✅</td>
+              </tr>
+              <tr>
+                <td>Data Series</td>
+                <td>3</td>
+                <td>3</td>
+                <td class="match">✅</td>
+              </tr>
+              <tr>
+                <td>Total Data Points</td>
+                <td>112</td>
+                <td>108</td>
+                <td class="mismatch">❌</td>
+              </tr>
+              <tr>
+                <td>Text Elements</td>
+                <td>22</td>
+                <td>22</td>
+                <td class="match">✅</td>
+              </tr>
+            </table>
+            <ul class="diff-list">
+              <li class="critical">🔴 1</li>
+              <li class="critical">🔴 Contour lines missing in Java: C=2, Java=0</li>
+            </ul>
+            <ul class="diff-list">
+              <li class="minor">🟡 2</li>
+              <li class="minor">🟡 Data series 2 point count differs slightly: C=52, Java=50</li>
+              <li class="minor">🟡 Data series 3 point count differs slightly: C=52, Java=50</li>
+            </ul>
+          </div>
+          <div class="metrics-bar">
+            <div class="metric">
+              <span class="metric-label">Pixel Similarity:</span>
+              <span class="similarity-badge similarity-excellent">🟢 98,6%</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Different pixels:</span>
+              <span class="metric-value">6.864</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Total pixels:</span>
+              <span class="metric-value">480.000</span>
+            </div>
+          </div>
+          <div class="comparison">
+            <div class="implementation">
+              <h4>C Gnuplot</h4>
+              <div class="svg-output">
+                <img src="outputs/simple_c_003.svg" alt="C Gnuplot plot 3">
+              </div>
+              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Size: 14265 bytes</p>
+            </div>
+            <div class="implementation">
+              <h4>Java Gnuplot</h4>
+              <div class="svg-output">
+                <img src="outputs/simple_java_003.svg" alt="Java Gnuplot plot 3">
+              </div>
+              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Size: 9167 bytes</p>
+            </div>
+            <div class="implementation diff-image-container">
+              <h4>🔍 Difference</h4>
+              <div class="svg-output">
+                <img src="outputs/diff_simple_plot3.png" alt="Difference plot 3">
+              </div>
+              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Red areas show differences</p>
+            </div>
+          </div>
+        </div>
+        <div class="plot-comparison-row" style="margin-top: 1.5rem;">
+          <h5 style="color: #667eea;">Plot 4</h5>
+          <div class="structural-comparison">
+            <h4>📐 Structural Analysis</h4>
+            <span class="structural-badge structural-different">🔴 Structural Differences Found</span>
+            <table class="metrics-table">
+              <tr><th>Element</th><th>C Gnuplot</th><th>Java Gnuplot</th><th>Match</th></tr>
+              <tr>
+                <td>X-Axis Ticks</td>
+                <td>6</td>
+                <td>6</td>
+                <td class="match">✅</td>
+              </tr>
+              <tr>
+                <td>Y-Axis Ticks</td>
+                <td>9</td>
+                <td>9</td>
+                <td class="match">✅</td>
+              </tr>
+              <tr>
+                <td>Data Series</td>
+                <td>2</td>
+                <td>1</td>
+                <td class="mismatch">❌</td>
+              </tr>
+              <tr>
+                <td>Total Data Points</td>
+                <td>410</td>
+                <td>8</td>
+                <td class="mismatch">❌</td>
+              </tr>
+              <tr>
+                <td>Text Elements</td>
+                <td>18</td>
+                <td>18</td>
+                <td class="match">✅</td>
+              </tr>
+            </table>
+            <ul class="diff-list">
+              <li class="critical">🔴 3</li>
+              <li class="critical">🔴 Legend entries missing in Java: [[0:*] (x**besj0(x))-2.5]</li>
+              <li class="critical">🔴 Data series count differs: C=2, Java=1</li>
+              <li class="critical">🔴 Contour lines missing in Java: C=1, Java=0</li>
+            </ul>
+            <ul class="diff-list">
+              <li class="minor">🟡 0</li>
+            </ul>
+          </div>
+          <div class="metrics-bar">
+            <div class="metric">
+              <span class="metric-label">Pixel Similarity:</span>
+              <span class="similarity-badge similarity-excellent">🟢 96,2%</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Different pixels:</span>
+              <span class="metric-value">18.340</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Total pixels:</span>
+              <span class="metric-value">480.000</span>
+            </div>
+          </div>
+          <div class="comparison">
+            <div class="implementation">
+              <h4>C Gnuplot</h4>
+              <div class="svg-output">
+                <img src="outputs/simple_c_004.svg" alt="C Gnuplot plot 4">
+              </div>
+              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Size: 38106 bytes</p>
+            </div>
+            <div class="implementation">
+              <h4>Java Gnuplot</h4>
+              <div class="svg-output">
+                <img src="outputs/simple_java_004.svg" alt="Java Gnuplot plot 4">
+              </div>
+              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Size: 56516 bytes</p>
+            </div>
+            <div class="implementation diff-image-container">
+              <h4>🔍 Difference</h4>
+              <div class="svg-output">
+                <img src="outputs/diff_simple_plot4.png" alt="Difference plot 4">
+              </div>
+              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Red areas show differences</p>
+            </div>
+          </div>
+        </div>
+        <div class="plot-comparison-row" style="margin-top: 1.5rem;">
+          <h5 style="color: #667eea;">Plot 5</h5>
+          <div class="structural-comparison">
+            <h4>📐 Structural Analysis</h4>
+            <span class="structural-badge structural-different">🔴 Structural Differences Found</span>
+            <table class="metrics-table">
+              <tr><th>Element</th><th>C Gnuplot</th><th>Java Gnuplot</th><th>Match</th></tr>
+              <tr>
+                <td>X-Axis Ticks</td>
+                <td>5</td>
+                <td>5</td>
+                <td class="match">✅</td>
+              </tr>
+              <tr>
+                <td>Y-Axis Ticks</td>
+                <td>12</td>
+                <td>10</td>
+                <td class="mismatch">❌</td>
+              </tr>
+              <tr>
+                <td>Data Series</td>
+                <td>2</td>
+                <td>2</td>
+                <td class="match">✅</td>
+              </tr>
+              <tr>
+                <td>Total Data Points</td>
+                <td>410</td>
+                <td>208</td>
+                <td class="mismatch">❌</td>
+              </tr>
+              <tr>
+                <td>Text Elements</td>
+                <td>19</td>
+                <td>17</td>
+                <td class="mismatch">❌</td>
+              </tr>
+            </table>
+            <ul class="diff-list">
+              <li class="critical">🔴 4</li>
+              <li class="critical">🔴 Y-axis tick count differs: C=12, Java=10</li>
+              <li class="critical">🔴 Axis labels missing in Java: [-1, -0.5]</li>
+              <li class="critical">🔴 Data series 2 point count differs significantly: C=402, Java=200</li>
+              <li class="critical">🔴 Contour lines missing in Java: C=1, Java=0</li>
+            </ul>
+            <ul class="diff-list">
+              <li class="minor">🟡 0</li>
+            </ul>
+          </div>
+          <div class="metrics-bar">
+            <div class="metric">
+              <span class="metric-label">Pixel Similarity:</span>
+              <span class="similarity-badge similarity-excellent">🟢 96,8%</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Different pixels:</span>
+              <span class="metric-value">15.159</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Total pixels:</span>
+              <span class="metric-value">480.000</span>
+            </div>
+          </div>
+          <div class="comparison">
+            <div class="implementation">
+              <h4>C Gnuplot</h4>
+              <div class="svg-output">
+                <img src="outputs/simple_c_005.svg" alt="C Gnuplot plot 5">
+              </div>
+              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Size: 17512 bytes</p>
+            </div>
+            <div class="implementation">
+              <h4>Java Gnuplot</h4>
+              <div class="svg-output">
+                <img src="outputs/simple_java_005.svg" alt="Java Gnuplot plot 5">
+              </div>
+              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Size: 9225 bytes</p>
+            </div>
+            <div class="implementation diff-image-container">
+              <h4>🔍 Difference</h4>
+              <div class="svg-output">
+                <img src="outputs/diff_simple_plot5.png" alt="Difference plot 5">
+              </div>
+              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Red areas show differences</p>
+            </div>
+          </div>
+        </div>
+        <div class="plot-comparison-row" style="margin-top: 1.5rem;">
+          <h5 style="color: #667eea;">Plot 6</h5>
+          <div class="structural-comparison">
+            <h4>📐 Structural Analysis</h4>
+            <span class="structural-badge structural-different">🔴 Structural Differences Found</span>
+            <table class="metrics-table">
+              <tr><th>Element</th><th>C Gnuplot</th><th>Java Gnuplot</th><th>Match</th></tr>
+              <tr>
+                <td>X-Axis Ticks</td>
+                <td>7</td>
+                <td>7</td>
+                <td class="match">✅</td>
+              </tr>
+              <tr>
+                <td>Y-Axis Ticks</td>
+                <td>5</td>
+                <td>5</td>
+                <td class="match">✅</td>
+              </tr>
+              <tr>
+                <td>Data Series</td>
+                <td>3</td>
+                <td>3</td>
+                <td class="match">✅</td>
+              </tr>
+              <tr>
+                <td>Total Data Points</td>
+                <td>792</td>
+                <td>808</td>
+                <td class="mismatch">❌</td>
+              </tr>
+              <tr>
+                <td>Text Elements</td>
+                <td>15</td>
+                <td>15</td>
+                <td class="match">✅</td>
+              </tr>
+            </table>
+            <ul class="diff-list">
+              <li class="critical">🔴 1</li>
+              <li class="critical">🔴 Contour lines missing in Java: C=2, Java=0</li>
+            </ul>
+            <ul class="diff-list">
+              <li class="minor">🟡 2</li>
+              <li class="minor">🟡 Data series 2 point count differs slightly: C=386, Java=400</li>
+              <li class="minor">🟡 Data series 3 point count differs slightly: C=398, Java=400</li>
+            </ul>
+          </div>
+          <div class="metrics-bar">
+            <div class="metric">
+              <span class="metric-label">Pixel Similarity:</span>
+              <span class="similarity-badge similarity-good">🟡 91,4%</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Different pixels:</span>
+              <span class="metric-value">41.400</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Total pixels:</span>
+              <span class="metric-value">480.000</span>
+            </div>
+          </div>
+          <div class="comparison">
+            <div class="implementation">
+              <h4>C Gnuplot</h4>
+              <div class="svg-output">
+                <img src="outputs/simple_c_006.svg" alt="C Gnuplot plot 6">
+              </div>
+              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Size: 21805 bytes</p>
+            </div>
+            <div class="implementation">
+              <h4>Java Gnuplot</h4>
+              <div class="svg-output">
+                <img src="outputs/simple_java_006.svg" alt="Java Gnuplot plot 6">
+              </div>
+              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Size: 17217 bytes</p>
+            </div>
+            <div class="implementation diff-image-container">
+              <h4>🔍 Difference</h4>
+              <div class="svg-output">
+                <img src="outputs/diff_simple_plot6.png" alt="Difference plot 6">
+              </div>
+              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Red areas show differences</p>
+            </div>
+          </div>
+        </div>
+        <div class="plot-comparison-row" style="margin-top: 1.5rem;">
+          <h5 style="color: #667eea;">Plot 7</h5>
+          <div class="structural-comparison">
+            <h4>📐 Structural Analysis</h4>
+            <span class="structural-badge structural-different">🔴 Structural Differences Found</span>
+            <table class="metrics-table">
+              <tr><th>Element</th><th>C Gnuplot</th><th>Java Gnuplot</th><th>Match</th></tr>
+              <tr>
+                <td>X-Axis Ticks</td>
+                <td>6</td>
+                <td>6</td>
+                <td class="match">✅</td>
+              </tr>
+              <tr>
+                <td>Y-Axis Ticks</td>
+                <td>9</td>
+                <td>9</td>
+                <td class="match">✅</td>
+              </tr>
+              <tr>
+                <td>Data Series</td>
+                <td>2</td>
+                <td>2</td>
+                <td class="match">✅</td>
+              </tr>
+              <tr>
+                <td>Total Data Points</td>
+                <td>810</td>
+                <td>808</td>
+                <td class="mismatch">❌</td>
+              </tr>
+              <tr>
+                <td>Text Elements</td>
+                <td>17</td>
+                <td>17</td>
+                <td class="match">✅</td>
+              </tr>
+            </table>
+            <ul class="diff-list">
+              <li class="critical">🔴 1</li>
+              <li class="critical">🔴 Contour lines missing in Java: C=1, Java=0</li>
+            </ul>
+            <ul class="diff-list">
+              <li class="minor">🟡 1</li>
+              <li class="minor">🟡 Data series 2 point count differs slightly: C=802, Java=800</li>
+            </ul>
+          </div>
+          <div class="metrics-bar">
+            <div class="metric">
+              <span class="metric-label">Pixel Similarity:</span>
+              <span class="similarity-badge similarity-poor">🔴 63,2%</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Different pixels:</span>
+              <span class="metric-value">176.820</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Total pixels:</span>
+              <span class="metric-value">480.000</span>
+            </div>
+          </div>
+          <div class="comparison">
+            <div class="implementation">
+              <h4>C Gnuplot</h4>
+              <div class="svg-output">
+                <img src="outputs/simple_c_007.svg" alt="C Gnuplot plot 7">
+              </div>
+              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Size: 22797 bytes</p>
+            </div>
+            <div class="implementation">
+              <h4>Java Gnuplot</h4>
+              <div class="svg-output">
+                <img src="outputs/simple_java_007.svg" alt="Java Gnuplot plot 7">
+              </div>
+              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Size: 17595 bytes</p>
+            </div>
+            <div class="implementation diff-image-container">
+              <h4>🔍 Difference</h4>
+              <div class="svg-output">
+                <img src="outputs/diff_simple_plot7.png" alt="Difference plot 7">
+              </div>
+              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Red areas show differences</p>
+            </div>
+          </div>
+        </div>
+        <div class="plot-comparison-row" style="margin-top: 1.5rem;">
+          <h5 style="color: #667eea;">Plot 8</h5>
+          <div class="structural-comparison">
+            <h4>📐 Structural Analysis</h4>
+            <span class="structural-badge structural-different">🔴 Structural Differences Found</span>
+            <table class="metrics-table">
+              <tr><th>Element</th><th>C Gnuplot</th><th>Java Gnuplot</th><th>Match</th></tr>
+              <tr>
+                <td>X-Axis Ticks</td>
+                <td>7</td>
+                <td>7</td>
+                <td class="match">✅</td>
+              </tr>
+              <tr>
+                <td>Y-Axis Ticks</td>
+                <td>11</td>
+                <td>5</td>
+                <td class="mismatch">❌</td>
+              </tr>
+              <tr>
+                <td>Data Series</td>
+                <td>3</td>
+                <td>2</td>
+                <td class="mismatch">❌</td>
+              </tr>
+              <tr>
+                <td>Total Data Points</td>
+                <td>128</td>
+                <td>48</td>
+                <td class="mismatch">❌</td>
+              </tr>
+              <tr>
+                <td>Text Elements</td>
+                <td>22</td>
+                <td>16</td>
+                <td class="mismatch">❌</td>
+              </tr>
+            </table>
+            <ul class="diff-list">
+              <li class="critical">🔴 4</li>
+              <li class="critical">🔴 Y-axis tick count differs: C=11, Java=5</li>
+              <li class="critical">🔴 Axis labels missing in Java: [-2, -4, -6, -8, 2, 4, 6, 8]</li>
+              <li class="critical">🔴 Data series count differs: C=3, Java=2</li>
+              <li class="critical">🔴 Contour lines missing in Java: C=2, Java=0</li>
+            </ul>
+            <ul class="diff-list">
+              <li class="minor">🟡 1</li>
+              <li class="minor">🟡 Text element count differs: C=22, Java=16</li>
+            </ul>
+          </div>
+          <div class="metrics-bar">
+            <div class="metric">
+              <span class="metric-label">Pixel Similarity:</span>
+              <span class="similarity-badge similarity-excellent">🟢 95,8%</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Different pixels:</span>
+              <span class="metric-value">19.946</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Total pixels:</span>
+              <span class="metric-value">480.000</span>
+            </div>
+          </div>
+          <div class="comparison">
+            <div class="implementation">
+              <h4>C Gnuplot</h4>
+              <div class="svg-output">
+                <img src="outputs/simple_c_008.svg" alt="C Gnuplot plot 8">
+              </div>
+              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Size: 18705 bytes</p>
+            </div>
+            <div class="implementation">
+              <h4>Java Gnuplot</h4>
+              <div class="svg-output">
+                <img src="outputs/simple_java_008.svg" alt="Java Gnuplot plot 8">
+              </div>
+              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Size: 16692 bytes</p>
+            </div>
+            <div class="implementation diff-image-container">
+              <h4>🔍 Difference</h4>
+              <div class="svg-output">
+                <img src="outputs/diff_simple_plot8.png" alt="Difference plot 8">
+              </div>
+              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Red areas show differences</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="test-result">
+      <div class="test-header passing" onclick="toggleDetails('scatter')">
+        <div>
+          <span class="toggle-icon" id="icon-scatter">▶</span>           <span class="test-title">scatter.dem</span>
+          <small style="color: #666; margin-left: 1rem;">C: ✓ | Java: ✓</small>
+        </div>
+        <span class="status-badge pass">✅ PASS</span>
+      </div>
+      <div class="test-details" id="details-scatter">
+        <div class="script-section">
+          <h4 onclick="toggleScript('scatter')" style="cursor: pointer; user-select: none;"><span class="toggle-icon" id="script-icon-scatter">▶</span> 📝 Original Script</h4>
+          <div class="script-content" id="script-scatter" style="display: none;"><pre>#
+# Simple demo of scatter data conversion to grid data.
+#
+
+set title &quot;Simple demo of scatter data conversion to grid data&quot;
+unset hidden3d
+set ticslevel 0.5
+set view 60,30
+set autoscale
+set parametric
+set style data points
+set xlabel &quot;data style point - no dgrid&quot;
+set key box
+splot &quot;hemisphr.dat&quot;
+pause -1 &quot;Hit return to continue (1)&quot;
+
+set dgrid3d 10,10 qnorm 1
+set xlabel &quot; data style lines, dgrid3d qnorm 1&quot;
+set style data lines
+splot &quot;hemisphr.dat&quot;
+pause -1 &quot;Hit return to continue (2)&quot;
+
+set dgrid3d qnorm 4
+set xlabel &quot; data style lines, dgrid3d qnorm 4 &quot;
+set style data lines
+splot &quot;hemisphr.dat&quot;
+pause -1 &quot;Hit return to continue (3)&quot;
+
+set dgrid3d qnorm 16
+set xlabel &quot; data style lines, dgrid3d qnorm 16&quot;
+set style data lines
+splot &quot;hemisphr.dat&quot;
+pause -1 &quot;Hit return to continue (4)&quot;
+
+set contour
+set xlabel &quot;data style lines, dgrid3d qnorm 16, contour&quot;
+splot &quot;hemisphr.dat&quot;
+pause -1 &quot;Hit return to continue (5)&quot;
+
+unset dgrid3d
+set style data points
+set xlabel &quot;data style points, nodgrid3d&quot;
+splot &quot;scatter2.dat&quot;
+pause -1 &quot;Hit return to continue (6)&quot;
+
+set key nobox
+set dgrid3d qnorm 1
+set xlabel &quot;data style lines, dgrid3d qnorm 1&quot;
+set style data lines
+splot &quot;scatter2.dat&quot;
+pause -1 &quot;Hit return to continue (7)&quot;
+
+set dgrid3d qnorm 4
+set xlabel &quot;data style lines, dgrid3d qnorm 4&quot;
+set style data lines
+splot &quot;scatter2.dat&quot;
+pause -1 &quot;Hit return to continue (8)&quot;
+reset
+</pre></div>
+        </div>
+        <h4 style="margin-top: 1.5rem;">🖼️ Output Comparison</h4>
+        <div class="plot-comparison-row" style="margin-top: 1.5rem;">
+          <h5 style="color: #667eea;">Plot 1</h5>
+          <div class="structural-comparison">
+            <h4>📐 Structural Analysis</h4>
+            <span class="structural-badge structural-equivalent">✅ Structurally Equivalent</span>
+            <table class="metrics-table">
+              <tr><th>Element</th><th>C Gnuplot</th><th>Java Gnuplot</th><th>Match</th></tr>
+              <tr>
+                <td>X-Axis Ticks</td>
+                <td>0</td>
+                <td>0</td>
+                <td class="match">✅</td>
+              </tr>
+              <tr>
+                <td>Y-Axis Ticks</td>
+                <td>16</td>
+                <td>16</td>
+                <td class="match">✅</td>
+              </tr>
+              <tr>
+                <td>Data Series</td>
+                <td>1</td>
+                <td>1</td>
+                <td class="match">✅</td>
+              </tr>
+              <tr>
+                <td>Total Data Points</td>
+                <td>8</td>
+                <td>8</td>
+                <td class="match">✅</td>
+              </tr>
+              <tr>
+                <td>Text Elements</td>
+                <td>36</td>
+                <td>36</td>
+                <td class="match">✅</td>
+              </tr>
+            </table>
+            <ul class="diff-list">
+              <li class="critical">🔴 0</li>
+            </ul>
+            <ul class="diff-list">
+              <li class="minor">🟡 0</li>
+            </ul>
+          </div>
+          <div class="metrics-bar">
+            <div class="metric">
+              <span class="metric-label">Pixel Similarity:</span>
+              <span class="similarity-badge similarity-good">🟡 94,8%</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Different pixels:</span>
+              <span class="metric-value">25.076</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Total pixels:</span>
+              <span class="metric-value">480.000</span>
+            </div>
+          </div>
+          <div class="comparison">
+            <div class="implementation">
+              <h4>C Gnuplot</h4>
+              <div class="svg-output">
+                <img src="outputs/scatter_c.svg" alt="C Gnuplot plot 1">
+              </div>
+              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Size: 51130 bytes</p>
+            </div>
+            <div class="implementation">
+              <h4>Java Gnuplot</h4>
+              <div class="svg-output">
+                <img src="outputs/scatter_java.svg" alt="Java Gnuplot plot 1">
+              </div>
+              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Size: 42914 bytes</p>
+            </div>
+            <div class="implementation diff-image-container">
+              <h4>🔍 Difference</h4>
+              <div class="svg-output">
+                <img src="outputs/diff_scatter.png" alt="Difference plot 1">
+              </div>
+              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Red areas show differences</p>
+            </div>
+          </div>
+        </div>
+        <div class="plot-comparison-row" style="margin-top: 1.5rem;">
+          <h5 style="color: #667eea;">Plot 2</h5>
+          <div class="structural-comparison">
+            <h4>📐 Structural Analysis</h4>
+            <span class="structural-badge structural-equivalent">✅ Structurally Equivalent</span>
+            <table class="metrics-table">
+              <tr><th>Element</th><th>C Gnuplot</th><th>Java Gnuplot</th><th>Match</th></tr>
+              <tr>
+                <td>X-Axis Ticks</td>
+                <td>0</td>
+                <td>0</td>
+                <td class="match">✅</td>
+              </tr>
+              <tr>
+                <td>Y-Axis Ticks</td>
+                <td>14</td>
+                <td>14</td>
+                <td class="match">✅</td>
+              </tr>
+              <tr>
+                <td>Data Series</td>
+                <td>2</td>
+                <td>2</td>
+                <td class="match">✅</td>
+              </tr>
+              <tr>
+                <td>Total Data Points</td>
+                <td>208</td>
+                <td>208</td>
+                <td class="match">✅</td>
+              </tr>
+              <tr>
+                <td>Text Elements</td>
+                <td>32</td>
+                <td>32</td>
+                <td class="match">✅</td>
+              </tr>
+            </table>
+            <ul class="diff-list">
+              <li class="critical">🔴 0</li>
+            </ul>
+            <ul class="diff-list">
+              <li class="minor">🟡 0</li>
+            </ul>
+          </div>
+          <div class="metrics-bar">
+            <div class="metric">
+              <span class="metric-label">Pixel Similarity:</span>
+              <span class="similarity-badge similarity-good">🟡 92,0%</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Different pixels:</span>
+              <span class="metric-value">38.345</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Total pixels:</span>
+              <span class="metric-value">480.000</span>
+            </div>
+          </div>
+          <div class="comparison">
+            <div class="implementation">
+              <h4>C Gnuplot</h4>
+              <div class="svg-output">
+                <img src="outputs/scatter_c_002.svg" alt="C Gnuplot plot 2">
+              </div>
+              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Size: 26337 bytes</p>
+            </div>
+            <div class="implementation">
+              <h4>Java Gnuplot</h4>
+              <div class="svg-output">
+                <img src="outputs/scatter_java_002.svg" alt="Java Gnuplot plot 2">
+              </div>
+              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Size: 21103 bytes</p>
+            </div>
+            <div class="implementation diff-image-container">
+              <h4>🔍 Difference</h4>
+              <div class="svg-output">
+                <img src="outputs/diff_scatter_plot2.png" alt="Difference plot 2">
+              </div>
+              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Red areas show differences</p>
+            </div>
+          </div>
+        </div>
+        <div class="plot-comparison-row" style="margin-top: 1.5rem;">
+          <h5 style="color: #667eea;">Plot 3</h5>
+          <div class="structural-comparison">
+            <h4>📐 Structural Analysis</h4>
+            <span class="structural-badge structural-equivalent">✅ Structurally Equivalent</span>
+            <table class="metrics-table">
+              <tr><th>Element</th><th>C Gnuplot</th><th>Java Gnuplot</th><th>Match</th></tr>
+              <tr>
+                <td>X-Axis Ticks</td>
+                <td>0</td>
+                <td>0</td>
+                <td class="match">✅</td>
+              </tr>
+              <tr>
+                <td>Y-Axis Ticks</td>
+                <td>16</td>
+                <td>16</td>
+                <td class="match">✅</td>
+              </tr>
+              <tr>
+                <td>Data Series</td>
+                <td>2</td>
+                <td>2</td>
+                <td class="match">✅</td>
+              </tr>
+              <tr>
+                <td>Total Data Points</td>
+                <td>208</td>
+                <td>208</td>
+                <td class="match">✅</td>
+              </tr>
+              <tr>
+                <td>Text Elements</td>
+                <td>35</td>
+                <td>35</td>
+                <td class="match">✅</td>
+              </tr>
+            </table>
+            <ul class="diff-list">
+              <li class="critical">🔴 0</li>
+            </ul>
+            <ul class="diff-list">
+              <li class="minor">🟡 0</li>
+            </ul>
+          </div>
+          <div class="metrics-bar">
+            <div class="metric">
+              <span class="metric-label">Pixel Similarity:</span>
+              <span class="similarity-badge similarity-good">🟡 91,2%</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Different pixels:</span>
+              <span class="metric-value">42.099</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Total pixels:</span>
+              <span class="metric-value">480.000</span>
+            </div>
+          </div>
+          <div class="comparison">
+            <div class="implementation">
+              <h4>C Gnuplot</h4>
+              <div class="svg-output">
+                <img src="outputs/scatter_c_003.svg" alt="C Gnuplot plot 3">
+              </div>
+              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Size: 27812 bytes</p>
+            </div>
+            <div class="implementation">
+              <h4>Java Gnuplot</h4>
+              <div class="svg-output">
+                <img src="outputs/scatter_java_003.svg" alt="Java Gnuplot plot 3">
+              </div>
+              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Size: 22203 bytes</p>
+            </div>
+            <div class="implementation diff-image-container">
+              <h4>🔍 Difference</h4>
+              <div class="svg-output">
+                <img src="outputs/diff_scatter_plot3.png" alt="Difference plot 3">
+              </div>
+              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Red areas show differences</p>
+            </div>
+          </div>
+        </div>
+        <div class="plot-comparison-row" style="margin-top: 1.5rem;">
+          <h5 style="color: #667eea;">Plot 4</h5>
+          <div class="structural-comparison">
+            <h4>📐 Structural Analysis</h4>
+            <span class="structural-badge structural-equivalent">✅ Structurally Equivalent</span>
+            <table class="metrics-table">
+              <tr><th>Element</th><th>C Gnuplot</th><th>Java Gnuplot</th><th>Match</th></tr>
+              <tr>
+                <td>X-Axis Ticks</td>
+                <td>0</td>
+                <td>0</td>
+                <td class="match">✅</td>
+              </tr>
+              <tr>
+                <td>Y-Axis Ticks</td>
+                <td>16</td>
+                <td>16</td>
+                <td class="match">✅</td>
+              </tr>
+              <tr>
+                <td>Data Series</td>
+                <td>2</td>
+                <td>2</td>
+                <td class="match">✅</td>
+              </tr>
+              <tr>
+                <td>Total Data Points</td>
+                <td>208</td>
+                <td>208</td>
+                <td class="match">✅</td>
+              </tr>
+              <tr>
+                <td>Text Elements</td>
+                <td>36</td>
+                <td>36</td>
+                <td class="match">✅</td>
+              </tr>
+            </table>
+            <ul class="diff-list">
+              <li class="critical">🔴 0</li>
+            </ul>
+            <ul class="diff-list">
+              <li class="minor">🟡 0</li>
+            </ul>
+          </div>
+          <div class="metrics-bar">
+            <div class="metric">
+              <span class="metric-label">Pixel Similarity:</span>
+              <span class="similarity-badge similarity-good">🟡 91,2%</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Different pixels:</span>
+              <span class="metric-value">42.322</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Total pixels:</span>
+              <span class="metric-value">480.000</span>
+            </div>
+          </div>
+          <div class="comparison">
+            <div class="implementation">
+              <h4>C Gnuplot</h4>
+              <div class="svg-output">
+                <img src="outputs/scatter_c_004.svg" alt="C Gnuplot plot 4">
+              </div>
+              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Size: 28303 bytes</p>
+            </div>
+            <div class="implementation">
+              <h4>Java Gnuplot</h4>
+              <div class="svg-output">
+                <img src="outputs/scatter_java_004.svg" alt="Java Gnuplot plot 4">
+              </div>
+              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Size: 22569 bytes</p>
+            </div>
+            <div class="implementation diff-image-container">
+              <h4>🔍 Difference</h4>
+              <div class="svg-output">
+                <img src="outputs/diff_scatter_plot4.png" alt="Difference plot 4">
+              </div>
+              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Red areas show differences</p>
+            </div>
+          </div>
+        </div>
+        <div class="plot-comparison-row" style="margin-top: 1.5rem;">
+          <h5 style="color: #667eea;">Plot 5</h5>
+          <div class="structural-comparison">
+            <h4>📐 Structural Analysis</h4>
+            <span class="structural-badge structural-different">🔴 Structural Differences Found</span>
+            <table class="metrics-table">
+              <tr><th>Element</th><th>C Gnuplot</th><th>Java Gnuplot</th><th>Match</th></tr>
+              <tr>
+                <td>X-Axis Ticks</td>
+                <td>0</td>
+                <td>0</td>
+                <td class="match">✅</td>
+              </tr>
+              <tr>
+                <td>Y-Axis Ticks</td>
+                <td>16</td>
+                <td>16</td>
+                <td class="match">✅</td>
+              </tr>
+              <tr>
+                <td>Data Series</td>
+                <td>6</td>
+                <td>10</td>
+                <td class="mismatch">❌</td>
+              </tr>
+              <tr>
+                <td>Total Data Points</td>
+                <td>348</td>
+                <td>317</td>
+                <td class="mismatch">❌</td>
+              </tr>
+              <tr>
+                <td>Text Elements</td>
+                <td>40</td>
+                <td>40</td>
+                <td class="match">✅</td>
+              </tr>
+            </table>
+            <ul class="diff-list">
+              <li class="critical">🔴 1</li>
+              <li class="critical">🔴 Data series count differs: C=6, Java=10</li>
+            </ul>
+            <ul class="diff-list">
+              <li class="minor">🟡 0</li>
+            </ul>
+          </div>
+          <div class="metrics-bar">
+            <div class="metric">
+              <span class="metric-label">Pixel Similarity:</span>
+              <span class="similarity-badge similarity-good">🟡 89,1%</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Different pixels:</span>
+              <span class="metric-value">52.321</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Total pixels:</span>
+              <span class="metric-value">480.000</span>
+            </div>
+          </div>
+          <div class="comparison">
+            <div class="implementation">
+              <h4>C Gnuplot</h4>
+              <div class="svg-output">
+                <img src="outputs/scatter_c_005.svg" alt="C Gnuplot plot 5">
+              </div>
+              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Size: 32654 bytes</p>
+            </div>
+            <div class="implementation">
+              <h4>Java Gnuplot</h4>
+              <div class="svg-output">
+                <img src="outputs/scatter_java_005.svg" alt="Java Gnuplot plot 5">
+              </div>
+              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Size: 25858 bytes</p>
+            </div>
+            <div class="implementation diff-image-container">
+              <h4>🔍 Difference</h4>
+              <div class="svg-output">
+                <img src="outputs/diff_scatter_plot5.png" alt="Difference plot 5">
+              </div>
+              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Red areas show differences</p>
+            </div>
+          </div>
+        </div>
+        <div class="plot-comparison-row" style="margin-top: 1.5rem;">
+          <h5 style="color: #667eea;">Plot 6</h5>
+          <div class="structural-comparison">
+            <h4>📐 Structural Analysis</h4>
+            <span class="structural-badge structural-equivalent">✅ Structurally Equivalent</span>
+            <table class="metrics-table">
+              <tr><th>Element</th><th>C Gnuplot</th><th>Java Gnuplot</th><th>Match</th></tr>
+              <tr>
+                <td>X-Axis Ticks</td>
+                <td>0</td>
+                <td>0</td>
+                <td class="match">✅</td>
+              </tr>
+              <tr>
+                <td>Y-Axis Ticks</td>
+                <td>13</td>
+                <td>13</td>
+                <td class="match">✅</td>
+              </tr>
+              <tr>
+                <td>Data Series</td>
+                <td>1</td>
+                <td>1</td>
+                <td class="match">✅</td>
+              </tr>
+              <tr>
+                <td>Total Data Points</td>
+                <td>8</td>
+                <td>8</td>
+                <td class="match">✅</td>
+              </tr>
+              <tr>
+                <td>Text Elements</td>
+                <td>30</td>
+                <td>30</td>
+                <td class="match">✅</td>
+              </tr>
+            </table>
+            <ul class="diff-list">
+              <li class="critical">🔴 0</li>
+            </ul>
+            <ul class="diff-list">
+              <li class="minor">🟡 0</li>
+            </ul>
+          </div>
+          <div class="metrics-bar">
+            <div class="metric">
+              <span class="metric-label">Pixel Similarity:</span>
+              <span class="similarity-badge similarity-excellent">🟢 95,6%</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Different pixels:</span>
+              <span class="metric-value">21.085</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Total pixels:</span>
+              <span class="metric-value">480.000</span>
+            </div>
+          </div>
+          <div class="comparison">
+            <div class="implementation">
+              <h4>C Gnuplot</h4>
+              <div class="svg-output">
+                <img src="outputs/scatter_c_006.svg" alt="C Gnuplot plot 6">
+              </div>
+              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Size: 33494 bytes</p>
+            </div>
+            <div class="implementation">
+              <h4>Java Gnuplot</h4>
+              <div class="svg-output">
+                <img src="outputs/scatter_java_006.svg" alt="Java Gnuplot plot 6">
+              </div>
+              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Size: 27354 bytes</p>
+            </div>
+            <div class="implementation diff-image-container">
+              <h4>🔍 Difference</h4>
+              <div class="svg-output">
+                <img src="outputs/diff_scatter_plot6.png" alt="Difference plot 6">
+              </div>
+              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Red areas show differences</p>
+            </div>
+          </div>
+        </div>
+        <div class="plot-comparison-row" style="margin-top: 1.5rem;">
+          <h5 style="color: #667eea;">Plot 7</h5>
+          <div class="structural-comparison">
+            <h4>📐 Structural Analysis</h4>
+            <span class="structural-badge structural-different">🔴 Structural Differences Found</span>
+            <table class="metrics-table">
+              <tr><th>Element</th><th>C Gnuplot</th><th>Java Gnuplot</th><th>Match</th></tr>
+              <tr>
+                <td>X-Axis Ticks</td>
+                <td>0</td>
+                <td>0</td>
+                <td class="match">✅</td>
+              </tr>
+              <tr>
+                <td>Y-Axis Ticks</td>
+                <td>13</td>
+                <td>13</td>
+                <td class="match">✅</td>
+              </tr>
+              <tr>
+                <td>Data Series</td>
+                <td>5</td>
+                <td>3</td>
+                <td class="mismatch">❌</td>
+              </tr>
+              <tr>
+                <td>Total Data Points</td>
+                <td>237</td>
+                <td>219</td>
+                <td class="mismatch">❌</td>
+              </tr>
+              <tr>
+                <td>Text Elements</td>
+                <td>32</td>
+                <td>32</td>
+                <td class="match">✅</td>
+              </tr>
+            </table>
+            <ul class="diff-list">
+              <li class="critical">🔴 1</li>
+              <li class="critical">🔴 Data series count differs: C=5, Java=3</li>
+            </ul>
+            <ul class="diff-list">
+              <li class="minor">🟡 0</li>
+            </ul>
+          </div>
+          <div class="metrics-bar">
+            <div class="metric">
+              <span class="metric-label">Pixel Similarity:</span>
+              <span class="similarity-badge similarity-good">🟡 91,0%</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Different pixels:</span>
+              <span class="metric-value">43.064</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Total pixels:</span>
+              <span class="metric-value">480.000</span>
+            </div>
+          </div>
+          <div class="comparison">
+            <div class="implementation">
+              <h4>C Gnuplot</h4>
+              <div class="svg-output">
+                <img src="outputs/scatter_c_007.svg" alt="C Gnuplot plot 7">
+              </div>
+              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Size: 26132 bytes</p>
+            </div>
+            <div class="implementation">
+              <h4>Java Gnuplot</h4>
+              <div class="svg-output">
+                <img src="outputs/scatter_java_007.svg" alt="Java Gnuplot plot 7">
+              </div>
+              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Size: 20284 bytes</p>
+            </div>
+            <div class="implementation diff-image-container">
+              <h4>🔍 Difference</h4>
+              <div class="svg-output">
+                <img src="outputs/diff_scatter_plot7.png" alt="Difference plot 7">
+              </div>
+              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Red areas show differences</p>
+            </div>
+          </div>
+        </div>
+        <div class="plot-comparison-row" style="margin-top: 1.5rem;">
+          <h5 style="color: #667eea;">Plot 8</h5>
+          <div class="structural-comparison">
+            <h4>📐 Structural Analysis</h4>
+            <span class="structural-badge structural-equivalent">✅ Structurally Equivalent</span>
+            <table class="metrics-table">
+              <tr><th>Element</th><th>C Gnuplot</th><th>Java Gnuplot</th><th>Match</th></tr>
+              <tr>
+                <td>X-Axis Ticks</td>
+                <td>0</td>
+                <td>0</td>
+                <td class="match">✅</td>
+              </tr>
+              <tr>
+                <td>Y-Axis Ticks</td>
+                <td>13</td>
+                <td>13</td>
+                <td class="match">✅</td>
+              </tr>
+              <tr>
+                <td>Data Series</td>
+                <td>5</td>
+                <td>5</td>
+                <td class="match">✅</td>
+              </tr>
+              <tr>
+                <td>Total Data Points</td>
+                <td>244</td>
+                <td>235</td>
+                <td class="mismatch">❌</td>
+              </tr>
+              <tr>
+                <td>Text Elements</td>
+                <td>33</td>
+                <td>33</td>
+                <td class="match">✅</td>
+              </tr>
+            </table>
+            <ul class="diff-list">
+              <li class="critical">🔴 0</li>
+            </ul>
+            <ul class="diff-list">
+              <li class="minor">🟡 3</li>
+              <li class="minor">🟡 Data series 3 point count differs slightly: C=13, Java=10</li>
+              <li class="minor">🟡 Data series 4 point count differs slightly: C=13, Java=10</li>
+              <li class="minor">🟡 Data series 5 point count differs slightly: C=10, Java=7</li>
+            </ul>
+          </div>
+          <div class="metrics-bar">
+            <div class="metric">
+              <span class="metric-label">Pixel Similarity:</span>
+              <span class="similarity-badge similarity-good">🟡 90,4%</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Different pixels:</span>
+              <span class="metric-value">46.248</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Total pixels:</span>
+              <span class="metric-value">480.000</span>
+            </div>
+          </div>
+          <div class="comparison">
+            <div class="implementation">
+              <h4>C Gnuplot</h4>
+              <div class="svg-output">
+                <img src="outputs/scatter_c_008.svg" alt="C Gnuplot plot 8">
+              </div>
+              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Size: 26730 bytes</p>
+            </div>
+            <div class="implementation">
+              <h4>Java Gnuplot</h4>
+              <div class="svg-output">
+                <img src="outputs/scatter_java_008.svg" alt="Java Gnuplot plot 8">
+              </div>
+              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Size: 20706 bytes</p>
+            </div>
+            <div class="implementation diff-image-container">
+              <h4>🔍 Difference</h4>
+              <div class="svg-output">
+                <img src="outputs/diff_scatter_plot8.png" alt="Difference plot 8">
+              </div>
+              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Red areas show differences</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="test-result">
+      <div class="test-header passing" onclick="toggleDetails('controls')">
+        <div>
+          <span class="toggle-icon" id="icon-controls">▶</span>           <span class="test-title">controls.dem</span>
+          <small style="color: #666; margin-left: 1rem;">C: ✓ | Java: ✓</small>
+        </div>
+        <span class="status-badge pass">✅ PASS</span>
+      </div>
+      <div class="test-details" id="details-controls">
+        <div class="script-section">
+          <h4 onclick="toggleScript('controls')" style="cursor: pointer; user-select: none;"><span class="toggle-icon" id="script-icon-controls">▶</span> 📝 Original Script</h4>
+          <div class="script-content" id="script-controls" style="display: none;"><pre>#
+# warning:  this demo is SLOW on PCs without math coprocessors!
+#
+# From _Automatic_Control_Systems_, fourth ed., figure 6-14
+# transient response of a second-order system to a unit step input function
+#
+damp(t) = exp(-s*wn*t)/sqrt(1.0-s*s)
+per(t) = sin(wn*sqrt(1.0-s**2)*t - atan(-sqrt(1.0-s**2)/s))
+c(t) = 1-damp(t)*per(t)
+#
+#	wn is natural undamped frequency
+#	s is damping factor
+#
+wn = 1.0
+set xrange [0:13]
+set samples 50
+set dummy t
+set key box
+#
+# plot c(t) for several different damping factors s
+#
+plot s=.1,c(t),s=.3,c(t),s=.5,c(t),s=.7,c(t),s=.9,c(t),s=1.0,c(t),s=1.5,c(t),s=2.0,c(t)
+pause -1 &quot;Hit return to continue&quot;
+reset
+
+</pre></div>
+        </div>
+        <h4 style="margin-top: 1.5rem;">🖼️ Output Comparison</h4>
+        <div class="plot-comparison-row" style="margin-top: 1.5rem;">
+          <h5 style="color: #667eea;">Plot 1</h5>
+          <div class="comparison">
+            <div class="implementation">
+              <h4>C Gnuplot</h4>
+              <div class="svg-output">
+                <img src="outputs/controls_c.svg" alt="C Gnuplot plot 1">
+              </div>
+              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Size: 20525 bytes</p>
+            </div>
+            <div class="implementation">
+              <h4>Java Gnuplot</h4>
+              <div class="svg-output">
+                <img src="outputs/controls_java.svg" alt="Java Gnuplot plot 1">
+              </div>
+              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Size: 5097 bytes</p>
+            </div>
+            <div class="implementation diff-image-container">
+              <h4>🔍 Difference</h4>
+              <p style="color: #999;">No diff image available</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+    <img id="lightbox-img" src="" alt="">
+  </div>
+  <script>
+    function toggleDetails(id) {
+      const details = document.getElementById('details-' + id);
+      const icon = document.getElementById('icon-' + id);
+      details.classList.toggle('expanded');
+      icon.classList.toggle('expanded');
+    }
+    function toggleScript(id) {
+      const script = document.getElementById('script-' + id);
+      const icon = document.getElementById('script-icon-' + id);
+      if (script.style.display === 'none') {
+        script.style.display = 'block';
+        icon.classList.add('expanded');
+      } else {
+        script.style.display = 'none';
+        icon.classList.remove('expanded');
+      }
+    }
+    function openLightbox(imgSrc) {
+      const lightbox = document.getElementById('lightbox');
+      const lightboxImg = document.getElementById('lightbox-img');
+      lightboxImg.src = imgSrc;
+      lightbox.classList.add('active');
+    }
+    function closeLightbox() {
+      const lightbox = document.getElementById('lightbox');
+      lightbox.classList.remove('active');
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+      const images = document.querySelectorAll('.svg-output img');
+      images.forEach(img => {
+        img.addEventListener('click', function(e) {
+          e.stopPropagation();
+          openLightbox(this.src);
+        });
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+structurallyEquivalent=false
+criticalDifferenceCount=2
+minorDifferenceCount=2
+cXAxisTicks=10
+javaXAxisTicks=10
+cYAxisTicks=5
+javaYAxisTicks=5
+cDataSeries=3
+javaDataSeries=3
+cTotalDataPoints=212
+javaTotalDataPoints=208
+cTextCount=18
+javaTextCount=18
+cContourLines=2
+javaContourLines=0
+criticalDiff0=Legend entries missing in Java: [-(sin(x) > sin(x+1) ? sin(x) : sin(x+1))]
+criticalDiff1=Contour lines missing in Java: C=2, Java=0
+minorDiff0=Data series 2 point count differs slightly: C=102, Java=100
+minorDiff1=Data series 3 point count differs slightly: C=102, Java=100

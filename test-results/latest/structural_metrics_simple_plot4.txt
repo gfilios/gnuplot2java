@@ -1,0 +1,18 @@
+structurallyEquivalent=false
+criticalDifferenceCount=3
+minorDifferenceCount=0
+cXAxisTicks=6
+javaXAxisTicks=6
+cYAxisTicks=9
+javaYAxisTicks=9
+cDataSeries=2
+javaDataSeries=1
+cTotalDataPoints=410
+javaTotalDataPoints=8
+cTextCount=18
+javaTextCount=18
+cContourLines=1
+javaContourLines=0
+criticalDiff0=Legend entries missing in Java: [[0:*] (x**besj0(x))-2.5]
+criticalDiff1=Data series count differs: C=2, Java=1
+criticalDiff2=Contour lines missing in Java: C=1, Java=0

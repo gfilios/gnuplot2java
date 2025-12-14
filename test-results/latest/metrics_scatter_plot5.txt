@@ -1,0 +1,3 @@
+similarity=0.8910
+differentPixels=52321
+totalPixels=480000

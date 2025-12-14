@@ -1,0 +1,20 @@
+structurallyEquivalent=false
+criticalDifferenceCount=4
+minorDifferenceCount=1
+cXAxisTicks=7
+javaXAxisTicks=7
+cYAxisTicks=11
+javaYAxisTicks=5
+cDataSeries=3
+javaDataSeries=2
+cTotalDataPoints=128
+javaTotalDataPoints=48
+cTextCount=22
+javaTextCount=16
+cContourLines=2
+javaContourLines=0
+criticalDiff0=Y-axis tick count differs: C=11, Java=5
+criticalDiff1=Axis labels missing in Java: [-2, -4, -6, -8, 2, 4, 6, 8]
+criticalDiff2=Data series count differs: C=3, Java=2
+criticalDiff3=Contour lines missing in Java: C=2, Java=0
+minorDiff0=Text element count differs: C=22, Java=16

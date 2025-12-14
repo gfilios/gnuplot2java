@@ -1,0 +1,33 @@
+=== SVG Structural Comparison Report ===
+
+Overall Status: EQUIVALENT
+
+--- C Gnuplot Metrics ---
+  Lines: 0
+  Paths: 57
+  Polylines: 0
+  Text elements: 30
+  X-axis ticks: 0
+  Y-axis ticks: 13
+  Point markers: 123
+  Contour lines: 0
+  Axis labels: [20, 30, 40, 50, 60, 70, 80, 90, 100, 0, 100, 200, 300, 400, 500, 600, 700, 800, 0.2, 0.4, 0.6, 0.8, 1, 1.2, 1.4, 1.6, 1.8]
+  Legend entries: []
+  Data series: 1
+  Total data points: 8
+  Title: Gnuplot
+
+--- Java Gnuplot Metrics ---
+  Lines: 0
+  Paths: 57
+  Polylines: 0
+  Text elements: 30
+  X-axis ticks: 0
+  Y-axis ticks: 13
+  Point markers: 123
+  Contour lines: 0
+  Axis labels: [20, 30, 40, 50, 60, 70, 80, 90, 100, 0, 100, 200, 300, 400, 500, 600, 700, 800, 0.2, 0.4, 0.6, 0.8, 1, 1.2, 1.4, 1.6, 1.8]
+  Legend entries: []
+  Data series: 1
+  Total data points: 8
+

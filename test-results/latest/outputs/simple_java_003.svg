@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="800" height="600" viewBox="0 0 800 600">
+  <defs>
+    <clipPath id="plotClip">
+      <rect x="54" y="66" width="721" height="498"/>
+    </clipPath>
+
+    <!-- Point marker definitions (matching C Gnuplot) -->
+    <circle id='gpDot' r='0.5' stroke-width='0.5' stroke='currentColor'/>
+    <path id='gpPt0' stroke-width='0.222' stroke='currentColor' d='M-1,0 h2 M0,-1 v2'/>
+    <path id='gpPt1' stroke-width='0.222' stroke='currentColor' d='M-1,-1 L1,1 M1,-1 L-1,1'/>
+    <path id='gpPt2' stroke-width='0.222' stroke='currentColor' d='M-1,0 L1,0 M0,-1 L0,1 M-1,-1 L1,1 M-1,1 L1,-1'/>
+    <rect id='gpPt3' stroke-width='0.222' stroke='currentColor' x='-1' y='-1' width='2' height='2'/>
+    <rect id='gpPt4' stroke-width='0.222' stroke='currentColor' fill='currentColor' x='-1' y='-1' width='2' height='2'/>
+    <circle id='gpPt5' stroke-width='0.222' stroke='currentColor' cx='0' cy='0' r='1'/>
+    <use xlink:href='#gpPt5' id='gpPt6' fill='currentColor' stroke='none'/>
+    <path id='gpPt7' stroke-width='0.222' stroke='currentColor' d='M0,-1.33 L-1.33,0.67 L1.33,0.67 z'/>
+    <use xlink:href='#gpPt7' id='gpPt8' fill='currentColor' stroke='none'/>
+    <use xlink:href='#gpPt7' id='gpPt9' stroke='currentColor' transform='rotate(180)'/>
+    <use xlink:href='#gpPt9' id='gpPt10' fill='currentColor' stroke='none'/>
+    <use xlink:href='#gpPt3' id='gpPt11' stroke='currentColor' transform='rotate(45)'/>
+    <use xlink:href='#gpPt11' id='gpPt12' fill='currentColor' stroke='none'/>
+    <path id='gpPt13' stroke-width='0.222' stroke='currentColor' d='M0,1.330 L1.265,0.411 L0.782,-1.067 L-0.782,-1.076 L-1.265,0.411 z'/>
+    <use xlink:href='#gpPt13' id='gpPt14' fill='currentColor' stroke='none'/>
+  </defs>
+  <rect width="800" height="600" fill="#FFFFFF"/>
+  <text x="400" y="25" font-size="20" text-anchor="middle">Simple Plots</text>
+  <line x1="54" y1="564.00" x2="775" y2="564.00" stroke="#000" stroke-width="1"/>
+  <line x1="54.00" y1="564.00" x2="54.00" y2="558.00" stroke="#000" stroke-width="1"/>
+  <line x1="54.00" y1="66.00" x2="54.00" y2="72.00" stroke="#000" stroke-width="1"/>
+  <text x="54.00" y="582.00" text-anchor="middle" font-size="12">-3</text>
+  <line x1="144.13" y1="564.00" x2="144.13" y2="558.00" stroke="#000" stroke-width="1"/>
+  <line x1="144.13" y1="66.00" x2="144.13" y2="72.00" stroke="#000" stroke-width="1"/>
+  <text x="144.13" y="582.00" text-anchor="middle" font-size="12">-2</text>
+  <line x1="234.25" y1="564.00" x2="234.25" y2="558.00" stroke="#000" stroke-width="1"/>
+  <line x1="234.25" y1="66.00" x2="234.25" y2="72.00" stroke="#000" stroke-width="1"/>
+  <text x="234.25" y="582.00" text-anchor="middle" font-size="12">-1</text>
+  <line x1="324.38" y1="564.00" x2="324.38" y2="558.00" stroke="#000" stroke-width="1"/>
+  <line x1="324.38" y1="66.00" x2="324.38" y2="72.00" stroke="#000" stroke-width="1"/>
+  <text x="324.38" y="582.00" text-anchor="middle" font-size="12">0</text>
+  <line x1="414.50" y1="564.00" x2="414.50" y2="558.00" stroke="#000" stroke-width="1"/>
+  <line x1="414.50" y1="66.00" x2="414.50" y2="72.00" stroke="#000" stroke-width="1"/>
+  <text x="414.50" y="582.00" text-anchor="middle" font-size="12">1</text>
+  <line x1="504.63" y1="564.00" x2="504.63" y2="558.00" stroke="#000" stroke-width="1"/>
+  <line x1="504.63" y1="66.00" x2="504.63" y2="72.00" stroke="#000" stroke-width="1"/>
+  <text x="504.63" y="582.00" text-anchor="middle" font-size="12">2</text>
+  <line x1="594.75" y1="564.00" x2="594.75" y2="558.00" stroke="#000" stroke-width="1"/>
+  <line x1="594.75" y1="66.00" x2="594.75" y2="72.00" stroke="#000" stroke-width="1"/>
+  <text x="594.75" y="582.00" text-anchor="middle" font-size="12">3</text>
+  <line x1="684.88" y1="564.00" x2="684.88" y2="558.00" stroke="#000" stroke-width="1"/>
+  <line x1="684.88" y1="66.00" x2="684.88" y2="72.00" stroke="#000" stroke-width="1"/>
+  <text x="684.88" y="582.00" text-anchor="middle" font-size="12">4</text>
+  <line x1="775.00" y1="564.00" x2="775.00" y2="558.00" stroke="#000" stroke-width="1"/>
+  <line x1="775.00" y1="66.00" x2="775.00" y2="72.00" stroke="#000" stroke-width="1"/>
+  <text x="775.00" y="582.00" text-anchor="middle" font-size="12">5</text>
+  <line x1="54.00" y1="66" x2="54.00" y2="564" stroke="#000" stroke-width="1"/>
+  <line x1="54.00" y1="564.00" x2="60.00" y2="564.00" stroke="#000" stroke-width="1"/>
+  <line x1="775.00" y1="564.00" x2="769.00" y2="564.00" stroke="#000" stroke-width="1"/>
+  <text x="44.00" y="568.00" text-anchor="end" font-size="12">-1.5</text>
+  <line x1="54.00" y1="508.67" x2="60.00" y2="508.67" stroke="#000" stroke-width="1"/>
+  <line x1="775.00" y1="508.67" x2="769.00" y2="508.67" stroke="#000" stroke-width="1"/>
+  <text x="44.00" y="512.67" text-anchor="end" font-size="12">-1</text>
+  <line x1="54.00" y1="453.33" x2="60.00" y2="453.33" stroke="#000" stroke-width="1"/>
+  <line x1="775.00" y1="453.33" x2="769.00" y2="453.33" stroke="#000" stroke-width="1"/>
+  <text x="44.00" y="457.33" text-anchor="end" font-size="12">-0.5</text>
+  <line x1="54.00" y1="398.00" x2="60.00" y2="398.00" stroke="#000" stroke-width="1"/>
+  <line x1="775.00" y1="398.00" x2="769.00" y2="398.00" stroke="#000" stroke-width="1"/>
+  <text x="44.00" y="402.00" text-anchor="end" font-size="12">0</text>
+  <line x1="54.00" y1="342.67" x2="60.00" y2="342.67" stroke="#000" stroke-width="1"/>
+  <line x1="775.00" y1="342.67" x2="769.00" y2="342.67" stroke="#000" stroke-width="1"/>
+  <text x="44.00" y="346.67" text-anchor="end" font-size="12">0.5</text>
+  <line x1="54.00" y1="287.33" x2="60.00" y2="287.33" stroke="#000" stroke-width="1"/>
+  <line x1="775.00" y1="287.33" x2="769.00" y2="287.33" stroke="#000" stroke-width="1"/>
+  <text x="44.00" y="291.33" text-anchor="end" font-size="12">1</text>
+  <line x1="54.00" y1="232.00" x2="60.00" y2="232.00" stroke="#000" stroke-width="1"/>
+  <line x1="775.00" y1="232.00" x2="769.00" y2="232.00" stroke="#000" stroke-width="1"/>
+  <text x="44.00" y="236.00" text-anchor="end" font-size="12">1.5</text>
+  <line x1="54.00" y1="176.67" x2="60.00" y2="176.67" stroke="#000" stroke-width="1"/>
+  <line x1="775.00" y1="176.67" x2="769.00" y2="176.67" stroke="#000" stroke-width="1"/>
+  <text x="44.00" y="180.67" text-anchor="end" font-size="12">2</text>
+  <line x1="54.00" y1="121.33" x2="60.00" y2="121.33" stroke="#000" stroke-width="1"/>
+  <line x1="775.00" y1="121.33" x2="769.00" y2="121.33" stroke="#000" stroke-width="1"/>
+  <text x="44.00" y="125.33" text-anchor="end" font-size="12">2.5</text>
+  <line x1="54.00" y1="66.00" x2="60.00" y2="66.00" stroke="#000" stroke-width="1"/>
+  <line x1="775.00" y1="66.00" x2="769.00" y2="66.00" stroke="#000" stroke-width="1"/>
+  <text x="44.00" y="70.00" text-anchor="end" font-size="12">3</text>
+  <polyline points="235.16 556.13 238.78 536.60 242.40 524.40 246.03 514.63 249.65 506.19 253.27 498.61 256.89 491.64 260.52 485.14 264.14 479.01 267.76 473.16 271.39 467.56 275.01 462.15 278.63 456.91 282.26 451.81 285.88 446.84 289.50 441.97 293.13 437.19 296.75 432.48 300.37 427.83 303.99 423.24 307.62 418.70 311.24 414.18 314.86 409.70 318.49 405.23 322.11 400.78 325.73 396.33 329.36 391.88 332.98 387.42 336.60 382.94 340.23 378.43 343.85 373.90 347.47 369.32 351.10 364.69 354.72 360.00 358.34 355.24 361.96 350.39 365.59 345.44 369.21 340.38 372.83 335.18 376.46 329.81 380.08 324.26 383.70 318.48 387.33 312.42 390.95 306.02 394.57 299.19 398.20 291.78 401.82 283.58 405.44 274.21 409.07 262.79 412.69 246.39" fill="none" stroke="#9400D3" stroke-width="1.0" stroke-linecap="round" stroke-linejoin="round" clip-path="url(#plotClip)"/>
+  <polyline points="235.16 66.03 238.78 85.56 242.40 97.76 246.03 107.54 249.65 115.98 253.27 123.56 256.89 130.52 260.52 137.02 264.14 143.16 267.76 149.00 271.39 154.61 275.01 160.02 278.63 165.25 282.26 170.35 285.88 175.33 289.50 180.20 293.13 184.98 296.75 189.69 300.37 194.33 303.99 198.92 307.62 203.47 311.24 207.98 314.86 212.47 318.49 216.93 322.11 221.38 325.73 225.83 329.36 230.29 332.98 234.75 336.60 239.23 340.23 243.73 343.85 248.27 347.47 252.85 351.10 257.48 354.72 262.17 358.34 266.93 361.96 271.78 365.59 276.73 369.21 281.79 372.83 286.99 376.46 292.35 380.08 297.90 383.70 303.68 387.33 309.74 390.95 316.14 394.57 322.98 398.20 330.39 401.82 338.58 405.44 347.96 409.07 359.37 412.69 375.77" fill="none" stroke="#009E73" stroke-width="1.0" stroke-linecap="round" stroke-linejoin="round" clip-path="url(#plotClip)"/>
+  <rect x="59" y="71" width="95" height="36" fill="#FFFFFF" stroke="#000000" stroke-width="1"/>
+  <text x="109" y="83" font-family="Arial" font-size="12" alignment-baseline="middle" text-anchor="end">asin(x)</text>
+  <line x1="119" y1="80" x2="144" y2="80" stroke="#9400D3" stroke-width="2"/>
+  <text x="109" y="101" font-family="Arial" font-size="12" alignment-baseline="middle" text-anchor="end">acos(x)</text>
+  <line x1="119" y1="98" x2="144" y2="98" stroke="#009E73" stroke-width="2"/>
+  <path d="M 54.00 66.00 L 775.00 66.00 L 775.00 564.00 L 54.00 564.00 Z" stroke="#000000" stroke-width="1.0" fill="none"/>
+</svg>
