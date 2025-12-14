@@ -1,6 +1,6 @@
 Gnuplot Demo Test Results
 =========================
-Test Run: 2025-12-14_21-38-28
+Test Run: 2025-12-14_22-06-07
 Total Tests: 3
 Passing: 3 (100,0%)
 C Gnuplot Success: 3/3

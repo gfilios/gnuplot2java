@@ -18,22 +18,25 @@ Overall Status: DIFFERENT
   Title: Gnuplot
 
 --- Java Gnuplot Metrics ---
-  Lines: 33
+  Lines: 25
   Paths: 6
   Polylines: 1
-  Text elements: 17
+  Text elements: 13
   X-axis ticks: 5
-  Y-axis ticks: 10
+  Y-axis ticks: 6
   Point markers: 7
   Contour lines: 0
-  Axis labels: [-10, -5, 0, 5, 10, 0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5]
+  Axis labels: [-10, -5, 0, 5, 10, -1, 0, 1, 2, 3, 4]
   Legend entries: [real(sin(x)**besj0(x))]
   Data series: 2
-  Total data points: 208
+  Total data points: 408
 
 --- Critical Differences ---
-  * Y-axis tick count differs: C=12, Java=10
-  * Axis labels missing in Java: [-1, -0.5]
-  * Data series 2 point count differs significantly: C=402, Java=200
+  * Y-axis tick count differs: C=12, Java=6
+  * Axis labels missing in Java: [0.5, 1.5, 2.5, 3.5, 4.5, -0.5]
   * Contour lines missing in Java: C=1, Java=0
+
+--- Minor Differences ---
+  - Data series 2 point count differs slightly: C=402, Java=400
+  - Text element count differs: C=19, Java=13
 

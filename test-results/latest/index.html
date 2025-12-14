@@ -84,7 +84,7 @@
 <body>
   <div class="header">
     <h1>🧪 Gnuplot Demo Test Results</h1>
-    <p class="timestamp">Test Run: 2025-12-14 21:38:28</p>
+    <p class="timestamp">Test Run: 2025-12-14 22:06:07</p>
   </div>
   <div class="summary">
     <h2>📊 Summary</h2>
@@ -530,7 +530,7 @@ reset
               <tr>
                 <td>Y-Axis Ticks</td>
                 <td>12</td>
-                <td>10</td>
+                <td>6</td>
                 <td class="mismatch">❌</td>
               </tr>
               <tr>
@@ -542,35 +542,36 @@ reset
               <tr>
                 <td>Total Data Points</td>
                 <td>410</td>
-                <td>208</td>
+                <td>408</td>
                 <td class="mismatch">❌</td>
               </tr>
               <tr>
                 <td>Text Elements</td>
                 <td>19</td>
-                <td>17</td>
+                <td>13</td>
                 <td class="mismatch">❌</td>
               </tr>
             </table>
             <ul class="diff-list">
-              <li class="critical">🔴 4</li>
-              <li class="critical">🔴 Y-axis tick count differs: C=12, Java=10</li>
-              <li class="critical">🔴 Axis labels missing in Java: [-1, -0.5]</li>
-              <li class="critical">🔴 Data series 2 point count differs significantly: C=402, Java=200</li>
+              <li class="critical">🔴 3</li>
+              <li class="critical">🔴 Y-axis tick count differs: C=12, Java=6</li>
+              <li class="critical">🔴 Axis labels missing in Java: [0.5, 1.5, 2.5, 3.5, 4.5, -0.5]</li>
               <li class="critical">🔴 Contour lines missing in Java: C=1, Java=0</li>
             </ul>
             <ul class="diff-list">
-              <li class="minor">🟡 0</li>
+              <li class="minor">🟡 2</li>
+              <li class="minor">🟡 Data series 2 point count differs slightly: C=402, Java=400</li>
+              <li class="minor">🟡 Text element count differs: C=19, Java=13</li>
             </ul>
           </div>
           <div class="metrics-bar">
             <div class="metric">
               <span class="metric-label">Pixel Similarity:</span>
-              <span class="similarity-badge similarity-excellent">🟢 96,8%</span>
+              <span class="similarity-badge similarity-excellent">🟢 98,4%</span>
             </div>
             <div class="metric">
               <span class="metric-label">Different pixels:</span>
-              <span class="metric-value">15.159</span>
+              <span class="metric-value">7.876</span>
             </div>
             <div class="metric">
               <span class="metric-label">Total pixels:</span>
@@ -590,7 +591,7 @@ reset
               <div class="svg-output">
                 <img src="outputs/simple_java_005.svg" alt="Java Gnuplot plot 5">
               </div>
-              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Size: 9225 bytes</p>
+              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Size: 11018 bytes</p>
             </div>
             <div class="implementation diff-image-container">
               <h4>🔍 Difference</h4>
@@ -1659,7 +1660,7 @@ reset
               <div class="svg-output">
                 <img src="outputs/controls_java.svg" alt="Java Gnuplot plot 1">
               </div>
-              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Size: 12763 bytes</p>
+              <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">Size: 12664 bytes</p>
             </div>
             <div class="implementation diff-image-container">
               <h4>🔍 Difference</h4>
