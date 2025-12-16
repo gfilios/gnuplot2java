@@ -6,7 +6,122 @@ This plan shifts to a **test-driven approach** using the official Gnuplot demo s
 
 ---
 
-## Unified Test Infrastructure (Updated 2025-11-29)
+## Anleitung: Neue Demo hinzufuegen (Step-by-Step)
+
+Diese Anleitung beschreibt, wie man eine neue Demo zum Test-Framework hinzufuegt.
+
+### Schritt 1: Test-Methode in DemoTestSuite.java erstellen
+
+Datei: `gnuplot-java/gnuplot-cli/src/test/java/com/gnuplot/cli/demo/DemoTestSuite.java`
+
+Kopiere eine bestehende Test-Methode (z.B. `testSimpleDem`) und passe den Namen an:
+
+```java
+@Test
+void testDiscreteDem() throws IOException {
+    resetComparisonTracking();
+
+    DemoTestRunner.DemoResult result = testRunner.runDemo("discrete.dem");
+
+    Path originalScript = DEMO_DIR.resolve("discrete.dem");
+    TestResultRepository.DemoTestRecord record =
+            repository.store("discrete.dem", originalScript, result.getModifiedScript(), result);
+
+    System.out.println("\n╔═══════════════════════════════════════════════════════════╗");
+    System.out.println("║                  discrete.dem Test Results                ║");
+    System.out.println("╚═══════════════════════════════════════════════════════════╝");
+    // ... (Rest wie bei testSimpleDem)
+
+    // ASSERTIONS
+    assertThat(result.isCExecutionSuccess())
+            .as("C Gnuplot should execute discrete.dem successfully")
+            .isTrue();
+    assertThat(result.isJavaExecutionSuccess())
+            .as("Java Gnuplot should execute discrete.dem successfully")
+            .isTrue();
+    assertThat(bestPixelSimilarity)
+            .as("Pixel similarity should be >= 80%")
+            .isGreaterThanOrEqualTo(PIXEL_SIMILARITY_THRESHOLD);
+}
+```
+
+### Schritt 2: Test ausfuehren
+
+```bash
+cd gnuplot-java
+
+# Einzelne Demo testen
+mvn test -pl gnuplot-cli -Dtest=DemoTestSuite#testDiscreteDem
+
+# Alle Demo-Tests
+mvn test -pl gnuplot-cli -Dtest=DemoTestSuite
+```
+
+### Schritt 3: Ergebnisse analysieren
+
+Test-Ergebnisse werden automatisch gespeichert in:
+
+```
+test-results/latest/
+├── index.html                    # HTML-Report (oeffnen im Browser!)
+├── summary.txt                   # Text-Zusammenfassung
+├── metrics_discrete.txt          # Pixel-Similarity
+├── structural_discrete.txt       # Struktur-Vergleich
+├── outputs/
+│   ├── discrete_c.svg           # C gnuplot Referenz-Output
+│   └── discrete_java.svg        # Java Output
+└── logs/
+    ├── discrete_c.stdout        # C gnuplot Ausgabe
+    ├── discrete_c.stderr        # C gnuplot Fehler
+    ├── discrete_java.stdout     # Java Ausgabe
+    └── discrete_java.stderr     # Java Fehler (hier nach Parser-Fehlern suchen!)
+```
+
+**HTML-Report oeffnen:**
+```bash
+open test-results/latest/index.html
+```
+
+### Schritt 4: Fehler beheben
+
+Je nach Fehlerart in unterschiedlichen Dateien arbeiten:
+
+| Fehlertyp | Symptom | Zu aendernde Datei |
+|-----------|---------|-------------------|
+| **Parser-Fehler** | "no viable alternative", "mismatched input" | `gnuplot-cli/src/main/antlr4/.../GnuplotCommand.g4` |
+| **Unbekannter Befehl** | "Unknown command: xxx" | `gnuplot-cli/.../parser/CommandBuilderVisitor.java` |
+| **Fehlende Funktion** | "Unknown function: xxx" | `gnuplot-core/.../evaluator/functions/` |
+| **Rendering-Fehler** | SVG sieht anders aus | `gnuplot-render/.../svg/SvgRenderer.java` |
+| **Plot-Style fehlt** | "Unknown style: xxx" | `gnuplot-render/.../elements/` + `SvgRenderer.java` |
+
+### Schritt 5: Iterieren bis Test passiert
+
+Erfolgskriterien:
+- **Java-Execution erfolgreich** (kein Crash, keine Exceptions)
+- **Pixel-Similarity >= 80%** (visueller Vergleich)
+- **Keine kritischen Struktur-Unterschiede** (Achsen, Datenpunkte, Text)
+
+### Beispiel-Workflow
+
+```bash
+# 1. Test starten (wird vermutlich fehlschlagen)
+mvn test -pl gnuplot-cli -Dtest=DemoTestSuite#testDiscreteDem
+
+# 2. Fehler analysieren
+cat test-results/latest/logs/discrete_java.stderr
+
+# 3. Grammar/Code anpassen
+# ... Aenderungen in GnuplotCommand.g4 oder CommandBuilderVisitor.java
+
+# 4. Neu kompilieren und testen
+mvn test -pl gnuplot-cli -Dtest=DemoTestSuite#testDiscreteDem
+
+# 5. Wiederholen bis Test gruen ist
+```
+
+---
+
+## Unified Test Infrastructure (Updated 2025-12-16)
 
 ### Test Inventory
 
@@ -32,6 +147,38 @@ mvn test -pl gnuplot-cli -Dtest=DemoTestSuite
 # Run full build with tests
 mvn clean install
 ```
+
+### Priorisierte Demo-Liste (Stand 2025-12-16)
+
+**Aktuell bestanden:** 3/230 Demos (simple.dem, scatter.dem, controls.dem)
+
+#### TIER 1: Quick Wins (wenig Aufwand)
+
+| Demo | Zeilen | Benoetigte Features | Geschaetzter Aufwand |
+|------|--------|---------------------|---------------------|
+| `discrete.dem` | 23 | set contour, discrete levels | 0.5 Tage |
+| `candlesticks.dem` | 47 | with candlesticks | 1 Tag |
+| `autoscale.dem` | 58 | autoscale constraints | 1 Tag |
+| `circles.dem` | 67 | with circles, transparent fill | 1.5 Tage |
+
+#### TIER 2: Feature Extensions (mittlerer Aufwand)
+
+| Demo | Zeilen | Benoetigte Features | Geschaetzter Aufwand |
+|------|--------|---------------------|---------------------|
+| `fillstyle.dem` | 61 | set style fill, pattern fills | 2 Tage |
+| `errorbars.dem` | 63 | with xyerrorbars, using columns | 2 Tage |
+| `arrows.dem` | 33 | with vectors/arrows, arrow styles | 2 Tage |
+| `polar.dem` | 66 | set polar, trange | 2.5 Tage |
+
+#### TIER 3: Major Features (hoher Aufwand)
+
+| Demo | Zeilen | Benoetigte Features | Geschaetzter Aufwand |
+|------|--------|---------------------|---------------------|
+| `histograms.dem` | 124 | set style histogram, clustering | 3-4 Tage |
+| `surface1.dem` | 233 | 3D surfaces, hidden3d | 4-5 Tage |
+| `pm3d.dem` | 451 | PM3D coloring, palettes | 5-7 Tage |
+
+---
 
 ### Demo Test Assertions
 
