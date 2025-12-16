@@ -56,9 +56,10 @@ Complete guide to all documentation in the Gnuplot Java modernization project.
   - Known issues and limitations
 
 - **[CHANGELOG.md](CHANGELOG.md)** - Recent changes
+  - Complex number support (2025-12-14)
+  - Contour lines (2025-12-02)
+  - 3D rendering fixes (2025-11-04)
   - Point marker visibility fix (2025-10-07)
-  - simple.dem progress (2025-10-05)
-  - Phase 7 completion (2025-10-01)
 
 ---
 
@@ -134,15 +135,6 @@ Complete guide to all documentation in the Gnuplot Java modernization project.
   - Tool chain
   - Validation levels
 
-- **[test-tools/docs/DEEP_COMPARISON_FINDINGS.md](test-tools/docs/DEEP_COMPARISON_FINDINGS.md)** - Detailed findings
-  - Element-by-element analysis
-  - Known differences
-  - Validation results
-
-- **[test-tools/docs/COMPARISON_SUMMARY.md](test-tools/docs/COMPARISON_SUMMARY.md)** - Quick reference
-  - Summary of comparison results
-  - Quick lookup
-
 - **[gnuplot-java/test-oracle/README.md](gnuplot-java/test-oracle/README.md)** - Test oracle
   - Extracting reference data from C gnuplot
   - Validation approach
@@ -163,58 +155,28 @@ Complete guide to all documentation in the Gnuplot Java modernization project.
   - Story points summary
   - Quick navigation to phase files
 
-### Phase-Specific Backlogs
-
-- **[BACKLOG_PHASE_0_SETUP.md](BACKLOG_PHASE_0_SETUP.md)** - Phase 0: Setup ✅ COMPLETE
-  - Infrastructure setup (100%)
-  - 61/61 story points
-
-- **[BACKLOG_PHASE_1_MATH.md](BACKLOG_PHASE_1_MATH.md)** - Phase 1: Math Engine ✅ MVP COMPLETE
-  - Expression parser, evaluator, functions (66%)
-  - 197/300 story points
-
-- **[BACKLOG_PHASE_2_DATA.md](BACKLOG_PHASE_2_DATA.md)** - Phase 2: Data Processing ✅ MVP COMPLETE
-  - CSV, JSON, interpolation, coordinates (87%)
-  - 173/200 story points
+### Active Phases
 
 - **[BACKLOG_PHASE_3_RENDER.md](BACKLOG_PHASE_3_RENDER.md)** - Phase 3: Rendering 🟡 IN PROGRESS
-  - 2D and 3D plotting (~17%)
-  - ~50/300 story points
-
-- **[BACKLOG_PHASE_4_BACKEND.md](BACKLOG_PHASE_4_BACKEND.md)** - Phase 4: Backend ⚪ PLANNED
-  - Spring Boot API
-  - 120 story points
-
-- **[BACKLOG_PHASE_5_FRONTEND.md](BACKLOG_PHASE_5_FRONTEND.md)** - Phase 5: Frontend ⚪ PLANNED
-  - React + TypeScript
-  - 250 story points
-
-- **[BACKLOG_PHASE_6_INTEGRATION.md](BACKLOG_PHASE_6_INTEGRATION.md)** - Phase 6: Integration ⚪ PLANNED
-  - E2E testing, deployment
-  - 115 story points
+  - 2D and 3D plotting
+  - Contour lines, 3D wireframes
 
 - **[BACKLOG_PHASE_7_CLI.md](BACKLOG_PHASE_7_CLI.md)** - Phase 7: CLI ✅ COMPLETE
   - Script compatibility (100%)
-  - 80/80 story points
+  - User-defined functions, complex numbers
 
-### Active Stories
+### Future Roadmap
 
-- **[3D_YAXIS_POSITIONING_ANALYSIS.md](3D_YAXIS_POSITIONING_ANALYSIS.md)** ⚡ **READY TO IMPLEMENT**
-  - 3D vertical positioning issue
-  - Root cause: 4/7 scaling ratio vs 1/2
-  - Solution: Update mapProjectedX/Y()
-  - Estimated effort: 30 minutes
+- **[FUTURE_ROADMAP.md](FUTURE_ROADMAP.md)** - Phases 4-6 (Planned)
+  - Phase 4: Backend REST API (120 SP)
+  - Phase 5: Web Frontend (250 SP)
+  - Phase 6: Integration & Production (115 SP)
 
-- **[BACKLOG_IMPULSES_POINTS.md](BACKLOG_IMPULSES_POINTS.md)** - Impulses & points
-  - Implement "with impulses" style
-  - Point marker fixes
+### Archived (Completed Phases)
 
-- **[docs/STORY_TDD4_ROADMAP.md](docs/STORY_TDD4_ROADMAP.md)** - simple.dem roadmap
-  - Implementation phases
-  - Feature breakdown
-
-- **[docs/STORY_TDD6_LEGEND_INTEGRATION.md](docs/STORY_TDD6_LEGEND_INTEGRATION.md)** - Legend system
-  - Legend rendering integration
+- **[docs/archive/BACKLOG_PHASE_0_SETUP.md](docs/archive/BACKLOG_PHASE_0_SETUP.md)** - Setup ✅ COMPLETE
+- **[docs/archive/BACKLOG_PHASE_1_MATH.md](docs/archive/BACKLOG_PHASE_1_MATH.md)** - Math Engine ✅ COMPLETE
+- **[docs/archive/BACKLOG_PHASE_2_DATA.md](docs/archive/BACKLOG_PHASE_2_DATA.md)** - Data Processing ✅ COMPLETE
 
 ---
 

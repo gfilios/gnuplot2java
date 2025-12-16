@@ -2,7 +2,7 @@
 
 ![Java Version](https://img.shields.io/badge/Java-21-blue.svg)
 ![Maven](https://img.shields.io/badge/Maven-3.9+-blue.svg)
-![Tests](https://img.shields.io/badge/Tests-989%20passing-green.svg)
+![Tests](https://img.shields.io/badge/Tests-1005%2B%20passing-green.svg)
 ![Demo Pass Rate](https://img.shields.io/badge/Demo%20Pass%20Rate-4%2F100+-yellow.svg)
 ![License](https://img.shields.io/badge/License-Gnuplot-green.svg)
 
@@ -70,7 +70,7 @@ Modern, modular Java implementation of Gnuplot with complete script compatibilit
 
 ```bash
 mvn clean install
-mvn test  # 989 tests should pass
+mvn test  # 1005+ tests should pass
 ```
 
 ### Using the CLI

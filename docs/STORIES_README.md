@@ -74,29 +74,18 @@ When a story is complete:
 
 ## Current Active Stories
 
-### Priority 1 - Quick Wins (Root Level)
+**Note**: All previously tracked stories have been completed and archived.
 
-1. **[3D_YAXIS_POSITIONING_ANALYSIS.md](../3D_YAXIS_POSITIONING_ANALYSIS.md)** ⚡
-   - 3D vertical positioning fix
-   - Estimated: 30 minutes
-   - Ready to implement
+### Status (2025-12-16)
+- **simple.dem** ✅ COMPLETE - 8/8 plots working
+- **scatter.dem** ✅ COMPLETE - 3D with contours
+- **controls.dem** ✅ COMPLETE - Complex number support
+- **3D Axis Fixes** ✅ COMPLETE - All positioning fixed
+- **Impulses & Points** ✅ COMPLETE - Fully implemented
 
-2. **[BACKLOG_IMPULSES_POINTS.md](../BACKLOG_IMPULSES_POINTS.md)**
-   - Impulse line rendering
-   - Point marker improvements
-   - Estimated: 2-3 hours
-
-### Priority 2 - Epics (docs/ Level)
-
-3. **[docs/STORY_TDD4_ROADMAP.md](STORY_TDD4_ROADMAP.md)**
-   - simple.dem full compliance
-   - Multi-phase roadmap
-   - ~80% complete
-
-4. **[docs/STORY_TDD6_LEGEND_INTEGRATION.md](STORY_TDD6_LEGEND_INTEGRATION.md)**
-   - Legend system integration
-   - Comprehensive epic documentation
-   - ~90% complete
+### Future Work
+See **[IMPLEMENTATION_STATUS.md](../IMPLEMENTATION_STATUS.md)** for current issues and next steps.
+See **[FUTURE_ROADMAP.md](../FUTURE_ROADMAP.md)** for planned features (Backend, Frontend, Integration).
 
 ---
 

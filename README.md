@@ -295,7 +295,7 @@ mvn test -Dtest=ExpressionParserTest#shouldParseAddition
 | **Phase 7: Gnuplot Compatibility** | **✅ Epic 7.1 Complete** | **68% (55/80 SP)** | **31** |
 | **Phase TDD: Demo Suite Validation** | **🟡 In Progress** | **4% (4/100+)** | **-** |
 
-**Total Tests**: 989 passing (583 core + 375 render + 31 cli)
+**Total Tests**: 1005+ passing (583 core + 375 render + 47 cli)
 
 ### Phase 1 Highlights
 

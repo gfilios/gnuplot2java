@@ -26,7 +26,7 @@ mvn test
 
 You should see output indicating all tests pass:
 ```
-Tests run: 989, Failures: 0, Errors: 0, Skipped: 0
+Tests run: 1005+, Failures: 0, Errors: 0, Skipped: 0
 ```
 
 ## Using the CLI (Recommended for Getting Started)
@@ -265,7 +265,7 @@ Generated SVG files will be in the module directory.
    ```bash
    mvn test
    ```
-   All 989 tests should pass!
+   All 1005+ tests should pass!
 
 ## Getting Help
 

@@ -3,8 +3,9 @@
 ## Overview
 This document tracks the implementation status of the Gnuplot Java port, comparing it against the C gnuplot reference implementation.
 
-**Last Updated:** 2025-10-08
+**Last Updated:** 2025-12-16
 **Test Results:** 3/3 demos passing (100%)
+**Unit Tests:** 1005+ tests passing
 
 ## Implemented Demos
 
@@ -15,12 +16,12 @@ This document tracks the implementation status of the Gnuplot Java port, compari
 - Point markers and line plots
 - Legend positioning (left/right, box/nobox)
 - Sample control (50, 100, 200, 400 samples)
-- Multiple plot styles (points, lines)
+- Multiple plot styles (points, lines, impulses)
+- Per-plot range specifications
 
-**Known Issues:**
-- Missing impulse line rendering (plot 4)
+**Known Issues:** None
 
-**Visual Accuracy:** ~95% (missing impulses only)
+**Visual Accuracy:** ~98%
 
 ---
 
@@ -32,26 +33,31 @@ This document tracks the implementation status of the Gnuplot Java port, compari
 - dgrid3d qnorm interpolation (10×10 grids)
 - ViewTransform3D projection (60°, 30° rotation)
 - 3D coordinate axes with tick marks
-- Legend positioning
+- Colorful contour lines at base plane
+- Legend positioning with contour colors
 - Style data switching (points ↔ lines)
+- xlabel/ylabel/zlabel support
 
 **Known Issues:**
-- Legend position 45px off horizontally (cosmetic)
-- Y/Z axes missing tick labels
-- Impulse guide lines not rendered
+- Minor tick label positioning differences
 
-**Visual Accuracy:** ~90% (core rendering correct, minor positioning differences)
+**Visual Accuracy:** ~95%
 
 ---
 
-### ✅ controls.dem - Control Flow
+### ✅ controls.dem - Overdamped Control Systems
 **Status:** PASSING
 **Features Used:**
-- Control flow structures (if/else, loops)
+- User-defined functions (f(x) = ...)
+- Variable assignments (a = 5)
+- Complex number support ({0,1} notation)
+- Assignment and comma operators
+- xrange specifications
+- Mathematical expressions with complex arithmetic
 
-**Known Issues:** None reported
+**Known Issues:** None
 
-**Visual Accuracy:** Not yet analyzed
+**Visual Accuracy:** ~95%
 
 ---
 
@@ -71,7 +77,7 @@ This document tracks the implementation status of the Gnuplot Java port, compari
 | Title | ✅ | Plot titles |
 | Labels | ✅ | Axis labels |
 | Sampling | ✅ | Variable sample counts |
-| Impulses | ❌ | Not implemented |
+| Impulses | ✅ | Vertical lines from axis |
 | Boxes | ❌ | Not implemented |
 | Steps | ❌ | Not implemented |
 | Histograms | ❌ | Not implemented |
@@ -87,12 +93,24 @@ This document tracks the implementation status of the Gnuplot Java port, compari
 | dgrid3d qnorm | ✅ | Weighted interpolation |
 | 3D orientation | ✅ | Correct (not upside down) |
 | Legend (3D) | ✅ | Top-right positioning |
-| Tick marks | 🟡 | X-axis only |
-| Tick labels | ❌ | Not yet implemented |
-| Impulse lines | ❌ | 3D guide lines missing |
-| Surface plots | ❌ | Solid surfaces not implemented |
-| Contours | ❌ | Not implemented |
+| Tick marks | ✅ | All axes with paired ticks |
+| Tick labels | 🟡 | X-axis complete, Y/Z partial |
+| Axis labels | ✅ | xlabel/ylabel/zlabel support |
+| Contour lines | ✅ | Colorful contours at base plane |
+| Surface plots | 🟡 | Wireframe only |
 | pm3d | ❌ | Not implemented |
+
+### Scripting & Expression Features
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| User-defined functions | ✅ | f(x) = expression |
+| Variable assignments | ✅ | a = value |
+| Complex numbers | ✅ | {real,imag} notation |
+| Assignment operator | ✅ | = in expressions |
+| Comma operator | ✅ | Multiple expressions |
+| xrange/yrange | ✅ | Range specifications |
+| Control flow | ❌ | if/else, loops not yet |
 
 ### Rendering & Optimization
 
@@ -190,19 +208,18 @@ where w_i = 1 / distance^norm
 ## Known Issues & Limitations
 
 ### High Priority
-1. **Impulse lines** - Not implemented for 2D or 3D
-2. **Tick labels** - Y/Z axes in 3D need labels
-3. **Legend positioning** - 45px horizontal offset in 3D
+1. **Control flow** - if/else, for/while loops not yet implemented
+2. **pm3d coloring** - Colored surface plots not implemented
 
 ### Medium Priority
-4. **3D surface rendering** - Solid surfaces not implemented
-5. **Contour lines** - Not implemented
-6. **Axis positioning** - 3D axes offset by ~175px from C gnuplot
+3. **3D surface rendering** - Only wireframe, no solid surfaces
+4. **Y/Z tick labels** - Partial implementation in 3D
+5. **Additional plot styles** - boxes, steps, histograms
 
 ### Low Priority
-7. **Additional plot styles** - boxes, steps, histograms, etc.
-8. **pm3d coloring** - Not implemented
-9. **More marker types** - Limited set currently
+6. **Fit command** - Curve fitting not implemented
+7. **More terminals** - Only SVG output currently
+8. **Advanced data files** - Binary, using expressions
 
 ## Test Results Summary
 

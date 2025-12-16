@@ -14,14 +14,10 @@
 This backlog has been split into manageable files for easier reading:
 
 - **[BACKLOG_SUMMARY.md](BACKLOG_SUMMARY.md)** (this file) - Progress overview, priorities, summary statistics
-- **[BACKLOG_PHASE_0_SETUP.md](BACKLOG_PHASE_0_SETUP.md)** - Phase 0: Project Setup (COMPLETE)
-- **[BACKLOG_PHASE_1_MATH.md](BACKLOG_PHASE_1_MATH.md)** - Phase 1: Core Mathematical Engine (COMPLETE)
-- **[BACKLOG_PHASE_2_DATA.md](BACKLOG_PHASE_2_DATA.md)** - Phase 2: Data Processing Layer (COMPLETE)
 - **[BACKLOG_PHASE_3_RENDER.md](BACKLOG_PHASE_3_RENDER.md)** - Phase 3: Rendering Engine (IN PROGRESS)
-- **[BACKLOG_PHASE_4_BACKEND.md](BACKLOG_PHASE_4_BACKEND.md)** - Phase 4: Backend Services
-- **[BACKLOG_PHASE_5_FRONTEND.md](BACKLOG_PHASE_5_FRONTEND.md)** - Phase 5: Web Frontend
-- **[BACKLOG_PHASE_6_INTEGRATION.md](BACKLOG_PHASE_6_INTEGRATION.md)** - Phase 6: Integration & Testing
 - **[BACKLOG_PHASE_7_CLI.md](BACKLOG_PHASE_7_CLI.md)** - Phase 7: CLI & Script Compatibility (COMPLETE)
+- **[FUTURE_ROADMAP.md](FUTURE_ROADMAP.md)** - Phases 4-6: Backend, Frontend, Integration (PLANNED)
+- **Archived**: [docs/archive/](docs/archive/) - Completed Phases 0, 1, 2
 
 > **Note**: The original [IMPLEMENTATION_BACKLOG.md](IMPLEMENTATION_BACKLOG.md) (3,346 lines, 39K tokens) has been preserved for reference but is too large to read in one go. Use the split files above instead.
 
@@ -91,7 +87,7 @@ This backlog has been split into manageable files for easier reading:
 ### Test Results (Current)
 
 ```
-Total Tests: 989 passing
+Total Tests: 1005+ passing
 ├── Parser: 69 tests
 ├── Evaluator: 74 tests
 ├── Complex Numbers: 31 tests

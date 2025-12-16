@@ -6,6 +6,93 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added - 2025-12-16
+- Documentation cleanup and optimization (39% file reduction)
+- FUTURE_ROADMAP.md consolidating Phases 4-6
+- Archived completed phases (0, 1, 2)
+
+---
+
+## [2025-12-14] - Complex Number Support
+
+### Added
+- **Complex numbers** - Full support for `{real,imag}` notation
+- **User-defined functions** - `f(x) = expression` syntax
+- **Variable assignments** - `a = value` syntax
+- **Assignment operator** - `=` in expressions
+- **Comma operator** - Multiple expressions support
+- **xrange/yrange** - Range specifications in plot commands
+
+### Status
+- controls.dem now fully supported (overdamped control systems)
+- Complex arithmetic for control system analysis
+- 3/3 demos passing
+
+---
+
+## [2025-12-02] - Contour Lines and 3D Improvements
+
+### Added
+- **Colorful contour lines** - Contours rendered at base plane with automatic colors
+- **Contour colors in legend** - Legend entries match contour colors
+- **Proper contour level count** - Matches C gnuplot behavior
+
+### Fixed
+- Contour line rendering at correct zMinVisual base plane
+- Start edge marking for all contours in ContourExtractor
+- C gnuplot contour color assignment matching
+
+---
+
+## [2025-11-29] - Unified Test Framework
+
+### Added
+- **Unified test framework** with proper assertions
+- Test assertions for C execution, Java execution, and pixel similarity
+- 80% minimum similarity threshold
+
+### Fixed
+- ANTLR grammar moved to package directory
+- Key parser tests updated
+
+---
+
+## [2025-11-04] - 3D Rendering Fixes
+
+### Added
+- **xlabel/ylabel/zlabel support** for 3D plots
+- Proper dgrid3d qnorm parameter parsing
+
+### Fixed
+- 3D coordinate system and data normalization
+- 3D axis and point projection pipeline
+- 3D view scale to prevent viewport overflow
+- ticslevel parameter for Z-axis rendering
+- 3D data point positioning
+- 3D plot proportions (scale=1.0)
+- 3D axes offset correction
+
+### Documentation
+- Updated documentation for completed 3D fixes
+- Removed obsolete documentation files
+- Reorganized documentation for efficient Claude Code sessions
+
+---
+
+## [2025-10-08] - 3D Improvements
+
+### Added
+- 3D coordinate axes rendering
+- 3D point marker optimization using `<use>` references
+- dgrid3d qnorm interpolation
+- 3D wireframe rendering
+
+### Fixed
+- 3D plot orientation (negated X-axis rotation)
+- Legend and border visibility in 3D
+
+---
+
 ### Fixed - 2025-10-07
 
 #### Point Marker Visibility in SVG Output (CRITICAL FIX)
