@@ -1,4 +1,4 @@
-Executing script: /var/folders/hq/0d5018vj44x5wg2ynxt_swl40000gn/T/junit16946763524671327745/scatter_java_modified.dem
+Executing script: /var/folders/mz/zzzsfg9d6g5bwd6hd1s63v5w0000gn/T/junit1918615139394409479/scatter_java_modified.dem
 Processing SPLOT command with 1 plot spec(s)
   Plot: "hemisphr.dat"
     Explicit style: none
@@ -83,13 +83,13 @@ Processing SPLOT command with 1 plot spec(s)
     Extracting contour lines...
     Extracted 3 contour lines
     Created ContourPlot3D with 3 lines
-Rendered scene 1 to: /var/folders/hq/0d5018vj44x5wg2ynxt_swl40000gn/T/junit16946763524671327745/scatter_java.svg
-Rendered scene 2 to: /var/folders/hq/0d5018vj44x5wg2ynxt_swl40000gn/T/junit16946763524671327745/scatter_java_002.svg
-Rendered scene 3 to: /var/folders/hq/0d5018vj44x5wg2ynxt_swl40000gn/T/junit16946763524671327745/scatter_java_003.svg
-Rendered scene 4 to: /var/folders/hq/0d5018vj44x5wg2ynxt_swl40000gn/T/junit16946763524671327745/scatter_java_004.svg
-Rendered scene 5 to: /var/folders/hq/0d5018vj44x5wg2ynxt_swl40000gn/T/junit16946763524671327745/scatter_java_005.svg
-Rendered scene 6 to: /var/folders/hq/0d5018vj44x5wg2ynxt_swl40000gn/T/junit16946763524671327745/scatter_java_006.svg
-Rendered scene 7 to: /var/folders/hq/0d5018vj44x5wg2ynxt_swl40000gn/T/junit16946763524671327745/scatter_java_007.svg
-Rendered scene 8 to: /var/folders/hq/0d5018vj44x5wg2ynxt_swl40000gn/T/junit16946763524671327745/scatter_java_008.svg
+Rendered scene 1 to: /var/folders/mz/zzzsfg9d6g5bwd6hd1s63v5w0000gn/T/junit1918615139394409479/scatter_java.svg
+Rendered scene 2 to: /var/folders/mz/zzzsfg9d6g5bwd6hd1s63v5w0000gn/T/junit1918615139394409479/scatter_java_002.svg
+Rendered scene 3 to: /var/folders/mz/zzzsfg9d6g5bwd6hd1s63v5w0000gn/T/junit1918615139394409479/scatter_java_003.svg
+Rendered scene 4 to: /var/folders/mz/zzzsfg9d6g5bwd6hd1s63v5w0000gn/T/junit1918615139394409479/scatter_java_004.svg
+Rendered scene 5 to: /var/folders/mz/zzzsfg9d6g5bwd6hd1s63v5w0000gn/T/junit1918615139394409479/scatter_java_005.svg
+Rendered scene 6 to: /var/folders/mz/zzzsfg9d6g5bwd6hd1s63v5w0000gn/T/junit1918615139394409479/scatter_java_006.svg
+Rendered scene 7 to: /var/folders/mz/zzzsfg9d6g5bwd6hd1s63v5w0000gn/T/junit1918615139394409479/scatter_java_007.svg
+Rendered scene 8 to: /var/folders/mz/zzzsfg9d6g5bwd6hd1s63v5w0000gn/T/junit1918615139394409479/scatter_java_008.svg
 Total: 8 scenes rendered
 Script executed successfully.
